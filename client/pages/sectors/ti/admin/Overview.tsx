@@ -2,12 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Pie, PieChart, Cell } from "recharts";
 
-function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Metric({ label, value, sub, variant }: { label: string; value: string; sub?: string; variant: "orange" | "blue" | "green" | "purple" }) {
   return (
-    <div className="card-surface rounded-xl p-4">
-      <div className="text-sm text-muted-foreground">{label}</div>
-      <div className="text-2xl font-bold mt-1">{value}</div>
-      {sub && <div className="text-xs text-muted-foreground mt-1">{sub}</div>}
+    <div className="metric-card" data-variant={variant}>
+      <div className="text-xs/5 opacity-90">{label}</div>
+      <div className="text-2xl font-extrabold mt-1 leading-none">{value}</div>
+      {sub && <div className="text-[11px] opacity-85 mt-1">{sub}</div>}
     </div>
   );
 }
