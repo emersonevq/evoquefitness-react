@@ -15,8 +15,8 @@ export default function Index() {
     <Layout>
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="container py-12 sm:py-16">
-          <div className="rounded-2xl brand-gradient px-6 py-12 sm:px-12 sm:py-16 shadow-xl">
+        <div className="container py-8 sm:py-16">
+          <div className="rounded-2xl brand-gradient px-4 py-8 sm:px-12 sm:py-16 shadow-xl">
             <div className="text-center">
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-primary-foreground drop-shadow-md">
                 Evoque Fitness
