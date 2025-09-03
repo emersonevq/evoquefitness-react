@@ -2,7 +2,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from sqlalchemy import Integer, String, Date, DateTime, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
-from ...core.db import Base
+from core.db import Base
 
 class Chamado(Base):
     __tablename__ = "chamado"
