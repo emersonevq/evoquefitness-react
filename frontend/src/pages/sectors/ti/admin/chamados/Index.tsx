@@ -267,6 +267,12 @@ export default function ChamadosPage() {
         <DialogContent className="max-w-3xl">
           {selected && (
             <div className="space-y-4">
+              {/* Hidden title for a11y */}
+              <div className="sr-only">
+                <DialogHeader>
+                  <DialogTitle>Detalhes do chamado {selected.id}</DialogTitle>
+                </DialogHeader>
+              </div>
               <div className="rounded-lg overflow-hidden border border-border/60">
                 <div className="brand-gradient p-4 sm:p-5 flex items-start justify-between">
                   <div>
@@ -383,12 +389,12 @@ export default function ChamadosPage() {
                   <div className="p-4 grid gap-4">
                     <div className="grid gap-2">
                       <label className="text-sm">Modelo de Mensagem</label>
-                      <Select value={template} onValueChange={setTemplate}>
+                      <Select value={template} onValueChange={(v)=>setTemplate(v === "none" ? "" : v)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione um modelo (opcional)" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Sem modelo</SelectItem>
+                          <SelectItem value="none">Sem modelo</SelectItem>
                           <SelectItem value="atualizacao">Atualização padrão</SelectItem>
                           <SelectItem value="info">Solicitar mais informações</SelectItem>
                         </SelectContent>
