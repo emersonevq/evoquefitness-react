@@ -163,6 +163,45 @@ export default function ChamadosPage() {
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<TicketMock | null>(null);
+  const [tab, setTab] = useState<"resumo" | "historico" | "ticket">("resumo");
+  const [history, setHistory] = useState<{ t: number; label: string; attachments?: string[] }[]>([]);
+  const [template, setTemplate] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [priority, setPriority] = useState(false);
+  const [ccMe, setCcMe] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
+
+  function initFromSelected(s: TicketMock) {
+    setTab("resumo");
+    setSubject(`Atualização do Chamado ${s.id}`);
+    setMessage("");
+    setTemplate("");
+    setPriority(false);
+    setCcMe(false);
+    setFiles([]);
+
+    const base = new Date(s.criadoEm).getTime();
+    const arr: { t: number; label: string; attachments?: string[] }[] = [
+      { t: base, label: "Chamado aberto" },
+      { t: base + 45 * 60 * 1000, label: `Status: ${s.status}` },
+    ];
+    if (s.visita) arr.push({ t: base + 3 * 60 * 60 * 1000, label: `Visita técnica: ${s.visita}` });
+    if (s.initialAttachments && s.initialAttachments.length) {
+      arr.push({ t: base + 2 * 60 * 1000, label: "Anexos recebidos na abertura", attachments: s.initialAttachments });
+    }
+    setHistory(arr);
+  }
+
+  function handleSendTicket() {
+    const now = Date.now();
+    const names = files.map((f) => f.name);
+    setHistory((h) => [
+      ...h,
+      { t: now, label: `Ticket enviado${priority ? " (prioritário)" : ""}` , attachments: names },
+    ]);
+    setTab("historico");
+  }
 
   return (
     <div className="space-y-6">
