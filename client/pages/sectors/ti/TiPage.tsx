@@ -35,6 +35,7 @@ export default function TiPage() {
             </Button>
           </div>
           <h2 className="text-lg sm:text-xl font-semibold">Histórico de chamados</h2>
+          <div className="hidden md:block"><Button asChild className="mr-2 rounded-full"><Link to="/setor/ti/admin">Painel administrativo</Link></Button></div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="rounded-full">Abrir novo chamado</Button>
