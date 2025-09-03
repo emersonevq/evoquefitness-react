@@ -25,9 +25,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             to="/"
             className="flex items-center gap-2 font-extrabold tracking-tight"
           >
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-sm font-bold text-primary-foreground">E</span>
-            </div>
+            <img
+              src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
+              alt="Evoque Fitness Logo"
+              className="h-6 w-auto rounded-sm shadow-sm"
+              loading="lazy"
+              decoding="async"
+            />
             <span className="text-lg">Evoque Fitness</span>
           </Link>
           {/* Desktop navigation */}
@@ -74,9 +78,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </SheetTrigger>
               <SheetContent side="left" className="w-[85%] p-0">
                 <div className="p-4 border-b border-border/60 flex items-center gap-2">
-                  <div className="h-6 w-6 bg-primary rounded-md flex items-center justify-center">
-                    <span className="text-xs font-bold text-primary-foreground">E</span>
-                  </div>
+                  <img
+                    src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
+                    alt="Evoque Fitness Logo"
+                    className="h-6 w-auto rounded-sm"
+                  />
                   <span className="font-semibold">Evoque Fitness</span>
                 </div>
                 <div className="p-4 space-y-2">

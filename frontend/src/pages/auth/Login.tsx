@@ -22,9 +22,11 @@ export default function Login() {
       <div className="hidden md:flex items-center justify-center p-10">
         <div className="w-full h-full rounded-2xl brand-gradient flex items-center justify-center">
           <div className="max-w-md text-center text-primary-foreground px-8">
-            <div className="h-12 w-12 bg-primary rounded-xl mx-auto mb-6 flex items-center justify-center shadow-sm">
-              <span className="text-xl font-bold text-primary-foreground">E</span>
-            </div>
+            <img
+              src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
+              alt="Evoque Fitness Logo"
+              className="h-10 w-auto mx-auto mb-6 rounded-sm shadow-sm"
+            />
             <h1 className="text-3xl font-extrabold drop-shadow">
               Evoque Fitness
             </h1>
@@ -41,9 +43,11 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="md:hidden flex items-center justify-center mb-8">
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-sm font-bold text-primary-foreground">E</span>
-            </div>
+            <img
+              src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
+              alt="Evoque Fitness Logo"
+              className="h-8 w-auto rounded-sm shadow-sm"
+            />
           </div>
 
           <div className="card-surface rounded-xl p-6 sm:p-8">
