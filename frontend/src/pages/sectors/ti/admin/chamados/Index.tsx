@@ -249,7 +249,7 @@ export default function ChamadosPage() {
   const [ccMe, setCcMe] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
 
-  function initFromSelected(s: TicketMock) {
+  function initFromSelected(s: UiTicket) {
     setTab("resumo");
     setSubject(`Atualização do Chamado ${s.id}`);
     setMessage("");
