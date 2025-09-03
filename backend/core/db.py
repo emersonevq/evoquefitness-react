@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 try:
-    from .. import env as _env
+    import env as _env  # type: ignore
 except Exception:
     _env = None
 
