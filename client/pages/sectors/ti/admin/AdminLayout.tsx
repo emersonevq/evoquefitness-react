@@ -77,9 +77,14 @@ export default function AdminLayout() {
               </SheetTrigger>
               <SheetContent side="left" className="w-[85%]">
                 <nav className="mt-6 grid gap-2">
-                  {items.map((i) => (
-                    <Link key={i.to} to={i.to} className="rounded-md px-3 py-2 bg-secondary hover:bg-secondary/80">{i.label}</Link>
-                  ))}
+                  {groups.flatMap((g) => [
+                    <div key={`${g.title}-title`} className="px-3 text-xs uppercase tracking-wide text-muted-foreground/80 mt-3">{g.title}</div>,
+                    ...g.items.map((i) => (
+                      <Link key={i.to} to={i.to} className="rounded-md px-3 py-2 bg-secondary hover:bg-secondary/80">
+                        {i.label}
+                      </Link>
+                    )),
+                  ])}
                 </nav>
               </SheetContent>
             </Sheet>
