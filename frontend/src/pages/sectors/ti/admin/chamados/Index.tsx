@@ -253,6 +253,7 @@ export default function ChamadosPage() {
             key={t.id}
             onClick={() => {
               setSelected(t);
+              initFromSelected(t);
               setOpen(true);
             }}
             className="cursor-pointer transition-shadow hover:shadow-md"
