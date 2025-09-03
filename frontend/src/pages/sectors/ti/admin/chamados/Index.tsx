@@ -204,6 +204,12 @@ export default function ChamadosPage() {
       };
     }
 
+    const apiConfigured = !!import.meta.env.VITE_API_BASE_URL || !!import.meta.env.VITE_PROXY_TARGET;
+    if (!apiConfigured) {
+      setItems([]);
+      return;
+    }
+
     fetch("/api/chamados")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
       .then((data) => setItems(Array.isArray(data) ? data.map(adapt) : []))
