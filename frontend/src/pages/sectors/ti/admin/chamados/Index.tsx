@@ -173,15 +173,52 @@ function TicketCard({
 export default function ChamadosPage() {
   const { filtro } = useParams<{ filtro?: string }>();
 
+  const [items, setItems] = useState<UiTicket[]>([]);
+
+  useEffect(() => {
+    function toUiStatus(s: string): TicketStatus {
+      const n = s?.toUpperCase();
+      if (n === "AGUARDANDO") return "AGUARDANDO";
+      if (n === "CONCLUIDO" || n === "CONCLUÍDO") return "CONCLUIDO";
+      if (n === "CANCELADO") return "CANCELADO";
+      return "ABERTO";
+    }
+
+    function adapt(it: any): UiTicket {
+      const titulo = it.problema === "Internet" && it.internet_item ? `Internet - ${it.internet_item}` : it.problema;
+      return {
+        id: String(it.id),
+        protocolo: it.protocolo,
+        titulo,
+        solicitante: it.solicitante,
+        unidade: it.unidade,
+        categoria: it.problema,
+        status: toUiStatus(it.status || "Aberto"),
+        criadoEm: it.data_abertura || new Date().toISOString(),
+        cargo: it.cargo,
+        email: it.email,
+        telefone: it.telefone,
+        internetItem: it.internet_item ?? null,
+        visita: it.data_visita ?? null,
+        gerente: null,
+      };
+    }
+
+    fetch("/api/chamados")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
+      .then((data) => setItems(Array.isArray(data) ? data.map(adapt) : []))
+      .catch(() => setItems([]));
+  }, []);
+
   const counts = useMemo(
     () => ({
-      todos: ticketsMock.length,
-      abertos: ticketsMock.filter((t) => t.status === "ABERTO").length,
-      aguardando: ticketsMock.filter((t) => t.status === "AGUARDANDO").length,
-      concluidos: ticketsMock.filter((t) => t.status === "CONCLUIDO").length,
-      cancelados: ticketsMock.filter((t) => t.status === "CANCELADO").length,
+      todos: items.length,
+      abertos: items.filter((t) => t.status === "ABERTO").length,
+      aguardando: items.filter((t) => t.status === "AGUARDANDO").length,
+      concluidos: items.filter((t) => t.status === "CONCLUIDO").length,
+      cancelados: items.filter((t) => t.status === "CANCELADO").length,
     }),
-    [],
+    [items],
   );
 
   const list = useMemo(() => {
