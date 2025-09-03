@@ -26,6 +26,17 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/setor/ti" element={<TiPage />} />
+          <Route path="/setor/ti/admin" element={<AdminLayout />}>
+            <Route index element={<Overview />} />
+            <Route path="overview" element={<Overview />} />
+            <Route path="chamados" element={<AdminChamados />} />
+            <Route path="usuarios" element={<AdminUsuarios />} />
+            <Route path="monitoramento" element={<AdminMonitoramento />} />
+            <Route path="integracoes" element={<AdminIntegracoes />} />
+            <Route path="sistema" element={<AdminSistema />} />
+            <Route path="historico" element={<AdminHistorico />} />
+            <Route path="configuracoes" element={<AdminConfiguracoes />} />
+          </Route>
           <Route path="/setor/compras" element={<ComprasPage />} />
           <Route path="/setor/manutencao" element={<ManutencaoPage />} />
           <Route path="/setor/financeiro" element={<FinanceiroPage />} />
