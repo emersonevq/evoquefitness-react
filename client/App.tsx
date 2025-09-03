@@ -21,15 +21,14 @@ import {
 } from "./pages/sectors/_placeholders";
 import AdminLayout from "./pages/sectors/ti/admin/AdminLayout";
 import Overview from "./pages/sectors/ti/admin/Overview";
-import {
-  Chamados as AdminChamados,
-  Usuarios as AdminUsuarios,
-  Monitoramento as AdminMonitoramento,
-  Integracoes as AdminIntegracoes,
-  Sistema as AdminSistema,
-  Historico as AdminHistorico,
-  Configuracoes as AdminConfiguracoes,
-} from "./pages/sectors/ti/admin/Sections";
+import ChamadosPage from "./pages/sectors/ti/admin/chamados/Index";
+import UsuariosLayout from "./pages/sectors/ti/admin/usuarios/UsuariosLayout";
+import { CriarUsuario, Bloqueios, Permissoes, Agentes, Grupos } from "./pages/sectors/ti/admin/usuarios/pages";
+import IntegracoesLayout from "./pages/sectors/ti/admin/integracoes/IntegracoesLayout";
+import { AdicionarUnidade, ListarUnidades, AdicionarBanco } from "./pages/sectors/ti/admin/integracoes/pages";
+import ConfiguracoesLayout from "./pages/sectors/ti/admin/configuracoes/ConfiguracoesLayout";
+import { SLA as ConfSLA, Prioridades as ConfPrioridades, Notificacoes as ConfNotificacoes, Sistema as ConfSistema, Seguranca as ConfSeguranca, Chamados as ConfChamados, Email as ConfEmail, Integracoes as ConfIntegracoes, Acoes as ConfAcoes } from "./pages/sectors/ti/admin/configuracoes/pages";
+import { Monitoramento as AdminMonitoramento, Historico as AdminHistorico } from "./pages/sectors/ti/admin/Sections";
 
 const queryClient = new QueryClient();
 
@@ -45,13 +44,38 @@ const App = () => (
           <Route path="/setor/ti/admin" element={<AdminLayout />}>
             <Route index element={<Overview />} />
             <Route path="overview" element={<Overview />} />
-            <Route path="chamados" element={<AdminChamados />} />
-            <Route path="usuarios" element={<AdminUsuarios />} />
+            <Route path="chamados">
+              <Route index element={<ChamadosPage />} />
+              <Route path=":filtro" element={<ChamadosPage />} />
+            </Route>
+            <Route path="usuarios" element={<UsuariosLayout />}>
+              <Route index element={<CriarUsuario />} />
+              <Route path="criar" element={<CriarUsuario />} />
+              <Route path="bloqueios" element={<Bloqueios />} />
+              <Route path="permissoes" element={<Permissoes />} />
+              <Route path="agentes" element={<Agentes />} />
+              <Route path="grupos" element={<Grupos />} />
+            </Route>
             <Route path="monitoramento" element={<AdminMonitoramento />} />
-            <Route path="integracoes" element={<AdminIntegracoes />} />
-            <Route path="sistema" element={<AdminSistema />} />
+            <Route path="integracoes" element={<IntegracoesLayout />}>
+              <Route index element={<AdicionarUnidade />} />
+              <Route path="adicionar-unidade" element={<AdicionarUnidade />} />
+              <Route path="listar-unidades" element={<ListarUnidades />} />
+              <Route path="adicionar-ao-banco" element={<AdicionarBanco />} />
+            </Route>
             <Route path="historico" element={<AdminHistorico />} />
-            <Route path="configuracoes" element={<AdminConfiguracoes />} />
+            <Route path="configuracoes" element={<ConfiguracoesLayout />}>
+              <Route index element={<ConfSLA />} />
+              <Route path="sla" element={<ConfSLA />} />
+              <Route path="prioridades" element={<ConfPrioridades />} />
+              <Route path="notificacoes" element={<ConfNotificacoes />} />
+              <Route path="sistema" element={<ConfSistema />} />
+              <Route path="seguranca" element={<ConfSeguranca />} />
+              <Route path="chamados" element={<ConfChamados />} />
+              <Route path="email" element={<ConfEmail />} />
+              <Route path="integracoes" element={<ConfIntegracoes />} />
+              <Route path="acoes" element={<ConfAcoes />} />
+            </Route>
           </Route>
           <Route path="/setor/compras" element={<ComprasPage />} />
           <Route path="/setor/manutencao" element={<ManutencaoPage />} />
