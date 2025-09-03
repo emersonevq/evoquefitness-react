@@ -24,10 +24,10 @@ export default function Overview() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Metric label="Chamados hoje" value="18" sub="(+12% vs ontem)" />
-        <Metric label="Tempo médio de resposta" value="32 min" sub="Últimas 24h" />
-        <Metric label="SLA (30h)" value="82%" sub="Dentro do acordo" />
-        <Metric label="Abertos agora" value="7" sub="em andamento" />
+        <Metric label="Chamados hoje" value="18" sub="(+12% vs ontem)" variant="orange" />
+        <Metric label="Tempo médio de resposta" value="32 min" sub="Últimas 24h" variant="blue" />
+        <Metric label="SLA (30h)" value="82%" sub="Dentro do acordo" variant="green" />
+        <Metric label="Abertos agora" value="7" sub="em andamento" variant="purple" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
