@@ -7,7 +7,7 @@ class UserCreate(BaseModel):
     sobrenome: str
     usuario: str
     email: EmailStr
-    senha: str = Field(min_length=6)
+    senha: Optional[str] = Field(default=None, min_length=6)
     nivel_acesso: str
     setores: Optional[List[str]] = None
     alterar_senha_primeiro_acesso: bool = True
@@ -24,3 +24,10 @@ class UserOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UserCreatedOut(UserOut):
+    senha: str  # senha em texto plano (retornada uma única vez)
+
+class UserAvailability(BaseModel):
+    email_exists: Optional[bool] = None
+    usuario_exists: Optional[bool] = None
