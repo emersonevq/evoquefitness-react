@@ -5,9 +5,16 @@ export interface TicketMock {
   titulo: string;
   solicitante: string;
   unidade: string;
-  categoria: string;
+  categoria: string; // mapeia "Problema Reportado"
   status: TicketStatus;
   criadoEm: string; // ISO
+  protocolo: string;
+  cargo: "Coordenador" | "Funcionário" | "Gerente" | "Gerente regional";
+  gerente: string;
+  email: string;
+  telefone: string; // numérico
+  internetItem?: string;
+  visita?: string; // yyyy-mm-dd
 }
 
 export const ticketsMock: TicketMock[] = Array.from({ length: 24 }).map(
@@ -26,16 +33,40 @@ export const ticketsMock: TicketMock[] = Array.from({ length: 24 }).map(
       "Som",
       "Catraca",
     ];
+    const cargos = [
+      "Coordenador",
+      "Funcionário",
+      "Gerente",
+      "Gerente regional",
+    ] as const;
+    const gerentes = ["Ana Lima", "Bruno Alves", "Carla Souza", "Daniel Reis"];
     const status = statuses[i % statuses.length];
     const day = (i % 27) + 1;
+    const categoria = cats[i % cats.length];
+    const criado = new Date(2025, 0, day, 9 + (i % 8));
+    const id = `TCK-${(1000 + i).toString()}`;
+    const solicitante = ["Bruna", "Carlos", "Diego", "Fernanda", "Gustavo"][i % 5];
+    const email = `${solicitante.toLowerCase().replace(/\s+/g, ".")}@evoque.com`;
+    const telefone = `11${String(987654321 + i).slice(0, 9)}`; // 11 + 9 dígitos
+    const internetItems = ["Antenas", "Cabo de rede", "DVR", "Roteador/Modem", "Switch", "Wi-fi"];
+    const internetItem = categoria === "Internet" ? internetItems[i % internetItems.length] : undefined;
+    const visitaDate = new Date(2025, 0, Math.min(day + 2, 28)).toISOString().slice(0, 10);
+
     return {
-      id: `TCK-${(1000 + i).toString()}`,
-      titulo: `${cats[i % cats.length]} - Ocorrência ${i + 1}`,
-      solicitante: ["Bruna", "Carlos", "Diego", "Fernanda", "Gustavo"][i % 5],
+      id,
+      titulo: `${categoria} - Ocorrência ${i + 1}`,
+      solicitante,
       unidade: ["Centro", "Zona Sul", "Zona Norte", "Zona Leste"][i % 4],
-      categoria: cats[i % cats.length],
+      categoria,
       status,
-      criadoEm: new Date(2025, 0, day, 9 + (i % 8)).toISOString(),
+      criadoEm: criado.toISOString(),
+      protocolo: `${criado.getFullYear()}-${String(criado.getMonth() + 1).padStart(2, "0")}-${String(criado.getDate()).padStart(2, "0")}-${id}`,
+      cargo: cargos[i % cargos.length],
+      gerente: gerentes[i % gerentes.length],
+      email,
+      telefone,
+      internetItem,
+      visita: visitaDate,
     };
   },
 );
