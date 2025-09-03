@@ -105,8 +105,12 @@ export default function Login() {
                   Esqueci minha senha
                 </Link>
               </div>
-              <Button type="submit" className="w-full h-11 rounded-md">
-                Entrar
+              <Button
+                type="submit"
+                className="w-full h-11 rounded-md"
+                disabled={isLoading}
+              >
+                {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
           </div>

@@ -4,6 +4,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,9 +14,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { sectors } from "@/data/sectors";
-import { ChevronDown, Menu } from "lucide-react";
+import { ChevronDown, Menu, LogOut } from "lucide-react";
+import { useAuthContext } from "@/lib/auth-context";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const { user, logout } = useAuthContext();
   return (
     <div className="min-h-[100svh] md:min-h-screen w-full flex flex-col">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur">
@@ -62,10 +65,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <div className="ml-2 hidden md:flex items-center gap-2 rounded-full bg-secondary px-3 py-1.5 text-sm">
-              <div className="h-6 w-6 rounded-full bg-primary/90" />
-              <span>Administrador</span>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" className="ml-2 hidden md:flex items-center gap-2 rounded-full px-3 py-1.5 text-sm">
+                  <div className="h-6 w-6 rounded-full bg-primary/90" />
+                  <span>{user?.name || "Administrador"}</span>
+                  <ChevronDown className="size-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem className="text-xs text-muted-foreground">
+                  {user?.email || "admin@evoque.com"}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="text-red-600">
+                  <LogOut className="size-4 mr-2" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
 
           {/* Mobile hamburger */}
