@@ -9,6 +9,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/auth/Login";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPasswordSuccess from "./pages/auth/ResetPasswordSuccess";
 import SectorPage from "./pages/Sector";
 import TiPage from "./pages/sectors/ti/TiPage";
 import {
@@ -66,6 +68,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          <Route path="/auth/reset-password-success" element={<ResetPasswordSuccess />} />
           <Route
             path="/setor/ti"
             element={
