@@ -224,17 +224,17 @@ export default function ChamadosPage() {
   const list = useMemo(() => {
     switch (filtro) {
       case "abertos":
-        return ticketsMock.filter((t) => t.status === "ABERTO");
+        return items.filter((t) => t.status === "ABERTO");
       case "aguardando":
-        return ticketsMock.filter((t) => t.status === "AGUARDANDO");
+        return items.filter((t) => t.status === "AGUARDANDO");
       case "concluidos":
-        return ticketsMock.filter((t) => t.status === "CONCLUIDO");
+        return items.filter((t) => t.status === "CONCLUIDO");
       case "cancelados":
-        return ticketsMock.filter((t) => t.status === "CANCELADO");
+        return items.filter((t) => t.status === "CANCELADO");
       default:
-        return ticketsMock;
+        return items;
     }
-  }, [filtro]);
+  }, [filtro, items]);
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<TicketMock | null>(null);
