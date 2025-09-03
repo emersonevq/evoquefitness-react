@@ -11,7 +11,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="h-1 w-full brand-gradient" />
         <div className="container flex items-center justify-between py-3">
           <Link to="/" className="flex items-center gap-2 font-extrabold tracking-tight">
-            <span className="inline-block h-6 w-6 rounded-sm brand-gradient" />
+            <img
+              src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
+              alt="Evoque Fitness Logo"
+              className="h-6 w-auto rounded-sm shadow-sm"
+              loading="lazy"
+              decoding="async"
+            />
             <span className="text-lg">Evoque Fitness ERP</span>
           </Link>
           <nav className="flex items-center gap-2">
