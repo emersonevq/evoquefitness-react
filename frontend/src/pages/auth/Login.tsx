@@ -41,11 +41,9 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="md:hidden flex items-center justify-center mb-8">
-            <img
-              src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
-              alt="Evoque Fitness Logo"
-              className="h-8 w-auto rounded-sm shadow-sm"
-            />
+            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-sm font-bold text-primary-foreground">E</span>
+            </div>
           </div>
 
           <div className="card-surface rounded-xl p-6 sm:p-8">
