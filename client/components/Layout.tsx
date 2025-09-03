@@ -6,7 +6,7 @@ import { ChevronDown } from "lucide-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-[100svh] md:min-h-screen w-full flex flex-col">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur">
         <div className="h-1 w-full brand-gradient" />
         <div className="container flex items-center justify-between py-3">
@@ -52,7 +52,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 w-full">{children}</main>
       <footer className="border-t border-border/60">
         <div className="container py-6 text-xs text-muted-foreground flex items-center justify-between">
           <p>© {new Date().getFullYear()} Evoque Fitness</p>
