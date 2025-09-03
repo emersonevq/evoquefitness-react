@@ -3,9 +3,9 @@ import random
 import string
 from datetime import date
 from sqlalchemy.orm import Session
-from ...core.utils import now_brazil_naive
-from ..models import Chamado
-from ..schemas.chamado import ChamadoCreate
+from core.utils import now_brazil_naive
+from ti.models import Chamado
+from ti.schemas.chamado import ChamadoCreate
 
 
 def _gerar_codigo(n: int = 6) -> str:
