@@ -95,7 +95,7 @@ function TicketCard({
 
           <div className="text-muted-foreground">Agente:</div>
           <div className="text-right">
-            <Button size="sm" className="bg-green-600 text-white hover:bg-green-700">
+            <Button size="sm" variant="success">
               <UserPlus className="size-4" /> Atribuir
             </Button>
           </div>
@@ -116,13 +116,13 @@ function TicketCard({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-          <Button className="bg-amber-500 text-white hover:bg-amber-600">
+          <Button variant="warning">
             <Save className="size-4" /> Atualizar
           </Button>
           <Button variant="destructive">
             <Trash2 className="size-4" /> Excluir
           </Button>
-          <Button className="bg-cyan-600 text-white hover:bg-cyan-700">
+          <Button variant="info">
             <TicketIcon className="size-4" /> Ticket
           </Button>
         </div>
