@@ -237,14 +237,43 @@ export default function ChamadosPage() {
                   <StatusPill status={selected.status} />
                 </div>
                 <div className="p-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                  <div className="text-muted-foreground">Protocolo</div>
+                  <div className="text-right">{selected.protocolo}</div>
+
                   <div className="text-muted-foreground">Solicitante</div>
                   <div className="text-right">{selected.solicitante}</div>
-                  <div className="text-muted-foreground">Problema</div>
-                  <div className="text-right">{selected.categoria}</div>
+
+                  <div className="text-muted-foreground">Cargo</div>
+                  <div className="text-right">{selected.cargo}</div>
+
+                  <div className="text-muted-foreground">Gerente</div>
+                  <div className="text-right">{selected.gerente}</div>
+
+                  <div className="text-muted-foreground">E-mail</div>
+                  <div className="text-right">{selected.email}</div>
+
+                  <div className="text-muted-foreground">Telefone</div>
+                  <div className="text-right">{selected.telefone}</div>
+
                   <div className="text-muted-foreground">Unidade</div>
                   <div className="text-right">{selected.unidade}</div>
-                  <div className="text-muted-foreground">Data</div>
+
+                  <div className="text-muted-foreground">Problema</div>
+                  <div className="text-right">{selected.categoria}</div>
+
+                  {selected.internetItem && (
+                    <>
+                      <div className="text-muted-foreground">Item de Internet</div>
+                      <div className="text-right">{selected.internetItem}</div>
+                    </>
+                  )}
+
+                  <div className="text-muted-foreground">Data de abertura</div>
                   <div className="text-right">{new Date(selected.criadoEm).toLocaleString()}</div>
+
+                  <div className="text-muted-foreground">Visita técnica</div>
+                  <div className="text-right">{selected.visita || "—"}</div>
+
                   <div className="text-muted-foreground">Agente</div>
                   <div className="text-right">
                     <Button size="sm" variant="success">
