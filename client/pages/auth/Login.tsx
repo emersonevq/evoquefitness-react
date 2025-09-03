@@ -11,8 +11,9 @@ export default function Login() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login flow — redirect to dashboard
-    navigate("/setor/ti/admin");
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get("redirect") || "/";
+    navigate(redirect, { state: { bypassGate: true }, replace: true });
   };
 
   return (
