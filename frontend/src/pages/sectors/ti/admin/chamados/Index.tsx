@@ -405,7 +405,7 @@ export default function ChamadosPage() {
                         <div className="text-muted-foreground">Cargo</div>
                         <div className="text-right">{selected.cargo}</div>
                         <div className="text-muted-foreground">Gerente</div>
-                        <div className="text-right">{selected.gerente}</div>
+                        <div className="text-right">{selected.gerente || "—"}</div>
                         <div className="text-muted-foreground">E-mail</div>
                         <div className="text-right">{selected.email}</div>
                         <div className="text-muted-foreground">Telefone</div>
