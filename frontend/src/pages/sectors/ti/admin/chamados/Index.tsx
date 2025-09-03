@@ -96,7 +96,7 @@ function TicketCard({
 
           <div className="text-muted-foreground">Agente:</div>
           <div className="text-right">
-            <Button size="sm" variant="success">
+            <Button size="sm" variant="success" onClick={(e) => e.stopPropagation()}>
               <UserPlus className="size-4" /> Atribuir
             </Button>
           </div>
