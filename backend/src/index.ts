@@ -1,23 +1,31 @@
-import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { handleDemo } from "./routes/demo";
+import { config } from "dotenv";
+import { handleDemo } from "./routes/demo.js";
 
-export function createServer() {
-  const app = express();
+// Load environment variables
+config();
 
-  // Middleware
-  app.use(cors());
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+const app = express();
+const PORT = process.env.PORT || 8000;
 
-  // Example API routes
-  app.get("/api/ping", (_req, res) => {
-    const ping = process.env.PING_MESSAGE ?? "ping";
-    res.json({ message: ping });
-  });
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-  app.get("/api/demo", handleDemo);
+// Health check endpoint
+app.get("/api/ping", (req, res) => {
+  res.json({ message: "pong", timestamp: new Date().toISOString() });
+});
 
-  return app;
-}
+// API Routes
+app.get("/api/demo", handleDemo);
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Backend server running on http://localhost:${PORT}`);
+  console.log(`📡 API available at http://localhost:${PORT}/api`);
+});
+
+export default app;
