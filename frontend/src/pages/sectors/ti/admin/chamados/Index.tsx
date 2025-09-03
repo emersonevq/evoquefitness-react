@@ -104,7 +104,7 @@ function TicketCard({
 
         <div className="mt-1 rounded-md border border-border/60 bg-background p-2">
           <Select value={sel} onValueChange={(v) => setSel(v as TicketStatus)}>
-            <SelectTrigger>
+            <SelectTrigger onClick={(e) => e.stopPropagation()}>
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -117,13 +117,13 @@ function TicketCard({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-          <Button variant="warning">
+          <Button variant="warning" onClick={(e) => e.stopPropagation()}>
             <Save className="size-4" /> Atualizar
           </Button>
-          <Button variant="destructive">
+          <Button variant="destructive" onClick={(e) => e.stopPropagation()}>
             <Trash2 className="size-4" /> Excluir
           </Button>
-          <Button variant="info">
+          <Button variant="info" onClick={(e) => e.stopPropagation()}>
             <TicketIcon className="size-4" /> Ticket
           </Button>
         </div>
@@ -160,6 +160,9 @@ export default function ChamadosPage() {
         return ticketsMock;
     }
   }, [filtro]);
+
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<TicketMock | null>(null);
 
   return (
     <div className="space-y-6">
@@ -207,9 +210,81 @@ export default function ChamadosPage() {
 
       <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
         {list.map((t) => (
-          <TicketCard key={t.id} {...t} />
+          <div
+            key={t.id}
+            onClick={() => {
+              setSelected(t);
+              setOpen(true);
+            }}
+            className="cursor-pointer transition-shadow hover:shadow-md"
+          >
+            <TicketCard {...t} />
+          </div>
         ))}
       </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl">
+          {selected && (
+            <div className="space-y-4">
+              <DialogHeader>
+                <DialogTitle>{selected.titulo}</DialogTitle>
+              </DialogHeader>
+
+              <div className="rounded-lg border border-border/60 bg-card">
+                <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
+                  <div className="font-semibold text-orange-400">{selected.id}</div>
+                  <StatusPill status={selected.status} />
+                </div>
+                <div className="p-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                  <div className="text-muted-foreground">Solicitante</div>
+                  <div className="text-right">{selected.solicitante}</div>
+                  <div className="text-muted-foreground">Problema</div>
+                  <div className="text-right">{selected.categoria}</div>
+                  <div className="text-muted-foreground">Unidade</div>
+                  <div className="text-right">{selected.unidade}</div>
+                  <div className="text-muted-foreground">Data</div>
+                  <div className="text-right">{new Date(selected.criadoEm).toLocaleString()}</div>
+                  <div className="text-muted-foreground">Agente</div>
+                  <div className="text-right">
+                    <Button size="sm" variant="success">
+                      <UserPlus className="size-4" /> Atribuir
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="sm:col-span-1">
+                  <Select defaultValue={selected.status}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ABERTO">Aberto</SelectItem>
+                      <SelectItem value="AGUARDANDO">Aguardando</SelectItem>
+                      <SelectItem value="CONCLUIDO">Concluído</SelectItem>
+                      <SelectItem value="CANCELADO">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button variant="warning">
+                  <Save className="size-4" /> Atualizar
+                </Button>
+                <Button variant="destructive">
+                  <Trash2 className="size-4" /> Excluir
+                </Button>
+              </div>
+
+              <div className="flex justify-end">
+                <Button variant="info">
+                  <TicketIcon className="size-4" /> Ticket
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
