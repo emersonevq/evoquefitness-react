@@ -1,4 +1,4 @@
-import Layout from "@/components/Layout";
+import Layout from "@/components/layout/Layout";
 import { sectors } from "@/data/sectors";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
