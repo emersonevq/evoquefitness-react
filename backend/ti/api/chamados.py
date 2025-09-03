@@ -1,0 +1,17 @@
+from __future__ import annotations
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from ...core.db import get_db
+from ..schemas.chamado import ChamadoCreate, ChamadoOut
+from ..services.chamados import criar_chamado as service_criar
+
+router = APIRouter(prefix="/chamados", tags=["TI - Chamados"])
+
+@router.post("", response_model=ChamadoOut)
+def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
+    try:
+        return service_criar(db, payload)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erro ao criar chamado")
