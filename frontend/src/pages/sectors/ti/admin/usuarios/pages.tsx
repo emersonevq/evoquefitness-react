@@ -31,9 +31,11 @@ export function CriarUsuario() {
   };
 
   const generatePassword = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
+    const chars =
+      "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
     let out = "";
-    for (let i = 0; i < 10; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    for (let i = 0; i < 10; i++)
+      out += chars[Math.floor(Math.random() * chars.length)];
     setGenPass(out);
   };
 
@@ -67,28 +69,55 @@ export function CriarUsuario() {
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="grid gap-2">
             <Label htmlFor="first">Nome</Label>
-            <Input id="first" placeholder="Digite o nome" value={first} onChange={(e)=>setFirst(e.target.value)} />
+            <Input
+              id="first"
+              placeholder="Digite o nome"
+              value={first}
+              onChange={(e) => setFirst(e.target.value)}
+            />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="last">Sobrenome</Label>
-            <Input id="last" placeholder="Digite o sobrenome" value={last} onChange={(e)=>setLast(e.target.value)} />
+            <Input
+              id="last"
+              placeholder="Digite o sobrenome"
+              value={last}
+              onChange={(e) => setLast(e.target.value)}
+            />
           </div>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="grid gap-2">
             <Label htmlFor="email">E-mail</Label>
-            <Input id="email" type="email" placeholder="Digite o e-mail" value={email} onChange={(e)=>setEmail(e.target.value)} />
+            <Input
+              id="email"
+              type="email"
+              placeholder="Digite o e-mail"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="username">Nome de usuário</Label>
             <div className="flex gap-2">
-              <Input id="username" placeholder="Digite o nome de usuário" value={username} onChange={(e)=>setUsername(e.target.value)} />
-              <Button type="button" variant="secondary" onClick={generateUsername}>
+              <Input
+                id="username"
+                placeholder="Digite o nome de usuário"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={generateUsername}
+              >
                 Gerar
               </Button>
             </div>
-            <div className="text-xs text-muted-foreground">Digite manualmente ou clique no botão para gerar automaticamente</div>
+            <div className="text-xs text-muted-foreground">
+              Digite manualmente ou clique no botão para gerar automaticamente
+            </div>
           </div>
         </div>
 
@@ -104,8 +133,12 @@ export function CriarUsuario() {
                 <SelectItem value="Gestor">Gestor</SelectItem>
                 <SelectItem value="Funcionário">Funcionário</SelectItem>
                 <SelectItem value="Gerente">Gerente</SelectItem>
-                <SelectItem value="Gerente regional">Gerente regional</SelectItem>
-                <SelectItem value="Agente de suporte">Agente de suporte</SelectItem>
+                <SelectItem value="Gerente regional">
+                  Gerente regional
+                </SelectItem>
+                <SelectItem value="Agente de suporte">
+                  Agente de suporte
+                </SelectItem>
                 <SelectItem value="Administrador">Administrador</SelectItem>
               </SelectContent>
             </Select>
@@ -134,14 +167,25 @@ export function CriarUsuario() {
               type="checkbox"
               className="h-4 w-4 rounded border-border"
               checked={forceReset}
-              onChange={(e)=>setForceReset(e.target.checked)}
+              onChange={(e) => setForceReset(e.target.checked)}
             />
             Solicitar alteração de senha no primeiro acesso
           </label>
           <div className="flex items-center gap-2">
-            <Button type="button" variant="secondary" onClick={generatePassword}>Gerar senha</Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={generatePassword}
+            >
+              Gerar senha
+            </Button>
             {genPass && (
-              <span className="text-sm">Senha gerada: <span className="font-medium">{genPass}</span> <span className="text-muted-foreground">(será exibida apenas uma vez)</span></span>
+              <span className="text-sm">
+                Senha gerada: <span className="font-medium">{genPass}</span>{" "}
+                <span className="text-muted-foreground">
+                  (será exibida apenas uma vez)
+                </span>
+              </span>
             )}
           </div>
         </div>

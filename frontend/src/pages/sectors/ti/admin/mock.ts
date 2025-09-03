@@ -45,12 +45,26 @@ export const ticketsMock: TicketMock[] = Array.from({ length: 24 }).map(
     const categoria = cats[i % cats.length];
     const criado = new Date(2025, 0, day, 9 + (i % 8));
     const id = `TCK-${(1000 + i).toString()}`;
-    const solicitante = ["Bruna", "Carlos", "Diego", "Fernanda", "Gustavo"][i % 5];
+    const solicitante = ["Bruna", "Carlos", "Diego", "Fernanda", "Gustavo"][
+      i % 5
+    ];
     const email = `${solicitante.toLowerCase().replace(/\s+/g, ".")}@evoque.com`;
     const telefone = `11${String(987654321 + i).slice(0, 9)}`; // 11 + 9 dígitos
-    const internetItems = ["Antenas", "Cabo de rede", "DVR", "Roteador/Modem", "Switch", "Wi-fi"];
-    const internetItem = categoria === "Internet" ? internetItems[i % internetItems.length] : undefined;
-    const visitaDate = new Date(2025, 0, Math.min(day + 2, 28)).toISOString().slice(0, 10);
+    const internetItems = [
+      "Antenas",
+      "Cabo de rede",
+      "DVR",
+      "Roteador/Modem",
+      "Switch",
+      "Wi-fi",
+    ];
+    const internetItem =
+      categoria === "Internet"
+        ? internetItems[i % internetItems.length]
+        : undefined;
+    const visitaDate = new Date(2025, 0, Math.min(day + 2, 28))
+      .toISOString()
+      .slice(0, 10);
 
     return {
       id,

@@ -9,7 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Save, Trash2, Ticket as TicketIcon, UserPlus } from "lucide-react";
 
 const statusMap = [
@@ -47,7 +52,9 @@ function StatusPill({ status }: { status: TicketStatus }) {
           ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300"
           : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300";
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${styles}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${styles}`}
+    >
       {status}
     </span>
   );
@@ -94,11 +101,17 @@ function TicketCard({
           <div className="text-right">{unidade}</div>
 
           <div className="text-muted-foreground">Data:</div>
-          <div className="text-right">{new Date(criadoEm).toLocaleDateString()}</div>
+          <div className="text-right">
+            {new Date(criadoEm).toLocaleDateString()}
+          </div>
 
           <div className="text-muted-foreground">Agente:</div>
           <div className="text-right">
-            <Button size="sm" variant="success" onClick={(e) => e.stopPropagation()}>
+            <Button
+              size="sm"
+              variant="success"
+              onClick={(e) => e.stopPropagation()}
+            >
               <UserPlus className="size-4" /> Atribuir
             </Button>
           </div>
@@ -172,7 +185,9 @@ export default function ChamadosPage() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<TicketMock | null>(null);
   const [tab, setTab] = useState<"resumo" | "historico" | "ticket">("resumo");
-  const [history, setHistory] = useState<{ t: number; label: string; attachments?: string[] }[]>([]);
+  const [history, setHistory] = useState<
+    { t: number; label: string; attachments?: string[] }[]
+  >([]);
   const [template, setTemplate] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -194,9 +209,17 @@ export default function ChamadosPage() {
       { t: base, label: "Chamado aberto" },
       { t: base + 45 * 60 * 1000, label: `Status: ${s.status}` },
     ];
-    if (s.visita) arr.push({ t: base + 3 * 60 * 60 * 1000, label: `Visita técnica: ${s.visita}` });
+    if (s.visita)
+      arr.push({
+        t: base + 3 * 60 * 60 * 1000,
+        label: `Visita técnica: ${s.visita}`,
+      });
     if (s.initialAttachments && s.initialAttachments.length) {
-      arr.push({ t: base + 2 * 60 * 1000, label: "Anexos recebidos na abertura", attachments: s.initialAttachments });
+      arr.push({
+        t: base + 2 * 60 * 1000,
+        label: "Anexos recebidos na abertura",
+        attachments: s.initialAttachments,
+      });
     }
     setHistory(arr);
   }
@@ -206,7 +229,11 @@ export default function ChamadosPage() {
     const names = files.map((f) => f.name);
     setHistory((h) => [
       ...h,
-      { t: now, label: `Ticket enviado${priority ? " (prioritário)" : ""}` , attachments: names },
+      {
+        t: now,
+        label: `Ticket enviado${priority ? " (prioritário)" : ""}`,
+        attachments: names,
+      },
     ]);
     setTab("historico");
   }
@@ -292,7 +319,9 @@ export default function ChamadosPage() {
               <div className="rounded-lg overflow-hidden border border-border/60">
                 <div className="brand-gradient p-4 sm:p-5 flex items-start justify-between">
                   <div>
-                    <div className="text-sm/5 text-primary-foreground/90">{selected.protocolo}</div>
+                    <div className="text-sm/5 text-primary-foreground/90">
+                      {selected.protocolo}
+                    </div>
                     <div className="mt-1 text-xl sm:text-2xl font-extrabold text-primary-foreground drop-shadow">
                       {selected.titulo}
                     </div>
@@ -303,13 +332,17 @@ export default function ChamadosPage() {
                 {/* Tabs */}
                 <div className="px-4 pt-3">
                   <div className="flex gap-2">
-                    {(["resumo","historico","ticket"] as const).map((k) => (
+                    {(["resumo", "historico", "ticket"] as const).map((k) => (
                       <button
                         key={k}
                         onClick={() => setTab(k)}
-                        className={`rounded-full px-3 py-1.5 text-sm ${tab===k?"bg-primary text-primary-foreground":"bg-secondary hover:bg-secondary/80"}`}
+                        className={`rounded-full px-3 py-1.5 text-sm ${tab === k ? "bg-primary text-primary-foreground" : "bg-secondary hover:bg-secondary/80"}`}
                       >
-                        {k === "resumo" ? "Resumo" : k === "historico" ? "Histórico" : "Ticket"}
+                        {k === "resumo"
+                          ? "Resumo"
+                          : k === "historico"
+                            ? "Histórico"
+                            : "Ticket"}
                       </button>
                     ))}
                   </div>
@@ -336,14 +369,26 @@ export default function ChamadosPage() {
                         <div className="text-right">{selected.categoria}</div>
                         {selected.internetItem && (
                           <>
-                            <div className="text-muted-foreground">Item Internet</div>
-                            <div className="text-right">{selected.internetItem}</div>
+                            <div className="text-muted-foreground">
+                              Item Internet
+                            </div>
+                            <div className="text-right">
+                              {selected.internetItem}
+                            </div>
                           </>
                         )}
-                        <div className="text-muted-foreground">Data de abertura</div>
-                        <div className="text-right">{new Date(selected.criadoEm).toLocaleString()}</div>
-                        <div className="text-muted-foreground">Visita técnica</div>
-                        <div className="text-right">{selected.visita || "—"}</div>
+                        <div className="text-muted-foreground">
+                          Data de abertura
+                        </div>
+                        <div className="text-right">
+                          {new Date(selected.criadoEm).toLocaleString()}
+                        </div>
+                        <div className="text-muted-foreground">
+                          Visita técnica
+                        </div>
+                        <div className="text-right">
+                          {selected.visita || "—"}
+                        </div>
                       </div>
                     </div>
 
@@ -356,7 +401,9 @@ export default function ChamadosPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="ABERTO">Aberto</SelectItem>
-                            <SelectItem value="AGUARDANDO">Aguardando</SelectItem>
+                            <SelectItem value="AGUARDANDO">
+                              Aguardando
+                            </SelectItem>
                             <SelectItem value="CONCLUIDO">Concluído</SelectItem>
                             <SelectItem value="CANCELADO">Cancelado</SelectItem>
                           </SelectContent>
@@ -377,7 +424,9 @@ export default function ChamadosPage() {
 
                 {tab === "historico" && (
                   <div className="p-4">
-                    <div className="text-sm font-medium mb-3">Linha do tempo</div>
+                    <div className="text-sm font-medium mb-3">
+                      Linha do tempo
+                    </div>
                     <div className="relative border-s">
                       {history.map((ev, idx) => (
                         <div key={idx} className="relative pl-6 mb-5 last:mb-0">
@@ -389,7 +438,10 @@ export default function ChamadosPage() {
                           {ev.attachments && ev.attachments.length > 0 && (
                             <div className="mt-1 flex flex-wrap gap-2">
                               {ev.attachments.map((a, i) => (
-                                <span key={i} className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs">
+                                <span
+                                  key={i}
+                                  className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs"
+                                >
                                   📎 {a}
                                 </span>
                               ))}
@@ -405,36 +457,69 @@ export default function ChamadosPage() {
                   <div className="p-4 grid gap-4">
                     <div className="grid gap-2">
                       <label className="text-sm">Modelo de Mensagem</label>
-                      <Select value={template} onValueChange={(v)=>setTemplate(v === "none" ? "" : v)}>
+                      <Select
+                        value={template}
+                        onValueChange={(v) =>
+                          setTemplate(v === "none" ? "" : v)
+                        }
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione um modelo (opcional)" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">Sem modelo</SelectItem>
-                          <SelectItem value="atualizacao">Atualização padrão</SelectItem>
-                          <SelectItem value="info">Solicitar mais informações</SelectItem>
+                          <SelectItem value="atualizacao">
+                            Atualização padrão
+                          </SelectItem>
+                          <SelectItem value="info">
+                            Solicitar mais informações
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid gap-2">
                       <label className="text-sm">Assunto</label>
-                      <input className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={subject} onChange={(e)=>setSubject(e.target.value)} />
+                      <input
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                      />
                     </div>
                     <div className="grid gap-2">
                       <label className="text-sm">Mensagem</label>
-                      <textarea className="min-h-[120px] w-full rounded-md border border-input bg-background p-3 text-sm" value={message} onChange={(e)=>setMessage(e.target.value)} />
+                      <textarea
+                        className="min-h-[120px] w-full rounded-md border border-input bg-background p-3 text-sm"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                      />
                     </div>
                     <div className="grid gap-2">
                       <label className="text-sm">Anexos</label>
-                      <input type="file" multiple onChange={(e)=>setFiles(Array.from(e.target.files||[]))} />
+                      <input
+                        type="file"
+                        multiple
+                        onChange={(e) =>
+                          setFiles(Array.from(e.target.files || []))
+                        }
+                      />
                     </div>
                     <div className="flex items-center gap-6">
                       <label className="inline-flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={priority} onChange={(e)=>setPriority(e.target.checked)} className="h-4 w-4 rounded border-border" />
+                        <input
+                          type="checkbox"
+                          checked={priority}
+                          onChange={(e) => setPriority(e.target.checked)}
+                          className="h-4 w-4 rounded border-border"
+                        />
                         Marcar como prioritário
                       </label>
                       <label className="inline-flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={ccMe} onChange={(e)=>setCcMe(e.target.checked)} className="h-4 w-4 rounded border-border" />
+                        <input
+                          type="checkbox"
+                          checked={ccMe}
+                          onChange={(e) => setCcMe(e.target.checked)}
+                          className="h-4 w-4 rounded border-border"
+                        />
                         Enviar cópia para mim
                       </label>
                     </div>
