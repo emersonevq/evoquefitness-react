@@ -10,7 +10,11 @@ router = APIRouter(prefix="/chamados", tags=["TI - Chamados"])
 @router.get("", response_model=list[ChamadoOut])
 def listar_chamados(db: Session = Depends(get_db)):
     from ..models import Chamado
-    return db.query(Chamado).order_by(Chamado.id.desc()).all()
+    try:
+        return db.query(Chamado).order_by(Chamado.id.desc()).all()
+    except Exception as e:
+        # Expõe o erro para facilitar debug local
+        raise HTTPException(status_code=500, detail=f"Erro ao listar chamados: {e}")
 
 @router.post("", response_model=ChamadoOut)
 def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
