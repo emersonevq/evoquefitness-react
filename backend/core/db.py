@@ -19,7 +19,7 @@ DB_NAME = (_env.DB_NAME if _env and _env.DB_NAME else os.getenv("DB_NAME", "test
 DB_PORT = int((_env.DB_PORT if _env and _env.DB_PORT else os.getenv("DB_PORT", "3306")))
 DB_SSL_CA = (_env.DB_SSL_CA if _env and _env.DB_SSL_CA else os.getenv("DB_SSL_CA"))
 
-MYSQL_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+MYSQL_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
 connect_args: Dict[str, Any] = {}
 if DB_SSL_CA:
