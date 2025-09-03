@@ -2,8 +2,8 @@ from __future__ import annotations
 from datetime import datetime
 from sqlalchemy import Integer, String, Boolean, DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ...core.db import Base
-from ...core.utils import now_brazil_naive
+from core.db import Base
+from core.utils import now_brazil_naive
 
 class User(Base):
     __tablename__ = "user"
