@@ -16,15 +16,23 @@ const SESSION_EXPIRY = 24 * 60 * 60 * 1000; // 24 horas (fallback de segurança)
 
 function readFromStorage(): AuthUser | null {
   const now = Date.now();
+  const LEGACY_EXPIRY = 24 * 60 * 60 * 1000; // compat 24h
 
   // 1) Preferir sessão atual (sessionStorage)
   const sessionRaw = sessionStorage.getItem(AUTH_KEY);
   if (sessionRaw) {
     try {
-      const data: AuthRecord = JSON.parse(sessionRaw);
-      if (now < data.expiresAt) {
-        const { email, name, loginTime } = data;
-        return { email, name, loginTime };
+      const data = JSON.parse(sessionRaw) as Partial<AuthRecord & AuthUser>;
+      if (typeof (data as AuthRecord).expiresAt === "number") {
+        if (now < (data as AuthRecord).expiresAt) {
+          const { email, name, loginTime } = data as AuthRecord;
+          if (email && name && loginTime) return { email, name, loginTime };
+        }
+      } else if (typeof data.loginTime === "number") {
+        if (now - data.loginTime < LEGACY_EXPIRY) {
+          const { email, name, loginTime } = data as AuthUser;
+          if (email && name && loginTime) return { email, name, loginTime };
+        }
       }
       sessionStorage.removeItem(AUTH_KEY);
     } catch {
@@ -36,10 +44,17 @@ function readFromStorage(): AuthUser | null {
   const localRaw = localStorage.getItem(AUTH_KEY);
   if (localRaw) {
     try {
-      const data: AuthRecord = JSON.parse(localRaw);
-      if (now < data.expiresAt) {
-        const { email, name, loginTime } = data;
-        return { email, name, loginTime };
+      const data = JSON.parse(localRaw) as Partial<AuthRecord & AuthUser>;
+      if (typeof (data as AuthRecord).expiresAt === "number") {
+        if (now < (data as AuthRecord).expiresAt) {
+          const { email, name, loginTime } = data as AuthRecord;
+          if (email && name && loginTime) return { email, name, loginTime };
+        }
+      } else if (typeof data.loginTime === "number") {
+        if (now - data.loginTime < LEGACY_EXPIRY) {
+          const { email, name, loginTime } = data as AuthUser;
+          if (email && name && loginTime) return { email, name, loginTime };
+        }
       }
       localStorage.removeItem(AUTH_KEY);
     } catch {
