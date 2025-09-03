@@ -45,21 +45,44 @@ export function CriarUsuario() {
     );
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock submit: limpar senha gerada para simular "exibir apenas uma vez"
-    const payload = {
-      first,
-      last,
-      email,
-      username,
-      level,
-      sectors: selSectors,
-      forceReset,
-      password: genPass,
-    };
-    console.log("CREATE_USER", payload);
-    setGenPass(null);
+    if (!genPass) {
+      alert("Gere uma senha antes de salvar.");
+      return;
+    }
+    try {
+      const res = await fetch("/api/usuarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: first,
+          sobrenome: last,
+          usuario: username,
+          email,
+          senha: genPass,
+          nivel_acesso: level,
+          setores: selSectors.length ? selSectors : null,
+          alterar_senha_primeiro_acesso: forceReset,
+        }),
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(t || "Falha ao criar usuário");
+      }
+      setGenPass(null);
+      setFirst("");
+      setLast("");
+      setEmail("");
+      setUsername("");
+      setLevel("Funcionário");
+      setSelSectors([]);
+      setForceReset(true);
+      alert("Usuário criado com sucesso.");
+    } catch (err) {
+      console.error(err);
+      alert("Não foi possível criar o usuário.");
+    }
   };
 
   return (
