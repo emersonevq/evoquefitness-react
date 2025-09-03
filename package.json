@@ -10,15 +10,14 @@
   "scripts": {
     "dev": "concurrently \"pnpm run dev:backend\" \"pnpm run dev:frontend\"",
     "dev:frontend": "cd frontend && pnpm dev",
-    "dev:backend": "cd backend && pnpm dev",
-    "build": "pnpm run build:frontend && pnpm run build:backend",
+    "dev:backend": "cd backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "build": "pnpm run build:frontend",
     "build:frontend": "cd frontend && pnpm build",
-    "build:backend": "cd backend && pnpm build",
-    "start": "cd backend && pnpm start",
-    "install:all": "pnpm install && cd frontend && pnpm install && cd ../backend && pnpm install",
-    "typecheck": "cd frontend && pnpm typecheck && cd ../backend && pnpm typecheck",
-    "test": "cd frontend && pnpm test && cd ../backend && pnpm test",
-    "clean": "rm -rf frontend/dist frontend/node_modules backend/dist backend/node_modules node_modules"
+    "start": "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000",
+    "install:all": "pnpm install && cd frontend && pnpm install",
+    "typecheck": "cd frontend && pnpm typecheck",
+    "test": "cd frontend && pnpm test",
+    "clean": "rm -rf frontend/dist frontend/node_modules node_modules"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
