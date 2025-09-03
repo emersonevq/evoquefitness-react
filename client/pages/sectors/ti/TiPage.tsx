@@ -86,7 +86,7 @@ export default function TiPage() {
 }
 
 function TicketForm({ onSubmit }: { onSubmit: (payload: { nome: string; cargo: string; gerente: string; email: string; telefone: string; unidade: string; problema: string; visita: string; }) => void; }) {
-  const [form, setForm] = useState({ nome: "", cargo: "Gerente", gerente: "", email: "", telefone: "", unidade: "", problema: "", visita: "" });
+  const [form, setForm] = useState({ nome: "", cargo: "", gerente: "", email: "", telefone: "", unidade: "", problema: "", visita: "" });
   const submit = (e: React.FormEvent) => { e.preventDefault(); onSubmit(form); };
 
   return (
