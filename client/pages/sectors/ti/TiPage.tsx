@@ -101,11 +101,10 @@ function TicketForm({ onSubmit }: { onSubmit: (payload: { nome: string; cargo: s
           <Select value={form.cargo} onValueChange={(v) => setForm({ ...form, cargo: v })}>
             <SelectTrigger id="cargo"><SelectValue placeholder="Selecione" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="Gerente">Gerente</SelectItem>
               <SelectItem value="Coordenador">Coordenador</SelectItem>
-              <SelectItem value="Analista">Analista</SelectItem>
-              <SelectItem value="Assistente">Assistente</SelectItem>
-              <SelectItem value="Outro">Outro</SelectItem>
+              <SelectItem value="Funcionário">Funcionário</SelectItem>
+              <SelectItem value="Gerente">Gerente</SelectItem>
+              <SelectItem value="Gerente regional">Gerente regional</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -142,11 +141,14 @@ function TicketForm({ onSubmit }: { onSubmit: (payload: { nome: string; cargo: s
           <Select value={form.problema} onValueChange={(v) => setForm({ ...form, problema: v })}>
             <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="Hardware">Hardware</SelectItem>
-              <SelectItem value="Software">Software</SelectItem>
-              <SelectItem value="Rede">Rede</SelectItem>
-              <SelectItem value="Acesso">Acesso</SelectItem>
-              <SelectItem value="Outro">Outro</SelectItem>
+              <SelectItem value="Catraca">Catraca</SelectItem>
+              <SelectItem value="CFTV">CFTV</SelectItem>
+              <SelectItem value="Internet">Internet</SelectItem>
+              <SelectItem value="Notebook/Desktop">Notebook/Desktop</SelectItem>
+              <SelectItem value="Sistema EVO">Sistema EVO</SelectItem>
+              <SelectItem value="Som">Som</SelectItem>
+              <SelectItem value="Totalpass/Gympass">Totalpass/Gympass</SelectItem>
+              <SelectItem value="TVs">TVs</SelectItem>
             </SelectContent>
           </Select>
         </div>
