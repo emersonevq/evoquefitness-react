@@ -17,7 +17,7 @@ export function CriarUsuario() {
   const [last, setLast] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
-  const [level, setLevel] = useState("Padrão");
+  const [level, setLevel] = useState("Funcionário");
   const [selSectors, setSelSectors] = useState<string[]>([]);
   const [forceReset, setForceReset] = useState(true);
   const [genPass, setGenPass] = useState<string | null>(null);
@@ -100,9 +100,13 @@ export function CriarUsuario() {
                 <SelectValue placeholder="Selecione um nível" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="Coordenador">Coordenador</SelectItem>
+                <SelectItem value="Gestor">Gestor</SelectItem>
+                <SelectItem value="Funcionário">Funcionário</SelectItem>
+                <SelectItem value="Gerente">Gerente</SelectItem>
+                <SelectItem value="Gerente regional">Gerente regional</SelectItem>
+                <SelectItem value="Agente de suporte">Agente de suporte</SelectItem>
                 <SelectItem value="Administrador">Administrador</SelectItem>
-                <SelectItem value="Agente">Agente</SelectItem>
-                <SelectItem value="Padrão">Padrão</SelectItem>
               </SelectContent>
             </Select>
           </div>
