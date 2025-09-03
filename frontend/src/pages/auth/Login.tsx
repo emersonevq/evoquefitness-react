@@ -20,8 +20,8 @@ export default function Login() {
     // Simular delay de autenticação
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Fazer login (salvará automaticamente no localStorage)
-    login(email, password);
+    // Fazer login com persistência conforme "Lembrar-me"
+    login(email, password, remember);
 
     // Navegar para a página de destino
     const params = new URLSearchParams(window.location.search);
