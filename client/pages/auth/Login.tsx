@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -84,9 +84,9 @@ export default function Login() {
                   />
                   Lembrar-me
                 </label>
-                <a href="#" className="text-primary hover:underline">
+                <Link to="/auth/forgot-password" className="text-primary hover:underline">
                   Esqueci minha senha
-                </a>
+                </Link>
               </div>
               <Button type="submit" className="w-full h-11 rounded-md">
                 Entrar
