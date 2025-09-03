@@ -237,7 +237,7 @@ export default function ChamadosPage() {
   }, [filtro, items]);
 
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<TicketMock | null>(null);
+  const [selected, setSelected] = useState<UiTicket | null>(null);
   const [tab, setTab] = useState<"resumo" | "historico" | "ticket">("resumo");
   const [history, setHistory] = useState<
     { t: number; label: string; attachments?: string[] }[]
