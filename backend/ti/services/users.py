@@ -1,14 +1,47 @@
 from __future__ import annotations
 import json
+import random
+import string
 from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash
 from ti.models import User
-from ti.schemas.user import UserCreate
+from ti.schemas.user import UserCreate, UserCreatedOut, UserAvailability
 
 
-def criar_usuario(db: Session, payload: UserCreate) -> User:
-    if db.query(User).filter((User.usuario == payload.usuario) | (User.email == str(payload.email))).first():
-        raise ValueError("Usuário ou e-mail já cadastrado")
+def _generate_password(length: int = 6) -> str:
+    # Ensure at least one lowercase, one uppercase, and one digit
+    if length < 3:
+        length = 3
+    parts = [
+        random.choice(string.ascii_lowercase),
+        random.choice(string.ascii_uppercase),
+        random.choice(string.digits),
+    ]
+    remaining = length - 3
+    pool = string.ascii_letters + string.digits
+    parts += [random.choice(pool) for _ in range(remaining)]
+    random.shuffle(parts)
+    return "".join(parts)
+
+
+def check_user_availability(db: Session, email: str | None = None, username: str | None = None) -> UserAvailability:
+    availability = UserAvailability()
+    if email is not None:
+        availability.email_exists = db.query(User).filter(User.email == email).first() is not None
+    if username is not None:
+        availability.usuario_exists = db.query(User).filter(User.usuario == username).first() is not None
+    return availability
+
+
+def criar_usuario(db: Session, payload: UserCreate) -> UserCreatedOut:
+    # Uniqueness checks
+    if payload.email and db.query(User).filter(User.email == str(payload.email)).first():
+        raise ValueError("E-mail já cadastrado")
+    if payload.usuario and db.query(User).filter(User.usuario == payload.usuario).first():
+        raise ValueError("Nome de usuário já cadastrado")
+
+    # Password generation in backend if not provided
+    generated_password = payload.senha or _generate_password(6)
 
     setores_json = None
     setor = None
@@ -21,7 +54,7 @@ def criar_usuario(db: Session, payload: UserCreate) -> User:
         sobrenome=payload.sobrenome,
         usuario=payload.usuario,
         email=str(payload.email),
-        senha_hash=generate_password_hash(payload.senha),
+        senha_hash=generate_password_hash(generated_password),
         alterar_senha_primeiro_acesso=payload.alterar_senha_primeiro_acesso,
         nivel_acesso=payload.nivel_acesso,
         setor=setor,
@@ -31,4 +64,14 @@ def criar_usuario(db: Session, payload: UserCreate) -> User:
     db.add(novo)
     db.commit()
     db.refresh(novo)
-    return novo
+
+    return UserCreatedOut(
+        id=novo.id,
+        nome=novo.nome,
+        sobrenome=novo.sobrenome,
+        usuario=novo.usuario,
+        email=novo.email,
+        nivel_acesso=novo.nivel_acesso,
+        setor=novo.setor,
+        senha=generated_password,
+    )
