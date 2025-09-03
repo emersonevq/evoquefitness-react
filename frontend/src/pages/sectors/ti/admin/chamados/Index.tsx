@@ -231,84 +231,91 @@ export default function ChamadosPage() {
                 <DialogTitle>{selected.titulo}</DialogTitle>
               </DialogHeader>
 
-              <div className="rounded-lg border border-border/60 bg-card">
-                <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
-                  <div className="font-semibold text-orange-400">{selected.id}</div>
-                  <StatusPill status={selected.status} />
+              <div className="grid gap-4 md:grid-cols-[1fr,320px]">
+                <div className="rounded-lg border border-border/60 bg-card">
+                  <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
+                    <div className="font-semibold text-orange-400">{selected.id}</div>
+                    <StatusPill status={selected.status} />
+                  </div>
+
+                  <div className="p-4 space-y-5 text-sm">
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Solicitação</div>
+                      <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-2">
+                        <div className="text-muted-foreground">Protocolo</div>
+                        <div className="text-right">{selected.protocolo}</div>
+                        <div className="text-muted-foreground">Data de abertura</div>
+                        <div className="text-right">{new Date(selected.criadoEm).toLocaleString()}</div>
+                        <div className="text-muted-foreground">Status</div>
+                        <div className="text-right"><StatusPill status={selected.status} /></div>
+                        <div className="text-muted-foreground">Visita técnica</div>
+                        <div className="text-right">{selected.visita || "—"}</div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Solicitante</div>
+                      <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-2">
+                        <div className="text-muted-foreground">Nome</div>
+                        <div className="text-right">{selected.solicitante}</div>
+                        <div className="text-muted-foreground">Cargo</div>
+                        <div className="text-right">{selected.cargo}</div>
+                        <div className="text-muted-foreground">Gerente</div>
+                        <div className="text-right">{selected.gerente}</div>
+                        <div className="text-muted-foreground">E-mail</div>
+                        <div className="text-right">{selected.email}</div>
+                        <div className="text-muted-foreground">Telefone</div>
+                        <div className="text-right">{selected.telefone}</div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Local e problema</div>
+                      <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-2">
+                        <div className="text-muted-foreground">Unidade</div>
+                        <div className="text-right">{selected.unidade}</div>
+                        <div className="text-muted-foreground">Problema</div>
+                        <div className="text-right">{selected.categoria}</div>
+                        {selected.internetItem && (
+                          <>
+                            <div className="text-muted-foreground">Item de Internet</div>
+                            <div className="text-right">{selected.internetItem}</div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="p-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                  <div className="text-muted-foreground">Protocolo</div>
-                  <div className="text-right">{selected.protocolo}</div>
 
-                  <div className="text-muted-foreground">Solicitante</div>
-                  <div className="text-right">{selected.solicitante}</div>
+                <div className="rounded-lg border border-border/60 bg-card p-4 h-max md:sticky md:top-20">
+                  <div className="font-semibold mb-3">Ações do chamado</div>
+                  <div className="grid gap-3">
+                    <Select defaultValue={selected.status}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ABERTO">Aberto</SelectItem>
+                        <SelectItem value="AGUARDANDO">Aguardando</SelectItem>
+                        <SelectItem value="CONCLUIDO">Concluído</SelectItem>
+                        <SelectItem value="CANCELADO">Cancelado</SelectItem>
+                      </SelectContent>
+                    </Select>
 
-                  <div className="text-muted-foreground">Cargo</div>
-                  <div className="text-right">{selected.cargo}</div>
-
-                  <div className="text-muted-foreground">Gerente</div>
-                  <div className="text-right">{selected.gerente}</div>
-
-                  <div className="text-muted-foreground">E-mail</div>
-                  <div className="text-right">{selected.email}</div>
-
-                  <div className="text-muted-foreground">Telefone</div>
-                  <div className="text-right">{selected.telefone}</div>
-
-                  <div className="text-muted-foreground">Unidade</div>
-                  <div className="text-right">{selected.unidade}</div>
-
-                  <div className="text-muted-foreground">Problema</div>
-                  <div className="text-right">{selected.categoria}</div>
-
-                  {selected.internetItem && (
-                    <>
-                      <div className="text-muted-foreground">Item de Internet</div>
-                      <div className="text-right">{selected.internetItem}</div>
-                    </>
-                  )}
-
-                  <div className="text-muted-foreground">Data de abertura</div>
-                  <div className="text-right">{new Date(selected.criadoEm).toLocaleString()}</div>
-
-                  <div className="text-muted-foreground">Visita técnica</div>
-                  <div className="text-right">{selected.visita || "—"}</div>
-
-                  <div className="text-muted-foreground">Agente</div>
-                  <div className="text-right">
-                    <Button size="sm" variant="success">
+                    <Button variant="success">
                       <UserPlus className="size-4" /> Atribuir
+                    </Button>
+                    <Button variant="warning">
+                      <Save className="size-4" /> Atualizar
+                    </Button>
+                    <Button variant="destructive">
+                      <Trash2 className="size-4" /> Excluir
+                    </Button>
+                    <Button variant="info" className="w-full">
+                      <TicketIcon className="size-4" /> Ticket
                     </Button>
                   </div>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <div className="sm:col-span-1">
-                  <Select defaultValue={selected.status}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ABERTO">Aberto</SelectItem>
-                      <SelectItem value="AGUARDANDO">Aguardando</SelectItem>
-                      <SelectItem value="CONCLUIDO">Concluído</SelectItem>
-                      <SelectItem value="CANCELADO">Cancelado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button variant="warning">
-                  <Save className="size-4" /> Atualizar
-                </Button>
-                <Button variant="destructive">
-                  <Trash2 className="size-4" /> Excluir
-                </Button>
-              </div>
-
-              <div className="flex justify-end">
-                <Button variant="info">
-                  <TicketIcon className="size-4" /> Ticket
-                </Button>
               </div>
             </div>
           )}
