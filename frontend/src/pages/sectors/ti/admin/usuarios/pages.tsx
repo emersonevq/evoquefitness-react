@@ -33,6 +33,7 @@ export function CriarUsuario() {
   const [usernameTaken, setUsernameTaken] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
 
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [createdUser, setCreatedUser] = useState<{ usuario: string; senha: string; nome: string } | null>(null);
 
@@ -65,14 +66,39 @@ export function CriarUsuario() {
     }
   };
 
+  const strengthScore = (pwd: string | null): { score: number; label: string; color: string } => {
+    if (!pwd) return { score: 0, label: "", color: "bg-muted" };
+    let score = 0;
+    const hasLower = /[a-z]/.test(pwd);
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasDigit = /\d/.test(pwd);
+    if (pwd.length >= 6) score += 1;
+    if (hasLower) score += 1;
+    if (hasUpper) score += 1;
+    if (hasDigit) score += 1;
+    const label = score <= 2 ? "Fraca" : score === 3 ? "Média" : "Forte";
+    const color = score <= 2 ? "bg-red-500" : score === 3 ? "bg-yellow-500" : "bg-green-600";
+    return { score, label, color };
+  };
+
+  const fetchPassword = async () => {
+    const res = await fetch(`/api/usuarios/generate-password`);
+    if (!res.ok) throw new Error("Falha ao gerar senha");
+    const data = await res.json();
+    setGeneratedPassword(data.senha);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Check availability before submit
     await checkAvailability("email", email);
     await checkAvailability("username", username);
     if (emailTaken || usernameTaken) {
       alert("E-mail ou usuário já cadastrado.");
+      return;
+    }
+    if (!generatedPassword) {
+      alert("Clique em 'Gerar senha' antes de salvar.");
       return;
     }
 
@@ -85,7 +111,7 @@ export function CriarUsuario() {
           sobrenome: last,
           usuario: username,
           email,
-          senha: null,
+          senha: generatedPassword,
           nivel_acesso: level,
           setores: selSectors.length ? selSectors : null,
           alterar_senha_primeiro_acesso: forceReset,
@@ -100,7 +126,6 @@ export function CriarUsuario() {
       setCreatedUser({ usuario: created.usuario, senha: created.senha, nome: `${created.nome} ${created.sobrenome}` });
       setShowSuccess(true);
 
-      // Reset form
       setFirst("");
       setLast("");
       setEmail("");
@@ -110,6 +135,7 @@ export function CriarUsuario() {
       setForceReset(true);
       setEmailTaken(null);
       setUsernameTaken(null);
+      setGeneratedPassword(null);
     } catch (err: any) {
       console.error(err);
       alert(err.message || "Não foi possível criar o usuário.");
