@@ -73,27 +73,54 @@ export default function TiPage() {
                 <DialogTitle>Abrir chamado</DialogTitle>
               </DialogHeader>
               <TicketForm
-                onSubmit={(payload) => {
-                  const now = new Date();
-                  const id = Math.random()
-                    .toString(36)
-                    .slice(2, 8)
-                    .toUpperCase();
-                  const problema =
-                    payload.problema === "Internet" && payload.internetItem
-                      ? `Internet - ${payload.internetItem}`
-                      : payload.problema;
-                  setTickets((prev) => [
-                    {
-                      id,
-                      protocolo: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}-${id}`,
-                      data: now.toISOString().slice(0, 10),
-                      problema,
-                      status: "Aberto",
-                    },
-                    ...prev,
-                  ]);
-                  setOpen(false);
+                onSubmit={async (payload) => {
+                  try {
+                    const res = await fetch("/api/chamados", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        solicitante: payload.nome,
+                        cargo: payload.cargo,
+                        gerente: payload.gerente,
+                        email: payload.email,
+                        telefone: payload.telefone,
+                        unidade: payload.unidade,
+                        problema: payload.problema,
+                        internetItem: payload.internetItem || null,
+                        visita: payload.visita || null,
+                        descricao: null,
+                      }),
+                    });
+                    if (!res.ok) throw new Error("Falha ao criar chamado");
+                    const created: {
+                      id: number;
+                      protocolo: string;
+                      data_abertura: string;
+                      problema: string;
+                      internet_item?: string | null;
+                      status: string;
+                    } = await res.json();
+
+                    const problemaFmt =
+                      created.problema === "Internet" && created.internet_item
+                        ? `Internet - ${created.internet_item}`
+                        : created.problema;
+
+                    setTickets((prev) => [
+                      {
+                        id: String(created.id),
+                        protocolo: created.protocolo,
+                        data: created.data_abertura?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+                        problema: problemaFmt,
+                        status: created.status,
+                      },
+                      ...prev,
+                    ]);
+                    setOpen(false);
+                  } catch (e) {
+                    console.error(e);
+                    alert("Não foi possível abrir o chamado. Tente novamente.");
+                  }
                 }}
               />
             </DialogContent>

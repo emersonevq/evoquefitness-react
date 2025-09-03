@@ -11,6 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Copy } from "lucide-react";
 
 export function CriarUsuario() {
   const [first, setFirst] = useState("");
@@ -20,7 +28,20 @@ export function CriarUsuario() {
   const [level, setLevel] = useState("Funcionário");
   const [selSectors, setSelSectors] = useState<string[]>([]);
   const [forceReset, setForceReset] = useState(true);
-  const [genPass, setGenPass] = useState<string | null>(null);
+
+  const [emailTaken, setEmailTaken] = useState<boolean | null>(null);
+  const [usernameTaken, setUsernameTaken] = useState<boolean | null>(null);
+  const [checking, setChecking] = useState(false);
+
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(
+    null,
+  );
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [createdUser, setCreatedUser] = useState<{
+    usuario: string;
+    senha: string;
+    nome: string;
+  } | null>(null);
 
   const allSectors = useMemo(() => sectors.map((s) => s.title), []);
 
@@ -30,36 +51,119 @@ export function CriarUsuario() {
     setUsername(safe.normalize("NFD").replace(/[^\w.]+/g, ""));
   };
 
-  const generatePassword = () => {
-    const chars =
-      "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
-    let out = "";
-    for (let i = 0; i < 10; i++)
-      out += chars[Math.floor(Math.random() * chars.length)];
-    setGenPass(out);
-  };
-
   const toggleSector = (name: string) => {
     setSelSectors((prev) =>
       prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name],
     );
   };
 
-  const submit = (e: React.FormEvent) => {
+  const checkAvailability = async (
+    type: "email" | "username",
+    value: string,
+  ) => {
+    if (!value) return;
+    try {
+      setChecking(true);
+      const q =
+        type === "email"
+          ? `email=${encodeURIComponent(value)}`
+          : `username=${encodeURIComponent(value)}`;
+      const res = await fetch(`/api/usuarios/check-availability?${q}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (type === "email") setEmailTaken(!!data.email_exists);
+      else setUsernameTaken(!!data.usuario_exists);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const strengthScore = (
+    pwd: string | null,
+  ): { score: number; label: string; color: string } => {
+    if (!pwd) return { score: 0, label: "", color: "bg-muted" };
+    let score = 0;
+    const hasLower = /[a-z]/.test(pwd);
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasDigit = /\d/.test(pwd);
+    if (pwd.length >= 6) score += 1;
+    if (hasLower) score += 1;
+    if (hasUpper) score += 1;
+    if (hasDigit) score += 1;
+    const label = score <= 2 ? "Fraca" : score === 3 ? "Média" : "Forte";
+    const color =
+      score <= 2
+        ? "bg-red-500"
+        : score === 3
+          ? "bg-yellow-500"
+          : "bg-green-600";
+    return { score, label, color };
+  };
+
+  const fetchPassword = async () => {
+    const res = await fetch(`/api/usuarios/generate-password`);
+    if (!res.ok) throw new Error("Falha ao gerar senha");
+    const data = await res.json();
+    setGeneratedPassword(data.senha);
+  };
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock submit: limpar senha gerada para simular "exibir apenas uma vez"
-    const payload = {
-      first,
-      last,
-      email,
-      username,
-      level,
-      sectors: selSectors,
-      forceReset,
-      password: genPass,
-    };
-    console.log("CREATE_USER", payload);
-    setGenPass(null);
+
+    await checkAvailability("email", email);
+    await checkAvailability("username", username);
+    if (emailTaken || usernameTaken) {
+      alert("E-mail ou usuário já cadastrado.");
+      return;
+    }
+    if (!generatedPassword) {
+      alert("Clique em 'Gerar senha' antes de salvar.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/usuarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: first,
+          sobrenome: last,
+          usuario: username,
+          email,
+          senha: generatedPassword,
+          nivel_acesso: level,
+          setores: selSectors.length ? selSectors : null,
+          alterar_senha_primeiro_acesso: forceReset,
+        }),
+      });
+      if (!res.ok) {
+        const t = await res.json().catch(() => ({}) as any);
+        const detail =
+          (t && (t.detail || t.message)) || "Falha ao criar usuário";
+        throw new Error(detail);
+      }
+      const created = await res.json();
+      setCreatedUser({
+        usuario: created.usuario,
+        senha: created.senha,
+        nome: `${created.nome} ${created.sobrenome}`,
+      });
+      setShowSuccess(true);
+
+      setFirst("");
+      setLast("");
+      setEmail("");
+      setUsername("");
+      setLevel("Funcionário");
+      setSelSectors([]);
+      setForceReset(true);
+      setEmailTaken(null);
+      setUsernameTaken(null);
+      setGeneratedPassword(null);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Não foi possível criar o usuário.");
+    }
   };
 
   return (
@@ -95,8 +199,17 @@ export function CriarUsuario() {
               type="email"
               placeholder="Digite o e-mail"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setEmailTaken(null);
+              }}
+              onBlur={() => checkAvailability("email", email)}
             />
+            {emailTaken && (
+              <div className="text-xs text-destructive">
+                E-mail já cadastrado
+              </div>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="username">Nome de usuário</Label>
@@ -105,7 +218,11 @@ export function CriarUsuario() {
                 id="username"
                 placeholder="Digite o nome de usuário"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setUsernameTaken(null);
+                }}
+                onBlur={() => checkAvailability("username", username)}
               />
               <Button
                 type="button"
@@ -118,6 +235,11 @@ export function CriarUsuario() {
             <div className="text-xs text-muted-foreground">
               Digite manualmente ou clique no botão para gerar automaticamente
             </div>
+            {usernameTaken && (
+              <div className="text-xs text-destructive">
+                Usuário já cadastrado
+              </div>
+            )}
           </div>
         </div>
 
@@ -171,29 +293,86 @@ export function CriarUsuario() {
             />
             Solicitar alteração de senha no primeiro acesso
           </label>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={generatePassword}
-            >
+
+          <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-3">
+            <Button type="button" variant="secondary" onClick={fetchPassword}>
               Gerar senha
             </Button>
-            {genPass && (
-              <span className="text-sm">
-                Senha gerada: <span className="font-medium">{genPass}</span>{" "}
-                <span className="text-muted-foreground">
-                  (será exibida apenas uma vez)
-                </span>
-              </span>
+            {generatedPassword && (
+              <div className="flex-1 flex items-center gap-3">
+                <div className="font-mono text-base tracking-widest px-3 py-2 rounded-md bg-muted select-all">
+                  {generatedPassword}
+                </div>
+                {(() => {
+                  const s = strengthScore(generatedPassword);
+                  const width = Math.min(100, (s.score / 4) * 100);
+                  return (
+                    <div className="flex items-center gap-2">
+                      <div className="w-32 h-2 rounded bg-muted overflow-hidden">
+                        <div
+                          className={`${s.color} h-full`}
+                          style={{ width: `${width}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {s.label}
+                      </span>
+                    </div>
+                  );
+                })()}
+              </div>
             )}
           </div>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">
-          <Button type="submit">Salvar</Button>
+          <Button
+            type="submit"
+            disabled={!!emailTaken || !!usernameTaken || checking}
+          >
+            Salvar
+          </Button>
         </div>
       </form>
+
+      <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Usuário criado com sucesso</DialogTitle>
+            <DialogDescription>
+              Guarde as credenciais abaixo com segurança. Elas serão exibidas
+              apenas uma vez.
+            </DialogDescription>
+          </DialogHeader>
+          {createdUser && (
+            <div className="space-y-3">
+              <div className="text-sm">
+                Usuário:{" "}
+                <span className="font-medium">{createdUser.usuario}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="font-mono text-lg tracking-widest px-3 py-2 rounded-md bg-muted select-all">
+                  {createdUser.senha}
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    const text = `Usuário: ${createdUser.usuario}\nSenha provisória: ${createdUser.senha}\n\nInstruções: acesse o sistema com estas credenciais e altere sua senha no primeiro acesso.`;
+                    navigator.clipboard?.writeText(text);
+                  }}
+                  className="inline-flex items-center gap-2"
+                >
+                  <Copy className="h-4 w-4" /> Copiar
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                No primeiro acesso, será solicitado que a senha seja alterada.
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

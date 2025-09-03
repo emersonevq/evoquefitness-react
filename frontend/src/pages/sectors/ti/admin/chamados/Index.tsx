@@ -1,5 +1,22 @@
-import { useMemo, useState } from "react";
-import { ticketsMock, TicketStatus, TicketMock } from "../mock";
+import { useEffect, useMemo, useState } from "react";
+type TicketStatus = "ABERTO" | "AGUARDANDO" | "CONCLUIDO" | "CANCELADO";
+
+interface UiTicket {
+  id: string;
+  protocolo: string;
+  titulo: string;
+  solicitante: string;
+  unidade: string;
+  categoria: string;
+  status: TicketStatus;
+  criadoEm: string;
+  cargo: string;
+  email: string;
+  telefone: string;
+  internetItem?: string | null;
+  visita?: string | null;
+  gerente?: string | null;
+}
 import { NavLink, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -156,34 +173,82 @@ function TicketCard({
 export default function ChamadosPage() {
   const { filtro } = useParams<{ filtro?: string }>();
 
+  const [items, setItems] = useState<UiTicket[]>([]);
+
+  useEffect(() => {
+    function toUiStatus(s: string): TicketStatus {
+      const n = s?.toUpperCase();
+      if (n === "AGUARDANDO") return "AGUARDANDO";
+      if (n === "CONCLUIDO" || n === "CONCLUÍDO") return "CONCLUIDO";
+      if (n === "CANCELADO") return "CANCELADO";
+      return "ABERTO";
+    }
+
+    function adapt(it: any): UiTicket {
+      const titulo =
+        it.problema === "Internet" && it.internet_item
+          ? `Internet - ${it.internet_item}`
+          : it.problema;
+      return {
+        id: String(it.id),
+        protocolo: it.protocolo,
+        titulo,
+        solicitante: it.solicitante,
+        unidade: it.unidade,
+        categoria: it.problema,
+        status: toUiStatus(it.status || "Aberto"),
+        criadoEm: it.data_abertura || new Date().toISOString(),
+        cargo: it.cargo,
+        email: it.email,
+        telefone: it.telefone,
+        internetItem: it.internet_item ?? null,
+        visita: it.data_visita ?? null,
+        gerente: null,
+      };
+    }
+
+    const apiConfigured =
+      !!import.meta.env.VITE_API_BASE_URL ||
+      !!import.meta.env.VITE_PROXY_TARGET;
+    if (!apiConfigured) {
+      setItems([]);
+      return;
+    }
+
+    fetch("/api/chamados")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
+      .then((data) => setItems(Array.isArray(data) ? data.map(adapt) : []))
+      .catch(() => setItems([]));
+  }, []);
+
   const counts = useMemo(
     () => ({
-      todos: ticketsMock.length,
-      abertos: ticketsMock.filter((t) => t.status === "ABERTO").length,
-      aguardando: ticketsMock.filter((t) => t.status === "AGUARDANDO").length,
-      concluidos: ticketsMock.filter((t) => t.status === "CONCLUIDO").length,
-      cancelados: ticketsMock.filter((t) => t.status === "CANCELADO").length,
+      todos: items.length,
+      abertos: items.filter((t) => t.status === "ABERTO").length,
+      aguardando: items.filter((t) => t.status === "AGUARDANDO").length,
+      concluidos: items.filter((t) => t.status === "CONCLUIDO").length,
+      cancelados: items.filter((t) => t.status === "CANCELADO").length,
     }),
-    [],
+    [items],
   );
 
   const list = useMemo(() => {
     switch (filtro) {
       case "abertos":
-        return ticketsMock.filter((t) => t.status === "ABERTO");
+        return items.filter((t) => t.status === "ABERTO");
       case "aguardando":
-        return ticketsMock.filter((t) => t.status === "AGUARDANDO");
+        return items.filter((t) => t.status === "AGUARDANDO");
       case "concluidos":
-        return ticketsMock.filter((t) => t.status === "CONCLUIDO");
+        return items.filter((t) => t.status === "CONCLUIDO");
       case "cancelados":
-        return ticketsMock.filter((t) => t.status === "CANCELADO");
+        return items.filter((t) => t.status === "CANCELADO");
       default:
-        return ticketsMock;
+        return items;
     }
-  }, [filtro]);
+  }, [filtro, items]);
 
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<TicketMock | null>(null);
+  const [selected, setSelected] = useState<UiTicket | null>(null);
   const [tab, setTab] = useState<"resumo" | "historico" | "ticket">("resumo");
   const [history, setHistory] = useState<
     { t: number; label: string; attachments?: string[] }[]
@@ -195,7 +260,7 @@ export default function ChamadosPage() {
   const [ccMe, setCcMe] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
 
-  function initFromSelected(s: TicketMock) {
+  function initFromSelected(s: UiTicket) {
     setTab("resumo");
     setSubject(`Atualização do Chamado ${s.id}`);
     setMessage("");
@@ -214,13 +279,6 @@ export default function ChamadosPage() {
         t: base + 3 * 60 * 60 * 1000,
         label: `Visita técnica: ${s.visita}`,
       });
-    if (s.initialAttachments && s.initialAttachments.length) {
-      arr.push({
-        t: base + 2 * 60 * 1000,
-        label: "Anexos recebidos na abertura",
-        attachments: s.initialAttachments,
-      });
-    }
     setHistory(arr);
   }
 
@@ -358,7 +416,9 @@ export default function ChamadosPage() {
                         <div className="text-muted-foreground">Cargo</div>
                         <div className="text-right">{selected.cargo}</div>
                         <div className="text-muted-foreground">Gerente</div>
-                        <div className="text-right">{selected.gerente}</div>
+                        <div className="text-right">
+                          {selected.gerente || "—"}
+                        </div>
                         <div className="text-muted-foreground">E-mail</div>
                         <div className="text-right">{selected.email}</div>
                         <div className="text-muted-foreground">Telefone</div>
