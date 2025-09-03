@@ -13,14 +13,14 @@ const statusMap = [
 function SummaryCard({
   title,
   value,
-  color,
+  bgClass,
 }: {
   title: string;
   value: number;
-  color: string;
+  bgClass: string;
 }) {
   return (
-    <div className="rounded-xl p-4 text-white" style={{ background: color }}>
+    <div className={`rounded-xl p-4 text-white ${bgClass}`}>
       <div className="text-sm/5 opacity-90">{title}</div>
       <div className="text-2xl font-extrabold mt-1">{value}</div>
     </div>
