@@ -1,2 +1,3 @@
 from .chamado import Chamado
-__all__ = ["Chamado"]
+from .user import User
+__all__ = ["Chamado", "User"]
