@@ -1,9 +1,9 @@
 from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from ...core.db import get_db
-from ..schemas.chamado import ChamadoCreate, ChamadoOut
-from ..services.chamados import criar_chamado as service_criar
+from core.db import get_db
+from ti.schemas.chamado import ChamadoCreate, ChamadoOut
+from ti.services.chamados import criar_chamado as service_criar
 
 router = APIRouter(prefix="/chamados", tags=["TI - Chamados"])
 
