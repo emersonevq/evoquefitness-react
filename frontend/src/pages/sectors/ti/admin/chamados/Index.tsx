@@ -1,6 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ticketsMock, TicketStatus } from "../mock";
 import { NavLink, useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Save, Trash2, Ticket as TicketIcon, UserPlus } from "lucide-react";
 
 const statusMap = [
   { key: "todos", label: "Todos" },
@@ -30,7 +39,7 @@ function SummaryCard({
 function StatusPill({ status }: { status: TicketStatus }) {
   const styles =
     status === "ABERTO"
-      ? "bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300"
+      ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300"
       : status === "AGUARDANDO"
         ? "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300"
         : status === "CONCLUIDO"
@@ -40,6 +49,85 @@ function StatusPill({ status }: { status: TicketStatus }) {
     <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${styles}`}>
       {status}
     </span>
+  );
+}
+
+function TicketCard({
+  id,
+  titulo,
+  solicitante,
+  unidade,
+  categoria,
+  status,
+  criadoEm,
+}: {
+  id: string;
+  titulo: string;
+  solicitante: string;
+  unidade: string;
+  categoria: string;
+  status: TicketStatus;
+  criadoEm: string;
+}) {
+  const [sel, setSel] = useState<TicketStatus>(status);
+  return (
+    <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+      <div className="px-4 py-3 border-b border-border/60 bg-muted/30 flex items-center justify-between">
+        <div className="font-semibold text-orange-400">{id}</div>
+        <StatusPill status={status} />
+      </div>
+
+      <div className="p-4 flex flex-col gap-3">
+        <div className="font-medium text-base">{titulo}</div>
+
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+          <div className="text-muted-foreground">Solicitante:</div>
+          <div className="text-right">{solicitante}</div>
+
+          <div className="text-muted-foreground">Problema:</div>
+          <div className="text-right">{categoria}</div>
+
+          <div className="text-muted-foreground">Unidade:</div>
+          <div className="text-right">{unidade}</div>
+
+          <div className="text-muted-foreground">Data:</div>
+          <div className="text-right">{new Date(criadoEm).toLocaleDateString()}</div>
+
+          <div className="text-muted-foreground">Agente:</div>
+          <div className="text-right">
+            <Button size="sm" className="bg-green-600 text-white hover:bg-green-700">
+              <UserPlus className="size-4" /> Atribuir
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-1 rounded-md border border-border/60 bg-background p-2">
+          <Select value={sel} onValueChange={(v) => setSel(v as TicketStatus)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ABERTO">Aberto</SelectItem>
+              <SelectItem value="AGUARDANDO">Aguardando</SelectItem>
+              <SelectItem value="CONCLUIDO">Concluído</SelectItem>
+              <SelectItem value="CANCELADO">Cancelado</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+          <Button className="bg-amber-500 text-white hover:bg-amber-600">
+            <Save className="size-4" /> Atualizar
+          </Button>
+          <Button variant="destructive">
+            <Trash2 className="size-4" /> Excluir
+          </Button>
+          <Button className="bg-cyan-600 text-white hover:bg-cyan-700">
+            <TicketIcon className="size-4" /> Ticket
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -118,37 +206,7 @@ export default function ChamadosPage() {
 
       <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
         {list.map((t) => (
-          <div
-            key={t.id}
-            className="rounded-xl border border-border/60 bg-card p-4 flex flex-col gap-3"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-xs text-muted-foreground">{t.id}</div>
-                <div className="font-semibold mt-0.5">{t.titulo}</div>
-              </div>
-              <StatusPill status={t.status} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <div className="text-xs text-muted-foreground">Solicitante</div>
-                <div>{t.solicitante}</div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">Unidade</div>
-                <div>{t.unidade}</div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">Categoria</div>
-                <div>{t.categoria}</div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">Criado em</div>
-                <div>{new Date(t.criadoEm).toLocaleString()}</div>
-              </div>
-            </div>
-          </div>
+          <TicketCard key={t.id} {...t} />
         ))}
       </div>
     </div>
