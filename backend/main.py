@@ -19,3 +19,4 @@ def ping():
     return {"message": "pong"}
 
 app.include_router(chamados_router, prefix="/api")
+app.include_router(usuarios_router, prefix="/api")
