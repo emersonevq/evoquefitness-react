@@ -1,6 +1,10 @@
 import { Navigate, useLocation } from "react-router-dom";
 
-export default function RequireLogin({ children }: { children: React.ReactNode }) {
+export default function RequireLogin({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const location = useLocation();
   // Allow when navigation explicitly bypasses the guard (from Login submit)
   // Otherwise redirect to login with intended URL as redirect param
@@ -10,5 +14,7 @@ export default function RequireLogin({ children }: { children: React.ReactNode }
   const state = location.state as any;
   if (state?.bypassGate) return <>{children}</>;
   const redirect = `${location.pathname}${location.search}`;
-  return <Navigate to={`/login?redirect=${encodeURIComponent(redirect)}`} replace />;
+  return (
+    <Navigate to={`/login?redirect=${encodeURIComponent(redirect)}`} replace />
+  );
 }

@@ -27,9 +27,12 @@ export default function Login() {
               alt="Evoque Fitness Logo"
               className="h-10 w-auto mx-auto mb-6 rounded-sm shadow-sm"
             />
-            <h1 className="text-3xl font-extrabold drop-shadow">Evoque Fitness</h1>
+            <h1 className="text-3xl font-extrabold drop-shadow">
+              Evoque Fitness
+            </h1>
             <p className="mt-3 text-sm/6 opacity-90">
-              Acesse seu painel para gerenciar chamados e acompanhar métricas do setor.
+              Acesse seu painel para gerenciar chamados e acompanhar métricas do
+              setor.
             </p>
           </div>
         </div>
@@ -55,20 +58,39 @@ export default function Login() {
             <form onSubmit={submit} className="mt-6 grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="email">E-mail</Label>
-                <Input id="email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} required />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input id="password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} required />
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
               </div>
               <div className="flex items-center justify-between text-sm">
                 <label className="inline-flex items-center gap-2">
-                  <input type="checkbox" className="h-4 w-4 rounded border-border bg-background" />
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-border bg-background"
+                  />
                   Lembrar-me
                 </label>
-                <a href="#" className="text-primary hover:underline">Esqueci minha senha</a>
+                <a href="#" className="text-primary hover:underline">
+                  Esqueci minha senha
+                </a>
               </div>
-              <Button type="submit" className="w-full h-11 rounded-md">Entrar</Button>
+              <Button type="submit" className="w-full h-11 rounded-md">
+                Entrar
+              </Button>
             </form>
           </div>
 

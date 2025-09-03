@@ -24,12 +24,35 @@ import AdminLayout from "./pages/sectors/ti/admin/AdminLayout";
 import Overview from "./pages/sectors/ti/admin/Overview";
 import ChamadosPage from "./pages/sectors/ti/admin/chamados/Index";
 import UsuariosLayout from "./pages/sectors/ti/admin/usuarios/UsuariosLayout";
-import { CriarUsuario, Bloqueios, Permissoes, Agentes, Grupos } from "./pages/sectors/ti/admin/usuarios/pages";
+import {
+  CriarUsuario,
+  Bloqueios,
+  Permissoes,
+  Agentes,
+  Grupos,
+} from "./pages/sectors/ti/admin/usuarios/pages";
 import IntegracoesLayout from "./pages/sectors/ti/admin/integracoes/IntegracoesLayout";
-import { AdicionarUnidade, ListarUnidades, AdicionarBanco } from "./pages/sectors/ti/admin/integracoes/pages";
+import {
+  AdicionarUnidade,
+  ListarUnidades,
+  AdicionarBanco,
+} from "./pages/sectors/ti/admin/integracoes/pages";
 import ConfiguracoesLayout from "./pages/sectors/ti/admin/configuracoes/ConfiguracoesLayout";
-import { SLA as ConfSLA, Prioridades as ConfPrioridades, Notificacoes as ConfNotificacoes, Sistema as ConfSistema, Seguranca as ConfSeguranca, Chamados as ConfChamados, Email as ConfEmail, Integracoes as ConfIntegracoes, Acoes as ConfAcoes } from "./pages/sectors/ti/admin/configuracoes/pages";
-import { Monitoramento as AdminMonitoramento, Historico as AdminHistorico } from "./pages/sectors/ti/admin/Sections";
+import {
+  SLA as ConfSLA,
+  Prioridades as ConfPrioridades,
+  Notificacoes as ConfNotificacoes,
+  Sistema as ConfSistema,
+  Seguranca as ConfSeguranca,
+  Chamados as ConfChamados,
+  Email as ConfEmail,
+  Integracoes as ConfIntegracoes,
+  Acoes as ConfAcoes,
+} from "./pages/sectors/ti/admin/configuracoes/pages";
+import {
+  Monitoramento as AdminMonitoramento,
+  Historico as AdminHistorico,
+} from "./pages/sectors/ti/admin/Sections";
 import RequireLogin from "./components/RequireLogin";
 
 const queryClient = new QueryClient();
@@ -43,8 +66,22 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/setor/ti" element={<RequireLogin><TiPage /></RequireLogin>} />
-          <Route path="/setor/ti/admin" element={<RequireLogin><AdminLayout /></RequireLogin>}>
+          <Route
+            path="/setor/ti"
+            element={
+              <RequireLogin>
+                <TiPage />
+              </RequireLogin>
+            }
+          />
+          <Route
+            path="/setor/ti/admin"
+            element={
+              <RequireLogin>
+                <AdminLayout />
+              </RequireLogin>
+            }
+          >
             <Route index element={<Overview />} />
             <Route path="overview" element={<Overview />} />
             <Route path="chamados">
@@ -80,17 +117,70 @@ const App = () => (
               <Route path="acoes" element={<ConfAcoes />} />
             </Route>
           </Route>
-          <Route path="/setor/compras" element={<RequireLogin><ComprasPage /></RequireLogin>} />
-          <Route path="/setor/manutencao" element={<RequireLogin><ManutencaoPage /></RequireLogin>} />
-          <Route path="/setor/financeiro" element={<RequireLogin><FinanceiroPage /></RequireLogin>} />
-          <Route path="/setor/marketing" element={<RequireLogin><MarketingPage /></RequireLogin>} />
-          <Route path="/setor/produtos" element={<RequireLogin><ProdutosPage /></RequireLogin>} />
-          <Route path="/setor/comercial" element={<RequireLogin><ComercialPage /></RequireLogin>} />
+          <Route
+            path="/setor/compras"
+            element={
+              <RequireLogin>
+                <ComprasPage />
+              </RequireLogin>
+            }
+          />
+          <Route
+            path="/setor/manutencao"
+            element={
+              <RequireLogin>
+                <ManutencaoPage />
+              </RequireLogin>
+            }
+          />
+          <Route
+            path="/setor/financeiro"
+            element={
+              <RequireLogin>
+                <FinanceiroPage />
+              </RequireLogin>
+            }
+          />
+          <Route
+            path="/setor/marketing"
+            element={
+              <RequireLogin>
+                <MarketingPage />
+              </RequireLogin>
+            }
+          />
+          <Route
+            path="/setor/produtos"
+            element={
+              <RequireLogin>
+                <ProdutosPage />
+              </RequireLogin>
+            }
+          />
+          <Route
+            path="/setor/comercial"
+            element={
+              <RequireLogin>
+                <ComercialPage />
+              </RequireLogin>
+            }
+          />
           <Route
             path="/setor/outros-servicos"
-            element={<RequireLogin><OutrosServicosPage /></RequireLogin>}
+            element={
+              <RequireLogin>
+                <OutrosServicosPage />
+              </RequireLogin>
+            }
           />
-          <Route path="/setor/:slug" element={<RequireLogin><SectorPage /></RequireLogin>} />
+          <Route
+            path="/setor/:slug"
+            element={
+              <RequireLogin>
+                <SectorPage />
+              </RequireLogin>
+            }
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -10,7 +10,15 @@ const statusMap = [
   { key: "cancelados", label: "Cancelados" },
 ] as const;
 
-function Card({ title, value, color }: { title: string; value: number; color: string }) {
+function Card({
+  title,
+  value,
+  color,
+}: {
+  title: string;
+  value: number;
+  color: string;
+}) {
   return (
     <div className="rounded-xl p-4 text-white" style={{ background: color }}>
       <div className="text-sm/5 opacity-90">{title}</div>
@@ -22,37 +30,73 @@ function Card({ title, value, color }: { title: string; value: number; color: st
 export default function ChamadosPage() {
   const { filtro } = useParams<{ filtro?: string }>();
 
-  const counts = useMemo(() => ({
-    todos: ticketsMock.length,
-    abertos: ticketsMock.filter(t => t.status === "ABERTO").length,
-    aguardando: ticketsMock.filter(t => t.status === "AGUARDANDO").length,
-    concluidos: ticketsMock.filter(t => t.status === "CONCLUIDO").length,
-    cancelados: ticketsMock.filter(t => t.status === "CANCELADO").length,
-  }), []);
+  const counts = useMemo(
+    () => ({
+      todos: ticketsMock.length,
+      abertos: ticketsMock.filter((t) => t.status === "ABERTO").length,
+      aguardando: ticketsMock.filter((t) => t.status === "AGUARDANDO").length,
+      concluidos: ticketsMock.filter((t) => t.status === "CONCLUIDO").length,
+      cancelados: ticketsMock.filter((t) => t.status === "CANCELADO").length,
+    }),
+    [],
+  );
 
   const list = useMemo(() => {
     switch (filtro) {
-      case "abertos": return ticketsMock.filter(t => t.status === "ABERTO");
-      case "aguardando": return ticketsMock.filter(t => t.status === "AGUARDANDO");
-      case "concluidos": return ticketsMock.filter(t => t.status === "CONCLUIDO");
-      case "cancelados": return ticketsMock.filter(t => t.status === "CANCELADO");
-      default: return ticketsMock;
+      case "abertos":
+        return ticketsMock.filter((t) => t.status === "ABERTO");
+      case "aguardando":
+        return ticketsMock.filter((t) => t.status === "AGUARDANDO");
+      case "concluidos":
+        return ticketsMock.filter((t) => t.status === "CONCLUIDO");
+      case "cancelados":
+        return ticketsMock.filter((t) => t.status === "CANCELADO");
+      default:
+        return ticketsMock;
     }
   }, [filtro]);
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card title="Todos" value={counts.todos} color="linear-gradient(135deg,#64748b,#475569)" />
-        <Card title="Abertos" value={counts.abertos} color="linear-gradient(135deg,#fa6400,#f97316)" />
-        <Card title="Aguardando" value={counts.aguardando} color="linear-gradient(135deg,#eab308,#ca8a04)" />
-        <Card title="Concluídos" value={counts.concluidos} color="linear-gradient(135deg,#22c55e,#16a34a)" />
-        <Card title="Cancelados" value={counts.cancelados} color="linear-gradient(135deg,#ef4444,#b91c1c)" />
+        <Card
+          title="Todos"
+          value={counts.todos}
+          color="linear-gradient(135deg,#64748b,#475569)"
+        />
+        <Card
+          title="Abertos"
+          value={counts.abertos}
+          color="linear-gradient(135deg,#fa6400,#f97316)"
+        />
+        <Card
+          title="Aguardando"
+          value={counts.aguardando}
+          color="linear-gradient(135deg,#eab308,#ca8a04)"
+        />
+        <Card
+          title="Concluídos"
+          value={counts.concluidos}
+          color="linear-gradient(135deg,#22c55e,#16a34a)"
+        />
+        <Card
+          title="Cancelados"
+          value={counts.cancelados}
+          color="linear-gradient(135deg,#ef4444,#b91c1c)"
+        />
       </div>
 
       <div className="flex flex-wrap gap-2">
         {statusMap.map((s) => (
-          <NavLink key={s.key} to={`/setor/ti/admin/chamados/${s.key}`} className={({isActive})=>`rounded-full px-3 py-1.5 text-sm border ${isActive?"bg-primary text-primary-foreground border-transparent":"bg-secondary hover:bg-secondary/80"}`}>{s.label}</NavLink>
+          <NavLink
+            key={s.key}
+            to={`/setor/ti/admin/chamados/${s.key}`}
+            className={({ isActive }) =>
+              `rounded-full px-3 py-1.5 text-sm border ${isActive ? "bg-primary text-primary-foreground border-transparent" : "bg-secondary hover:bg-secondary/80"}`
+            }
+          >
+            {s.label}
+          </NavLink>
         ))}
       </div>
 
@@ -78,7 +122,9 @@ export default function ChamadosPage() {
                 <td className="px-4 py-3">{t.unidade}</td>
                 <td className="px-4 py-3">{t.categoria}</td>
                 <td className="px-4 py-3">{t.status}</td>
-                <td className="px-4 py-3">{new Date(t.criadoEm).toLocaleString()}</td>
+                <td className="px-4 py-3">
+                  {new Date(t.criadoEm).toLocaleString()}
+                </td>
               </tr>
             ))}
           </tbody>
