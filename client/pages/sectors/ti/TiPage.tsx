@@ -29,6 +29,11 @@ export default function TiPage() {
 
       <section className="container py-8">
         <div className="flex items-center justify-between gap-4">
+          <div className="md:hidden">
+            <Button asChild variant="secondary" className="rounded-full">
+              <Link to="/setor/ti/admin">Painel administrativo</Link>
+            </Button>
+          </div>
           <h2 className="text-lg sm:text-xl font-semibold">Histórico de chamados</h2>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
