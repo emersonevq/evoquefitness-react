@@ -42,22 +42,32 @@ export default function AdminLayout() {
         </div>
       </section>
 
-      <section className="container py-6 grid grid-cols-1 md:grid-cols-[240px,1fr] gap-6">
+      <section className="container py-6 grid grid-cols-1 md:grid-cols-[280px,1fr] gap-6">
         {/* Sidebar */}
         <aside className="hidden md:block">
-          <nav className="sticky top-20 space-y-1">
-            {items.map((i) => (
-              <NavLink
-                key={i.to}
-                to={i.to}
-                className={({ isActive }) =>
-                  `block rounded-md px-3 py-2 text-sm ${isActive ? "bg-primary text-primary-foreground" : "bg-secondary/70 hover:bg-secondary"}`
-                }
-              >
-                {i.label}
-              </NavLink>
-            ))}
-          </nav>
+          <div className="sticky top-24">
+            <nav className="sidebar-nav">
+              {groups.map((g) => (
+                <div key={g.title} className="sidebar-group">
+                  <div className="sidebar-group-title">{g.title}</div>
+                  <div className="space-y-2">
+                    {g.items.map((i) => (
+                      <NavLink
+                        key={i.to}
+                        to={i.to}
+                        className={({ isActive }) =>
+                          `sidebar-link ${isActive ? "data-[active=true]" : ""}`
+                        }
+                        data-active={({ isActive }: any) => isActive}
+                      >
+                        {i.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </nav>
+          </div>
         </aside>
 
         {/* Content */}
