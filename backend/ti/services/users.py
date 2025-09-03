@@ -2,8 +2,8 @@ from __future__ import annotations
 import json
 from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash
-from ..models import User
-from ..schemas.user import UserCreate
+from ti.models import User
+from ti.schemas.user import UserCreate
 
 
 def criar_usuario(db: Session, payload: UserCreate) -> User:
