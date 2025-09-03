@@ -65,7 +65,8 @@ export default function ResetPasswordSuccess() {
               <ul className="space-y-2 text-left">
                 <li className="flex items-start gap-2">
                   <span className="text-primary">1.</span>
-                  Verifique sua caixa de entrada (incluindo spam/lixo eletrônico)
+                  Verifique sua caixa de entrada (incluindo spam/lixo
+                  eletrônico)
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary">2.</span>
@@ -85,10 +86,13 @@ export default function ResetPasswordSuccess() {
                   Voltar ao login
                 </Link>
               </Button>
-              
+
               <p className="text-xs text-muted-foreground">
                 Não recebeu o e-mail?{" "}
-                <Link to="/auth/forgot-password" className="text-primary hover:underline">
+                <Link
+                  to="/auth/forgot-password"
+                  className="text-primary hover:underline"
+                >
                   Tentar novamente
                 </Link>
               </p>

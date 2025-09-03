@@ -84,7 +84,10 @@ export default function Login() {
                   />
                   Lembrar-me
                 </label>
-                <Link to="/auth/forgot-password" className="text-primary hover:underline">
+                <Link
+                  to="/auth/forgot-password"
+                  className="text-primary hover:underline"
+                >
                   Esqueci minha senha
                 </Link>
               </div>

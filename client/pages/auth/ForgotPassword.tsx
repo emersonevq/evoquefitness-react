@@ -13,14 +13,14 @@ export default function ForgotPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Simula envio do e-mail (substituir por integração real)
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     // Redireciona para página de sucesso
-    navigate("/auth/reset-password-success", { 
+    navigate("/auth/reset-password-success", {
       state: { email },
-      replace: true 
+      replace: true,
     });
   };
 
@@ -59,8 +59,8 @@ export default function ForgotPassword() {
 
           <div className="card-surface rounded-xl p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-4">
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-secondary/80 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -91,8 +91,8 @@ export default function ForgotPassword() {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full h-11 rounded-md"
                 disabled={isLoading}
               >
