@@ -9,6 +9,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SectorPage from "./pages/Sector";
+import TiPage from "./pages/sectors/ti/TiPage";
+import { ComprasPage, ManutencaoPage, FinanceiroPage, MarketingPage, ProdutosPage, ComercialPage, OutrosServicosPage } from "./pages/sectors/_placeholders";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +22,14 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/setor/ti" element={<TiPage />} />
+          <Route path="/setor/compras" element={<ComprasPage />} />
+          <Route path="/setor/manutencao" element={<ManutencaoPage />} />
+          <Route path="/setor/financeiro" element={<FinanceiroPage />} />
+          <Route path="/setor/marketing" element={<MarketingPage />} />
+          <Route path="/setor/produtos" element={<ProdutosPage />} />
+          <Route path="/setor/comercial" element={<ComercialPage />} />
+          <Route path="/setor/outros-servicos" element={<OutrosServicosPage />} />
           <Route path="/setor/:slug" element={<SectorPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
