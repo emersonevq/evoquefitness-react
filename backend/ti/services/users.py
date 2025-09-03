@@ -1,6 +1,6 @@
 from __future__ import annotations
 import json
-import random
+import secrets
 import string
 from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash
@@ -13,14 +13,17 @@ def _generate_password(length: int = 6) -> str:
     if length < 3:
         length = 3
     parts = [
-        random.choice(string.ascii_lowercase),
-        random.choice(string.ascii_uppercase),
-        random.choice(string.digits),
+        secrets.choice(string.ascii_lowercase),
+        secrets.choice(string.ascii_uppercase),
+        secrets.choice(string.digits),
     ]
     remaining = length - 3
     pool = string.ascii_letters + string.digits
-    parts += [random.choice(pool) for _ in range(remaining)]
-    random.shuffle(parts)
+    parts += [secrets.choice(pool) for _ in range(remaining)]
+    # Shuffle deterministically with secrets by reordering via random indices
+    for i in range(len(parts) - 1, 0, -1):
+        j = ord(secrets.token_bytes(1)) % (i + 1)
+        parts[i], parts[j] = parts[j], parts[i]
     return "".join(parts)
 
 
