@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from core.db import get_db
 from ti.schemas.user import UserCreate, UserCreatedOut, UserAvailability
-from ti.services.users import criar_usuario as service_criar, check_user_availability
+from ti.services.users import criar_usuario as service_criar, check_user_availability, generate_password
 
 router = APIRouter(prefix="/usuarios", tags=["TI - Usuarios"])
 
@@ -21,3 +21,11 @@ def check_availability(email: str | None = None, username: str | None = None, db
     if email is None and username is None:
         raise HTTPException(status_code=400, detail="Informe email ou username para verificar")
     return check_user_availability(db, email, username)
+
+@router.get("/generate-password")
+def generate_password_endpoint(length: int = 6):
+    if length < 6:
+        length = 6
+    if length > 64:
+        length = 64
+    return {"senha": generate_password(length)}
