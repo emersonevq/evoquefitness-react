@@ -1,54 +1,48 @@
-import os
+# Configurações do Banco de Dados MySQL Azure
+DB_HOST=evoque-database.mysql.database.azure.com
+DB_USER=infra
+DB_PASSWORD=Evoque12@
+DB_NAME=infra
+DB_PORT=3306
 
-# Este arquivo centraliza configurações, lendo SEMPRE do ambiente.
-# Evitamos commitar segredos diretamente em código.
+# Configurações da Aplicação Flask
+SECRET_KEY=evoque_secret_key_2024_muito_segura_para_producao
+FLASK_ENV=development
+FLASK_DEBUG=True
 
-# Banco de Dados MySQL Azure
-DB_HOST = os.getenv("DB_HOST", "evoque-database.mysql.database.azure.com")
-DB_USER = os.getenv("DB_USER", "infra")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "Evoque12@")
-DB_NAME = os.getenv("DB_NAME", "infra")
-DB_PORT = os.getenv("DB_PORT", "3306")
-DB_SSL_CA = os.getenv("DB_SSL_CA")  # caminho opcional para CA (ex.: DigiCertGlobalRootCA.crt.pem)
+# Configurações do Microsoft Graph API (Email)
+CLIENT_ID=bc90db46-3e94-476d-8f37-bb818eeb4690
+CLIENT_SECRET=4lg8Q~Np6rsPirXWNnlTtgIPfauxbXEVFdK6ocwN
+TENANT_ID=9f45f492-87a3-4214-862d-4c0d080aa136
+USER_ID=no-reply@academiaevoque.com.br
 
-# Aplicação (legado Flask, útil para compatibilidade de configs)
-SECRET_KEY = os.getenv("SECRET_KEY")
-FLASK_ENV = os.getenv("FLASK_ENV")
-FLASK_DEBUG = os.getenv("FLASK_DEBUG")
+# Configurações de Email
+EMAIL_SISTEMA=sistema@evoquefitness.com
+EMAIL_TI=ti@academiaevoque.com.br
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USE_TLS=True
 
-# Microsoft Graph / Email
-CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-TENANT_ID = os.getenv("TENANT_ID")
-USER_ID = os.getenv("USER_ID")
+# Configurações de Segurança
+MAX_LOGIN_ATTEMPTS=5
+SESSION_TIMEOUT=30
+PASSWORD_MIN_LENGTH=6
 
-# E-mail SMTP
-EMAIL_SISTEMA = os.getenv("EMAIL_SISTEMA")
-EMAIL_TI = os.getenv("EMAIL_TI")
-SMTP_SERVER = os.getenv("SMTP_SERVER")
-SMTP_PORT = os.getenv("SMTP_PORT")
-SMTP_USE_TLS = os.getenv("SMTP_USE_TLS")
+# Configurações de Logs
+LOG_LEVEL=INFO
+LOG_FILE_PATH=logs/app.log
 
-# Segurança
-MAX_LOGIN_ATTEMPTS = os.getenv("MAX_LOGIN_ATTEMPTS")
-SESSION_TIMEOUT = os.getenv("SESSION_TIMEOUT")
-PASSWORD_MIN_LENGTH = os.getenv("PASSWORD_MIN_LENGTH")
+# Configurações de Backup
+BACKUP_PATH=backups/
+BACKUP_RETENTION_DAYS=30
 
-# Logs
-LOG_LEVEL = os.getenv("LOG_LEVEL")
-LOG_FILE_PATH = os.getenv("LOG_FILE_PATH")
+# Configurações de Upload
+UPLOAD_FOLDER=uploads/
+MAX_CONTENT_LENGTH=16777216
 
-# Backup
-BACKUP_PATH = os.getenv("BACKUP_PATH")
-BACKUP_RETENTION_DAYS = os.getenv("BACKUP_RETENTION_DAYS")
+# Configurações de Timezone
+TIMEZONE=America/Sao_Paulo
 
-# Upload
-UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER")
-MAX_CONTENT_LENGTH = os.getenv("MAX_CONTENT_LENGTH")
-
-# Timezone
-TIMEZONE = os.getenv("TIMEZONE")
-
-# Cache
-CACHE_TYPE = os.getenv("CACHE_TYPE")
-CACHE_DEFAULT_TIMEOUT = os.getenv("CACHE_DEFAULT_TIMEOUT")
+# Configurações de Cache
+CACHE_TYPE=simple
+CACHE_DEFAULT_TIMEOUT=300
