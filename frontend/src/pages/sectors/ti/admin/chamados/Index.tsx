@@ -224,72 +224,77 @@ export default function ChamadosPage() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl">
           {selected && (
             <div className="space-y-4">
-              <DialogHeader>
-                <DialogTitle>{selected.titulo}</DialogTitle>
-              </DialogHeader>
+              <div className="rounded-lg overflow-hidden border border-border/60">
+                <div className="brand-gradient p-4 sm:p-5 flex items-start justify-between">
+                  <div>
+                    <div className="text-sm/5 text-primary-foreground/90">{selected.protocolo}</div>
+                    <div className="mt-1 text-xl sm:text-2xl font-extrabold text-primary-foreground drop-shadow">
+                      {selected.titulo}
+                    </div>
+                  </div>
+                  <StatusPill status={selected.status} />
+                </div>
 
-              <div className="grid gap-4 md:grid-cols-[1fr,320px]">
-                <div className="rounded-lg border border-border/60 bg-card">
-                  <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
-                    <div className="font-semibold text-orange-400">{selected.id}</div>
-                    <StatusPill status={selected.status} />
+                <div className="p-4 grid gap-6 md:grid-cols-[1fr,320px]">
+                  {/* Timeline */}
+                  <div>
+                    <div className="text-sm font-medium mb-3">Linha do tempo</div>
+                    <div className="relative border-s pl-6">
+                      {[(() => {
+                        const base = new Date(selected.criadoEm).getTime();
+                        const pad = (ms: number) => new Date(base + ms);
+                        const arr = [
+                          { t: pad(0), label: "Chamado aberto" },
+                          { t: pad(45 * 60 * 1000), label: `Status: ${selected.status}` },
+                        ];
+                        if (selected.visita) arr.push({ t: pad(3 * 60 * 60 * 1000), label: `Visita técnica: ${selected.visita}` });
+                        return arr;
+                      })()].flat().map((ev, idx) => (
+                        <div key={idx} className="relative mb-5 last:mb-0">
+                          <div className="absolute -left-1.5 top-1.5 h-3 w-3 rounded-full bg-primary ring-4 ring-primary/20" />
+                          <div className="text-sm">{ev.label}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(ev.t).toLocaleString()}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="p-4 space-y-5 text-sm">
-                    <div>
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Solicitação</div>
-                      <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-2">
-                        <div className="text-muted-foreground">Protocolo</div>
-                        <div className="text-right">{selected.protocolo}</div>
-                        <div className="text-muted-foreground">Data de abertura</div>
-                        <div className="text-right">{new Date(selected.criadoEm).toLocaleString()}</div>
-                        <div className="text-muted-foreground">Status</div>
-                        <div className="text-right"><StatusPill status={selected.status} /></div>
-                        <div className="text-muted-foreground">Visita técnica</div>
-                        <div className="text-right">{selected.visita || "—"}</div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Solicitante</div>
-                      <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-2">
-                        <div className="text-muted-foreground">Nome</div>
-                        <div className="text-right">{selected.solicitante}</div>
-                        <div className="text-muted-foreground">Cargo</div>
-                        <div className="text-right">{selected.cargo}</div>
-                        <div className="text-muted-foreground">Gerente</div>
-                        <div className="text-right">{selected.gerente}</div>
-                        <div className="text-muted-foreground">E-mail</div>
-                        <div className="text-right">{selected.email}</div>
-                        <div className="text-muted-foreground">Telefone</div>
-                        <div className="text-right">{selected.telefone}</div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Local e problema</div>
-                      <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-2">
-                        <div className="text-muted-foreground">Unidade</div>
-                        <div className="text-right">{selected.unidade}</div>
-                        <div className="text-muted-foreground">Problema</div>
-                        <div className="text-right">{selected.categoria}</div>
-                        {selected.internetItem && (
-                          <>
-                            <div className="text-muted-foreground">Item de Internet</div>
-                            <div className="text-right">{selected.internetItem}</div>
-                          </>
-                        )}
-                      </div>
+                  {/* Ficha */}
+                  <div className="rounded-lg border border-border/60 bg-card p-4 h-max">
+                    <div className="font-semibold mb-3">Ficha do chamado</div>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                      <div className="text-muted-foreground">Solicitante</div>
+                      <div className="text-right">{selected.solicitante}</div>
+                      <div className="text-muted-foreground">Cargo</div>
+                      <div className="text-right">{selected.cargo}</div>
+                      <div className="text-muted-foreground">Gerente</div>
+                      <div className="text-right">{selected.gerente}</div>
+                      <div className="text-muted-foreground">E-mail</div>
+                      <div className="text-right">{selected.email}</div>
+                      <div className="text-muted-foreground">Telefone</div>
+                      <div className="text-right">{selected.telefone}</div>
+                      <div className="text-muted-foreground">Unidade</div>
+                      <div className="text-right">{selected.unidade}</div>
+                      <div className="text-muted-foreground">Problema</div>
+                      <div className="text-right">{selected.categoria}</div>
+                      {selected.internetItem && (
+                        <>
+                          <div className="text-muted-foreground">Item Internet</div>
+                          <div className="text-right">{selected.internetItem}</div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-border/60 bg-card p-4 h-max md:sticky md:top-20">
-                  <div className="font-semibold mb-3">Ações do chamado</div>
-                  <div className="grid gap-3">
+                {/* Sticky footer actions */}
+                <div className="border-t border-border/60 bg-background/50 p-3 sm:p-4 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+                  <div className="w-full sm:w-64">
                     <Select defaultValue={selected.status}>
                       <SelectTrigger>
                         <SelectValue />
@@ -301,7 +306,8 @@ export default function ChamadosPage() {
                         <SelectItem value="CANCELADO">Cancelado</SelectItem>
                       </SelectContent>
                     </Select>
-
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Button variant="success">
                       <UserPlus className="size-4" /> Atribuir
                     </Button>
@@ -311,7 +317,7 @@ export default function ChamadosPage() {
                     <Button variant="destructive">
                       <Trash2 className="size-4" /> Excluir
                     </Button>
-                    <Button variant="info" className="w-full">
+                    <Button variant="info">
                       <TicketIcon className="size-4" /> Ticket
                     </Button>
                   </div>
