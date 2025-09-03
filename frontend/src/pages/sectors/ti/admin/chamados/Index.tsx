@@ -185,7 +185,10 @@ export default function ChamadosPage() {
     }
 
     function adapt(it: any): UiTicket {
-      const titulo = it.problema === "Internet" && it.internet_item ? `Internet - ${it.internet_item}` : it.problema;
+      const titulo =
+        it.problema === "Internet" && it.internet_item
+          ? `Internet - ${it.internet_item}`
+          : it.problema;
       return {
         id: String(it.id),
         protocolo: it.protocolo,
@@ -204,7 +207,9 @@ export default function ChamadosPage() {
       };
     }
 
-    const apiConfigured = !!import.meta.env.VITE_API_BASE_URL || !!import.meta.env.VITE_PROXY_TARGET;
+    const apiConfigured =
+      !!import.meta.env.VITE_API_BASE_URL ||
+      !!import.meta.env.VITE_PROXY_TARGET;
     if (!apiConfigured) {
       setItems([]);
       return;
@@ -411,7 +416,9 @@ export default function ChamadosPage() {
                         <div className="text-muted-foreground">Cargo</div>
                         <div className="text-right">{selected.cargo}</div>
                         <div className="text-muted-foreground">Gerente</div>
-                        <div className="text-right">{selected.gerente || "—"}</div>
+                        <div className="text-right">
+                          {selected.gerente || "—"}
+                        </div>
                         <div className="text-muted-foreground">E-mail</div>
                         <div className="text-right">{selected.email}</div>
                         <div className="text-muted-foreground">Telefone</div>

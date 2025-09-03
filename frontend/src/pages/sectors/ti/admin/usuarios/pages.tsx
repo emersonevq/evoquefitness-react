@@ -33,9 +33,15 @@ export function CriarUsuario() {
   const [usernameTaken, setUsernameTaken] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
 
-  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(
+    null,
+  );
   const [showSuccess, setShowSuccess] = useState(false);
-  const [createdUser, setCreatedUser] = useState<{ usuario: string; senha: string; nome: string } | null>(null);
+  const [createdUser, setCreatedUser] = useState<{
+    usuario: string;
+    senha: string;
+    nome: string;
+  } | null>(null);
 
   const allSectors = useMemo(() => sectors.map((s) => s.title), []);
 
@@ -51,11 +57,17 @@ export function CriarUsuario() {
     );
   };
 
-  const checkAvailability = async (type: "email" | "username", value: string) => {
+  const checkAvailability = async (
+    type: "email" | "username",
+    value: string,
+  ) => {
     if (!value) return;
     try {
       setChecking(true);
-      const q = type === "email" ? `email=${encodeURIComponent(value)}` : `username=${encodeURIComponent(value)}`;
+      const q =
+        type === "email"
+          ? `email=${encodeURIComponent(value)}`
+          : `username=${encodeURIComponent(value)}`;
       const res = await fetch(`/api/usuarios/check-availability?${q}`);
       if (!res.ok) return;
       const data = await res.json();
@@ -66,7 +78,9 @@ export function CriarUsuario() {
     }
   };
 
-  const strengthScore = (pwd: string | null): { score: number; label: string; color: string } => {
+  const strengthScore = (
+    pwd: string | null,
+  ): { score: number; label: string; color: string } => {
     if (!pwd) return { score: 0, label: "", color: "bg-muted" };
     let score = 0;
     const hasLower = /[a-z]/.test(pwd);
@@ -77,7 +91,12 @@ export function CriarUsuario() {
     if (hasUpper) score += 1;
     if (hasDigit) score += 1;
     const label = score <= 2 ? "Fraca" : score === 3 ? "Média" : "Forte";
-    const color = score <= 2 ? "bg-red-500" : score === 3 ? "bg-yellow-500" : "bg-green-600";
+    const color =
+      score <= 2
+        ? "bg-red-500"
+        : score === 3
+          ? "bg-yellow-500"
+          : "bg-green-600";
     return { score, label, color };
   };
 
@@ -118,12 +137,17 @@ export function CriarUsuario() {
         }),
       });
       if (!res.ok) {
-        const t = await res.json().catch(() => ({} as any));
-        const detail = (t && (t.detail || t.message)) || "Falha ao criar usuário";
+        const t = await res.json().catch(() => ({}) as any);
+        const detail =
+          (t && (t.detail || t.message)) || "Falha ao criar usuário";
         throw new Error(detail);
       }
       const created = await res.json();
-      setCreatedUser({ usuario: created.usuario, senha: created.senha, nome: `${created.nome} ${created.sobrenome}` });
+      setCreatedUser({
+        usuario: created.usuario,
+        senha: created.senha,
+        nome: `${created.nome} ${created.sobrenome}`,
+      });
       setShowSuccess(true);
 
       setFirst("");
@@ -182,7 +206,9 @@ export function CriarUsuario() {
               onBlur={() => checkAvailability("email", email)}
             />
             {emailTaken && (
-              <div className="text-xs text-destructive">E-mail já cadastrado</div>
+              <div className="text-xs text-destructive">
+                E-mail já cadastrado
+              </div>
             )}
           </div>
           <div className="grid gap-2">
@@ -210,7 +236,9 @@ export function CriarUsuario() {
               Digite manualmente ou clique no botão para gerar automaticamente
             </div>
             {usernameTaken && (
-              <div className="text-xs text-destructive">Usuário já cadastrado</div>
+              <div className="text-xs text-destructive">
+                Usuário já cadastrado
+              </div>
             )}
           </div>
         </div>
@@ -281,9 +309,14 @@ export function CriarUsuario() {
                   return (
                     <div className="flex items-center gap-2">
                       <div className="w-32 h-2 rounded bg-muted overflow-hidden">
-                        <div className={`${s.color} h-full`} style={{ width: `${width}%` }} />
+                        <div
+                          className={`${s.color} h-full`}
+                          style={{ width: `${width}%` }}
+                        />
                       </div>
-                      <span className="text-xs text-muted-foreground">{s.label}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {s.label}
+                      </span>
                     </div>
                   );
                 })()}
@@ -293,7 +326,12 @@ export function CriarUsuario() {
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">
-          <Button type="submit" disabled={!!emailTaken || !!usernameTaken || checking}>Salvar</Button>
+          <Button
+            type="submit"
+            disabled={!!emailTaken || !!usernameTaken || checking}
+          >
+            Salvar
+          </Button>
         </div>
       </form>
 
@@ -302,12 +340,16 @@ export function CriarUsuario() {
           <DialogHeader>
             <DialogTitle>Usuário criado com sucesso</DialogTitle>
             <DialogDescription>
-              Guarde as credenciais abaixo com segurança. Elas serão exibidas apenas uma vez.
+              Guarde as credenciais abaixo com segurança. Elas serão exibidas
+              apenas uma vez.
             </DialogDescription>
           </DialogHeader>
           {createdUser && (
             <div className="space-y-3">
-              <div className="text-sm">Usuário: <span className="font-medium">{createdUser.usuario}</span></div>
+              <div className="text-sm">
+                Usuário:{" "}
+                <span className="font-medium">{createdUser.usuario}</span>
+              </div>
               <div className="flex items-center gap-2">
                 <div className="font-mono text-lg tracking-widest px-3 py-2 rounded-md bg-muted select-all">
                   {createdUser.senha}
