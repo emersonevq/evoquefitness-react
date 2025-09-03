@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ticketsMock, TicketStatus } from "../mock";
+import { ticketsMock, TicketStatus, TicketMock } from "../mock";
 import { NavLink, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Save, Trash2, Ticket as TicketIcon, UserPlus } from "lucide-react";
 
 const statusMap = [
