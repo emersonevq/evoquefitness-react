@@ -30,6 +30,7 @@ import { AdicionarUnidade, ListarUnidades, AdicionarBanco } from "./pages/sector
 import ConfiguracoesLayout from "./pages/sectors/ti/admin/configuracoes/ConfiguracoesLayout";
 import { SLA as ConfSLA, Prioridades as ConfPrioridades, Notificacoes as ConfNotificacoes, Sistema as ConfSistema, Seguranca as ConfSeguranca, Chamados as ConfChamados, Email as ConfEmail, Integracoes as ConfIntegracoes, Acoes as ConfAcoes } from "./pages/sectors/ti/admin/configuracoes/pages";
 import { Monitoramento as AdminMonitoramento, Historico as AdminHistorico } from "./pages/sectors/ti/admin/Sections";
+import RequireLogin from "./components/RequireLogin";
 
 const queryClient = new QueryClient();
 
