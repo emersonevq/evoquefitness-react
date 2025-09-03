@@ -18,6 +18,7 @@ interface UiTicket {
   gerente?: string | null;
 }
 import { NavLink, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
