@@ -1,5 +1,22 @@
 import { useMemo, useState } from "react";
-import { ticketsMock, TicketStatus, TicketMock } from "../mock";
+type TicketStatus = "ABERTO" | "AGUARDANDO" | "CONCLUIDO" | "CANCELADO";
+
+interface UiTicket {
+  id: string;
+  protocolo: string;
+  titulo: string;
+  solicitante: string;
+  unidade: string;
+  categoria: string;
+  status: TicketStatus;
+  criadoEm: string;
+  cargo: string;
+  email: string;
+  telefone: string;
+  internetItem?: string | null;
+  visita?: string | null;
+  gerente?: string | null;
+}
 import { NavLink, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
