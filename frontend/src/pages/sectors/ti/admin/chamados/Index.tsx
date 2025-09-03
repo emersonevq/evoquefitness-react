@@ -242,7 +242,7 @@ export default function ChamadosPage() {
                   {/* Timeline */}
                   <div>
                     <div className="text-sm font-medium mb-3">Linha do tempo</div>
-                    <div className="relative border-s pl-6">
+                    <div className="relative border-s">
                       {[(() => {
                         const base = new Date(selected.criadoEm).getTime();
                         const pad = (ms: number) => new Date(base + ms);
@@ -253,8 +253,8 @@ export default function ChamadosPage() {
                         if (selected.visita) arr.push({ t: pad(3 * 60 * 60 * 1000), label: `Visita técnica: ${selected.visita}` });
                         return arr;
                       })()].flat().map((ev, idx) => (
-                        <div key={idx} className="relative mb-5 last:mb-0">
-                          <div className="absolute -left-1.5 top-1.5 h-3 w-3 rounded-full bg-primary ring-4 ring-primary/20" />
+                        <div key={idx} className="relative pl-6 mb-5 last:mb-0">
+                          <div className="absolute left-0 top-1.5 h-3 w-3 rounded-full bg-primary ring-4 ring-primary/20" />
                           <div className="text-sm">{ev.label}</div>
                           <div className="text-xs text-muted-foreground">
                             {new Date(ev.t).toLocaleString()}
