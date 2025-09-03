@@ -268,13 +268,6 @@ export default function ChamadosPage() {
         t: base + 3 * 60 * 60 * 1000,
         label: `Visita técnica: ${s.visita}`,
       });
-    if (s.initialAttachments && s.initialAttachments.length) {
-      arr.push({
-        t: base + 2 * 60 * 1000,
-        label: "Anexos recebidos na abertura",
-        attachments: s.initialAttachments,
-      });
-    }
     setHistory(arr);
   }
 
