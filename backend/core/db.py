@@ -7,12 +7,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-DB_NAME = os.getenv("DB_NAME", "test")
-DB_PORT = int(os.getenv("DB_PORT", "3306"))
-DB_SSL_CA = os.getenv("DB_SSL_CA")
+try:
+    from .. import env as _env
+except Exception:
+    _env = None
+
+DB_HOST = (_env.DB_HOST if _env and _env.DB_HOST else os.getenv("DB_HOST", "localhost"))
+DB_USER = (_env.DB_USER if _env and _env.DB_USER else os.getenv("DB_USER", "root"))
+DB_PASSWORD = (_env.DB_PASSWORD if _env and _env.DB_PASSWORD else os.getenv("DB_PASSWORD", ""))
+DB_NAME = (_env.DB_NAME if _env and _env.DB_NAME else os.getenv("DB_NAME", "test"))
+DB_PORT = int((_env.DB_PORT if _env and _env.DB_PORT else os.getenv("DB_PORT", "3306")))
+DB_SSL_CA = (_env.DB_SSL_CA if _env and _env.DB_SSL_CA else os.getenv("DB_SSL_CA"))
 
 MYSQL_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
