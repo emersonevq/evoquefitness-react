@@ -78,27 +78,27 @@ export default function ChamadosPage() {
         <SummaryCard
           title="Todos"
           value={counts.todos}
-          color="linear-gradient(135deg,#64748b,#475569)"
+          bgClass="bg-gradient-to-br from-slate-500 to-slate-600"
         />
         <SummaryCard
           title="Abertos"
           value={counts.abertos}
-          color="linear-gradient(135deg,#fa6400,#f97316)"
+          bgClass="bg-gradient-to-br from-orange-500 to-orange-400"
         />
         <SummaryCard
           title="Aguardando"
           value={counts.aguardando}
-          color="linear-gradient(135deg,#eab308,#ca8a04)"
+          bgClass="bg-gradient-to-br from-amber-500 to-amber-600"
         />
         <SummaryCard
           title="Concluídos"
           value={counts.concluidos}
-          color="linear-gradient(135deg,#22c55e,#16a34a)"
+          bgClass="bg-gradient-to-br from-green-500 to-green-600"
         />
         <SummaryCard
           title="Cancelados"
           value={counts.cancelados}
-          color="linear-gradient(135deg,#ef4444,#b91c1c)"
+          bgClass="bg-gradient-to-br from-red-500 to-red-700"
         />
       </div>
 
