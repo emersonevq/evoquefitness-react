@@ -17,7 +17,7 @@ export default function Login() {
     setIsLoading(true);
 
     // Simular delay de autenticação
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Fazer login (salvará automaticamente no localStorage)
     login(email, password);

@@ -30,6 +30,7 @@ Sistema de gestão interno da Evoque Fitness com frontend React e backend Expres
 ## 🚀 Scripts Disponíveis
 
 ### Desenvolvimento
+
 ```bash
 pnpm dev                    # Inicia frontend (3000) + backend (8000)
 pnpm dev:frontend          # Apenas frontend
@@ -37,6 +38,7 @@ pnpm dev:backend           # Apenas backend
 ```
 
 ### Build & Deploy
+
 ```bash
 pnpm build                 # Build completo
 pnpm build:frontend        # Build apenas frontend
@@ -45,6 +47,7 @@ pnpm start                 # Inicia backend em produção
 ```
 
 ### Utilitários
+
 ```bash
 pnpm install:all           # Instala deps em todos os projetos
 pnpm typecheck            # TypeScript check completo
@@ -55,6 +58,7 @@ pnpm clean                # Remove node_modules e dist
 ## 🎯 Tech Stack
 
 ### Frontend
+
 - **React 18** + **TypeScript**
 - **Vite** para build e dev server
 - **React Router 6** para roteamento SPA
@@ -64,8 +68,9 @@ pnpm clean                # Remove node_modules e dist
 - **Framer Motion** para animações
 
 ### Backend
+
 - **Node.js** + **Express**
-- **TypeScript** 
+- **TypeScript**
 - **Zod** para validação
 - **CORS** habilitado
 - **Hot reload** com tsx
@@ -73,6 +78,7 @@ pnpm clean                # Remove node_modules e dist
 ## 📦 Componentes UI Essenciais
 
 Mantidos apenas os componentes realmente utilizados:
+
 - `button`, `input`, `label` (auth, forms)
 - `dialog`, `sheet` (modals)
 - `card`, `select` (dashboard)
@@ -83,11 +89,13 @@ Mantidos apenas os componentes realmente utilizados:
 ## 🔧 Configuração
 
 1. **Instalar dependências:**
+
 ```bash
 pnpm install:all
 ```
 
 2. **Iniciar desenvolvimento:**
+
 ```bash
 pnpm dev
 ```

@@ -67,7 +67,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary" className="ml-2 hidden md:flex items-center gap-2 rounded-full px-3 py-1.5 text-sm">
+                <Button
+                  variant="secondary"
+                  className="ml-2 hidden md:flex items-center gap-2 rounded-full px-3 py-1.5 text-sm"
+                >
                   <div className="h-6 w-6 rounded-full bg-primary/90" />
                   <span>{user?.name || "Administrador"}</span>
                   <ChevronDown className="size-3" />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 interface AuthUser {
   email: string;
@@ -6,7 +6,7 @@ interface AuthUser {
   loginTime: number;
 }
 
-const AUTH_KEY = 'evoque-fitness-auth';
+const AUTH_KEY = "evoque-fitness-auth";
 const AUTH_EXPIRY = 24 * 60 * 60 * 1000; // 24 horas
 
 export function useAuth() {
@@ -20,7 +20,7 @@ export function useAuth() {
       try {
         const authData: AuthUser = JSON.parse(savedAuth);
         const now = Date.now();
-        
+
         // Verificar se não expirou (24h)
         if (now - authData.loginTime < AUTH_EXPIRY) {
           setUser(authData);
@@ -40,10 +40,10 @@ export function useAuth() {
     // Simular login (sem validação real)
     const authData: AuthUser = {
       email,
-      name: email.split('@')[0] || 'Usuário',
+      name: email.split("@")[0] || "Usuário",
       loginTime: Date.now(),
     };
-    
+
     setUser(authData);
     localStorage.setItem(AUTH_KEY, JSON.stringify(authData));
     return true;
