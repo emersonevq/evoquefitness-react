@@ -4,11 +4,11 @@ import os
 # Evitamos commitar segredos diretamente em código.
 
 # Banco de Dados MySQL Azure
-DB_HOST = os.getenv("DB_HOST")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_NAME = os.getenv("DB_NAME")
-DB_PORT = os.getenv("DB_PORT")
+DB_HOST = os.getenv("DB_HOST", "evoque-database.mysql.database.azure.com")
+DB_USER = os.getenv("DB_USER", "infra")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "Evoque12@")
+DB_NAME = os.getenv("DB_NAME", "infra")
+DB_PORT = os.getenv("DB_PORT", "3306")
 DB_SSL_CA = os.getenv("DB_SSL_CA")  # caminho opcional para CA (ex.: DigiCertGlobalRootCA.crt.pem)
 
 # Aplicação (legado Flask, útil para compatibilidade de configs)
