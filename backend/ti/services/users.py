@@ -36,6 +36,10 @@ def check_user_availability(db: Session, email: str | None = None, username: str
     return availability
 
 
+def generate_password(length: int = 6) -> str:
+    return _generate_password(length)
+
+
 def criar_usuario(db: Session, payload: UserCreate) -> UserCreatedOut:
     # Uniqueness checks
     if payload.email and db.query(User).filter(User.email == str(payload.email)).first():
