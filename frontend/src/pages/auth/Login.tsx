@@ -3,17 +3,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuthContext } from "@/lib/auth-context";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuthContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+
+    // Simular delay de autenticação
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Fazer login (salvará automaticamente no localStorage)
+    login(email, password);
+
+    // Navegar para a página de destino
     const params = new URLSearchParams(window.location.search);
     const redirect = params.get("redirect") || "/";
-    navigate(redirect, { state: { bypassGate: true }, replace: true });
+    navigate(redirect, { replace: true });
+
+    setIsLoading(false);
   };
 
   return (
