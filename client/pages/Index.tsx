@@ -1,6 +1,11 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { sectors } from "@/data/sectors";
 import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -17,12 +22,16 @@ export default function Index() {
                 Evoque Fitness
               </h1>
               <p className="mt-3 sm:mt-4 text-sm sm:text-base text-primary-foreground/90">
-                Explore nossos setores e eleve sua experiência com serviços personalizados!
+                Explore nossos setores e eleve sua experiência com serviços
+                personalizados!
               </p>
               <div className="mt-6 sm:mt-8 flex items-center justify-center">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button size="lg" className="rounded-full bg-background text-foreground hover:bg-background/90">
+                    <Button
+                      size="lg"
+                      className="rounded-full bg-background text-foreground hover:bg-background/90"
+                    >
                       Escolher Setor <ChevronDown className="size-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -55,7 +64,9 @@ export default function Index() {
                   <s.icon className="size-8 text-primary" />
                   <div>
                     <h3 className="font-semibold">{s.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{s.description}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {s.description}
+                    </p>
                   </div>
                 </div>
               </Link>

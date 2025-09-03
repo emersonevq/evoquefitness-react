@@ -1,4 +1,13 @@
-import { Landmark, Megaphone, Package, Server, ShoppingCart, Wrench, Briefcase, Layers3 } from "lucide-react";
+import {
+  Landmark,
+  Megaphone,
+  Package,
+  Server,
+  ShoppingCart,
+  Wrench,
+  Briefcase,
+  Layers3,
+} from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 
 export type IconType = ComponentType<SVGProps<SVGSVGElement>>;

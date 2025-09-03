@@ -25,8 +25,10 @@ export default function SectorPage() {
 
           <div className="mt-8 grid gap-4 text-sm text-muted-foreground">
             <p>
-              Esta página é um espaço para as funcionalidades do {sector ? sector.title : "setor"}.
-              Podemos adicionar fluxos de abertura de chamados, formulários, dashboards e integrações conforme sua orientação.
+              Esta página é um espaço para as funcionalidades do{" "}
+              {sector ? sector.title : "setor"}. Podemos adicionar fluxos de
+              abertura de chamados, formulários, dashboards e integrações
+              conforme sua orientação.
             </p>
           </div>
 
