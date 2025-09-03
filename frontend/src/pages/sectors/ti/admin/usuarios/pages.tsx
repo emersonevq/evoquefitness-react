@@ -265,6 +265,31 @@ export function CriarUsuario() {
             />
             Solicitar alteração de senha no primeiro acesso
           </label>
+
+          <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-3">
+            <Button type="button" variant="secondary" onClick={fetchPassword}>
+              Gerar senha
+            </Button>
+            {generatedPassword && (
+              <div className="flex-1 flex items-center gap-3">
+                <div className="font-mono text-base tracking-widest px-3 py-2 rounded-md bg-muted select-all">
+                  {generatedPassword}
+                </div>
+                {(() => {
+                  const s = strengthScore(generatedPassword);
+                  const width = Math.min(100, (s.score / 4) * 100);
+                  return (
+                    <div className="flex items-center gap-2">
+                      <div className="w-32 h-2 rounded bg-muted overflow-hidden">
+                        <div className={`${s.color} h-full`} style={{ width: `${width}%` }} />
+                      </div>
+                      <span className="text-xs text-muted-foreground">{s.label}</span>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">
@@ -277,7 +302,7 @@ export function CriarUsuario() {
           <DialogHeader>
             <DialogTitle>Usuário criado com sucesso</DialogTitle>
             <DialogDescription>
-              Guarde a senha abaixo com segurança. Ela será exibida apenas uma vez.
+              Guarde as credenciais abaixo com segurança. Elas serão exibidas apenas uma vez.
             </DialogDescription>
           </DialogHeader>
           {createdUser && (
@@ -290,12 +315,18 @@ export function CriarUsuario() {
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={() => navigator.clipboard?.writeText(createdUser.senha)}
+                  onClick={() => {
+                    const text = `Usuário: ${createdUser.usuario}\nSenha provisória: ${createdUser.senha}\n\nInstruções: acesse o sistema com estas credenciais e altere sua senha no primeiro acesso.`;
+                    navigator.clipboard?.writeText(text);
+                  }}
                   className="inline-flex items-center gap-2"
                 >
                   <Copy className="h-4 w-4" /> Copiar
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground">
+                No primeiro acesso, será solicitado que a senha seja alterada.
+              </p>
             </div>
           )}
         </DialogContent>
