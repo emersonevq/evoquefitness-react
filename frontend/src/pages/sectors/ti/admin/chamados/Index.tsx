@@ -61,6 +61,7 @@ function TicketCard({
   categoria,
   status,
   criadoEm,
+  onTicket,
 }: {
   id: string;
   titulo: string;
@@ -69,6 +70,7 @@ function TicketCard({
   categoria: string;
   status: TicketStatus;
   criadoEm: string;
+  onTicket: () => void;
 }) {
   const [sel, setSel] = useState<TicketStatus>(status);
   return (
@@ -123,7 +125,13 @@ function TicketCard({
           <Button variant="destructive" onClick={(e) => e.stopPropagation()}>
             <Trash2 className="size-4" /> Excluir
           </Button>
-          <Button variant="info" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="info"
+            onClick={(e) => {
+              e.stopPropagation();
+              onTicket();
+            }}
+          >
             <TicketIcon className="size-4" /> Ticket
           </Button>
         </div>
@@ -258,7 +266,15 @@ export default function ChamadosPage() {
             }}
             className="cursor-pointer transition-shadow hover:shadow-md"
           >
-            <TicketCard {...t} />
+            <TicketCard
+              {...t}
+              onTicket={() => {
+                setSelected(t);
+                initFromSelected(t);
+                setTab("ticket");
+                setOpen(true);
+              }}
+            />
           </div>
         ))}
       </div>
