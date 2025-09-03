@@ -1,4 +1,4 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,33 @@ import { useAuthContext } from "@/lib/auth-context";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthContext();
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/setor/ti/admin");
+  const adminGroups = [
+    {
+      title: "Operação",
+      items: [
+        { to: "/setor/ti/admin/overview", label: "Visão geral" },
+        { to: "/setor/ti/admin/chamados", label: "Gerenciar chamados" },
+        { to: "/setor/ti/admin/usuarios", label: "Gerenciar usuários" },
+      ],
+    },
+    {
+      title: "Monitoramento",
+      items: [
+        { to: "/setor/ti/admin/monitoramento", label: "Monitoramento" },
+        { to: "/setor/ti/admin/historico", label: "Histórico" },
+      ],
+    },
+    {
+      title: "Administração",
+      items: [
+        { to: "/setor/ti/admin/integracoes", label: "Integrações" },
+        { to: "/setor/ti/admin/sistema", label: "Sistema" },
+        { to: "/setor/ti/admin/configuracoes", label: "Configurações" },
+      ],
+    },
+  ];
   return (
     <div className="min-h-[100svh] md:min-h-screen w-full flex flex-col">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur">
@@ -107,41 +134,77 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <span className="font-semibold">Evoque Fitness</span>
                 </div>
                 <div className="p-4 space-y-2">
-                  <SheetClose asChild>
-                    <Link
-                      to="/"
-                      className="block rounded-md px-3 py-2 bg-secondary"
-                    >
-                      Início
-                    </Link>
-                  </SheetClose>
-                  <div className="mt-2 text-xs uppercase text-muted-foreground px-1">
-                    Setores
-                  </div>
-                  <div className="grid grid-cols-1 gap-1">
-                    {sectors.map((s) => (
-                      <SheetClose asChild key={s.slug}>
-                        <Link
-                          to={`/setor/${s.slug}`}
-                          className="block rounded-md px-3 py-2 hover:bg-secondary"
+                  {isAdminRoute ? (
+                    <>
+                      {adminGroups.map((g) => (
+                        <div key={g.title} className="space-y-2">
+                          <div className="px-1 text-xs uppercase text-muted-foreground">
+                            {g.title}
+                          </div>
+                          {g.items.map((i) => (
+                            <SheetClose asChild key={i.to}>
+                              <Link
+                                to={i.to}
+                                className="block rounded-md px-3 py-2 bg-secondary hover:bg-secondary/80"
+                              >
+                                {i.label}
+                              </Link>
+                            </SheetClose>
+                          ))}
+                        </div>
+                      ))}
+                      <div className="border-t border-border/60 mt-4 pt-4">
+                        <div className="text-xs text-muted-foreground px-1 mb-2">
+                          {user?.email || "admin@evoque.com"}
+                        </div>
+                        <button
+                          onClick={logout}
+                          className="w-full text-left rounded-md px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
                         >
-                          {s.title}
+                          <LogOut className="size-4" />
+                          Sair
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <SheetClose asChild>
+                        <Link
+                          to="/"
+                          className="block rounded-md px-3 py-2 bg-secondary"
+                        >
+                          Início
                         </Link>
                       </SheetClose>
-                    ))}
-                  </div>
-                  <div className="border-t border-border/60 mt-4 pt-4">
-                    <div className="text-xs text-muted-foreground px-1 mb-2">
-                      {user?.email || "admin@evoque.com"}
-                    </div>
-                    <button
-                      onClick={logout}
-                      className="w-full text-left rounded-md px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
-                    >
-                      <LogOut className="size-4" />
-                      Sair
-                    </button>
-                  </div>
+                      <div className="mt-2 text-xs uppercase text-muted-foreground px-1">
+                        Setores
+                      </div>
+                      <div className="grid grid-cols-1 gap-1">
+                        {sectors.map((s) => (
+                          <SheetClose asChild key={s.slug}>
+                            <Link
+                              to={`/setor/${s.slug}`}
+                              className="block rounded-md px-3 py-2 hover:bg-secondary"
+                            >
+                              {s.title}
+                            </Link>
+                          </SheetClose>
+                        ))}
+                      </div>
+                      <div className="border-t border-border/60 mt-4 pt-4">
+                        <div className="text-xs text-muted-foreground px-1 mb-2">
+                          {user?.email || "admin@evoque.com"}
+                        </div>
+                        <button
+                          onClick={logout}
+                          className="w-full text-left rounded-md px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+                        >
+                          <LogOut className="size-4" />
+                          Sair
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

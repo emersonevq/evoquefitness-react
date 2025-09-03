@@ -5,7 +5,7 @@ interface AuthContextType {
   user: { email: string; name: string; loginTime: number } | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string, remember?: boolean) => boolean;
   logout: () => void;
 }
 

@@ -6,51 +6,110 @@ interface AuthUser {
   loginTime: number;
 }
 
+interface AuthRecord extends AuthUser {
+  expiresAt: number;
+}
+
 const AUTH_KEY = "evoque-fitness-auth";
-const AUTH_EXPIRY = 24 * 60 * 60 * 1000; // 24 horas
+const REMEMBER_EXPIRY = 30 * 24 * 60 * 60 * 1000; // 30 dias
+const SESSION_EXPIRY = 24 * 60 * 60 * 1000; // 24 horas (fallback de segurança)
+
+function readFromStorage(): AuthUser | null {
+  const now = Date.now();
+  const LEGACY_EXPIRY = 24 * 60 * 60 * 1000; // compat 24h
+
+  // 1) Preferir sessão atual (sessionStorage)
+  const sessionRaw = sessionStorage.getItem(AUTH_KEY);
+  if (sessionRaw) {
+    try {
+      const data = JSON.parse(sessionRaw) as Partial<AuthRecord & AuthUser>;
+      if (typeof (data as AuthRecord).expiresAt === "number") {
+        if (now < (data as AuthRecord).expiresAt) {
+          const { email, name, loginTime } = data as AuthRecord;
+          if (email && name && loginTime) return { email, name, loginTime };
+        }
+      } else if (typeof data.loginTime === "number") {
+        if (now - data.loginTime < LEGACY_EXPIRY) {
+          const { email, name, loginTime } = data as AuthUser;
+          if (email && name && loginTime) return { email, name, loginTime };
+        }
+      }
+      sessionStorage.removeItem(AUTH_KEY);
+    } catch {
+      sessionStorage.removeItem(AUTH_KEY);
+    }
+  }
+
+  // 2) Senão, usar persistência (localStorage)
+  const localRaw = localStorage.getItem(AUTH_KEY);
+  if (localRaw) {
+    try {
+      const data = JSON.parse(localRaw) as Partial<AuthRecord & AuthUser>;
+      if (typeof (data as AuthRecord).expiresAt === "number") {
+        if (now < (data as AuthRecord).expiresAt) {
+          const { email, name, loginTime } = data as AuthRecord;
+          if (email && name && loginTime) return { email, name, loginTime };
+        }
+      } else if (typeof data.loginTime === "number") {
+        if (now - data.loginTime < LEGACY_EXPIRY) {
+          const { email, name, loginTime } = data as AuthUser;
+          if (email && name && loginTime) return { email, name, loginTime };
+        }
+      }
+      localStorage.removeItem(AUTH_KEY);
+    } catch {
+      localStorage.removeItem(AUTH_KEY);
+    }
+  }
+
+  return null;
+}
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar se há login salvo no localStorage
-    const savedAuth = localStorage.getItem(AUTH_KEY);
-    if (savedAuth) {
-      try {
-        const authData: AuthUser = JSON.parse(savedAuth);
-        const now = Date.now();
-
-        // Verificar se não expirou (24h)
-        if (now - authData.loginTime < AUTH_EXPIRY) {
-          setUser(authData);
-        } else {
-          // Expirou, remover
-          localStorage.removeItem(AUTH_KEY);
-        }
-      } catch (error) {
-        // Dados inválidos, remover
-        localStorage.removeItem(AUTH_KEY);
-      }
-    }
+    const existing = readFromStorage();
+    if (existing) setUser(existing);
     setIsLoading(false);
   }, []);
 
-  const login = (email: string, password: string) => {
-    // Simular login (sem validação real)
-    const authData: AuthUser = {
+  const login = (email: string, _password: string, remember = true) => {
+    const now = Date.now();
+    const base: AuthUser = {
       email,
       name: email.split("@")[0] || "Usuário",
-      loginTime: Date.now(),
+      loginTime: now,
     };
 
-    setUser(authData);
-    localStorage.setItem(AUTH_KEY, JSON.stringify(authData));
+    const record: AuthRecord = {
+      ...base,
+      expiresAt: now + (remember ? REMEMBER_EXPIRY : SESSION_EXPIRY),
+    };
+
+    setUser(base);
+
+    // Persistir conforme "Lembrar-me"
+    try {
+      const payload = JSON.stringify(record);
+      if (remember) {
+        sessionStorage.removeItem(AUTH_KEY);
+        localStorage.setItem(AUTH_KEY, payload);
+      } else {
+        localStorage.removeItem(AUTH_KEY);
+        sessionStorage.setItem(AUTH_KEY, payload);
+      }
+    } catch {
+      // Em caso de quota/storage cheia, não quebrar o fluxo
+    }
+
     return true;
   };
 
   const logout = () => {
     setUser(null);
+    sessionStorage.removeItem(AUTH_KEY);
     localStorage.removeItem(AUTH_KEY);
   };
 

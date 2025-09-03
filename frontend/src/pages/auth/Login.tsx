@@ -10,6 +10,7 @@ export default function Login() {
   const { login } = useAuthContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -19,8 +20,8 @@ export default function Login() {
     // Simular delay de autenticação
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Fazer login (salvará automaticamente no localStorage)
-    login(email, password);
+    // Fazer login com persistência conforme "Lembrar-me"
+    login(email, password, remember);
 
     // Navegar para a página de destino
     const params = new URLSearchParams(window.location.search);
@@ -95,6 +96,8 @@ export default function Login() {
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border-border bg-background"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
                   />
                   Lembrar-me
                 </label>
