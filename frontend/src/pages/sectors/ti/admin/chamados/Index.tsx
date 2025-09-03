@@ -18,7 +18,6 @@ interface UiTicket {
   gerente?: string | null;
 }
 import { NavLink, useParams } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -559,7 +558,7 @@ export default function ChamadosPage() {
                           onChange={(e) => setPriority(e.target.checked)}
                           className="h-4 w-4 rounded border-border"
                         />
-                        Marcar como prioritário
+                        Marcar como priorit��rio
                       </label>
                       <label className="inline-flex items-center gap-2 text-sm">
                         <input
