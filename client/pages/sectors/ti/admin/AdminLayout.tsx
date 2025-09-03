@@ -4,15 +4,30 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 
-const items = [
-  { to: "/setor/ti/admin/overview", label: "Visão geral" },
-  { to: "/setor/ti/admin/chamados", label: "Gerenciar chamados" },
-  { to: "/setor/ti/admin/usuarios", label: "Gerenciar usuários" },
-  { to: "/setor/ti/admin/monitoramento", label: "Monitoramento" },
-  { to: "/setor/ti/admin/integracoes", label: "Integrações" },
-  { to: "/setor/ti/admin/sistema", label: "Sistema" },
-  { to: "/setor/ti/admin/historico", label: "Histórico" },
-  { to: "/setor/ti/admin/configuracoes", label: "Configurações" },
+const groups = [
+  {
+    title: "Operação",
+    items: [
+      { to: "/setor/ti/admin/overview", label: "Visão geral" },
+      { to: "/setor/ti/admin/chamados", label: "Gerenciar chamados" },
+      { to: "/setor/ti/admin/usuarios", label: "Gerenciar usuários" },
+    ],
+  },
+  {
+    title: "Monitoramento",
+    items: [
+      { to: "/setor/ti/admin/monitoramento", label: "Monitoramento" },
+      { to: "/setor/ti/admin/historico", label: "Histórico" },
+    ],
+  },
+  {
+    title: "Administração",
+    items: [
+      { to: "/setor/ti/admin/integracoes", label: "Integrações" },
+      { to: "/setor/ti/admin/sistema", label: "Sistema" },
+      { to: "/setor/ti/admin/configuracoes", label: "Configurações" },
+    ],
+  },
 ];
 
 export default function AdminLayout() {
