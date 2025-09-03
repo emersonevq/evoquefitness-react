@@ -43,8 +43,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/setor/ti" element={<TiPage />} />
-          <Route path="/setor/ti/admin" element={<AdminLayout />}>
+          <Route path="/setor/ti" element={<RequireLogin><TiPage /></RequireLogin>} />
+          <Route path="/setor/ti/admin" element={<RequireLogin><AdminLayout /></RequireLogin>}>
             <Route index element={<Overview />} />
             <Route path="overview" element={<Overview />} />
             <Route path="chamados">
@@ -80,17 +80,17 @@ const App = () => (
               <Route path="acoes" element={<ConfAcoes />} />
             </Route>
           </Route>
-          <Route path="/setor/compras" element={<ComprasPage />} />
-          <Route path="/setor/manutencao" element={<ManutencaoPage />} />
-          <Route path="/setor/financeiro" element={<FinanceiroPage />} />
-          <Route path="/setor/marketing" element={<MarketingPage />} />
-          <Route path="/setor/produtos" element={<ProdutosPage />} />
-          <Route path="/setor/comercial" element={<ComercialPage />} />
+          <Route path="/setor/compras" element={<RequireLogin><ComprasPage /></RequireLogin>} />
+          <Route path="/setor/manutencao" element={<RequireLogin><ManutencaoPage /></RequireLogin>} />
+          <Route path="/setor/financeiro" element={<RequireLogin><FinanceiroPage /></RequireLogin>} />
+          <Route path="/setor/marketing" element={<RequireLogin><MarketingPage /></RequireLogin>} />
+          <Route path="/setor/produtos" element={<RequireLogin><ProdutosPage /></RequireLogin>} />
+          <Route path="/setor/comercial" element={<RequireLogin><ComercialPage /></RequireLogin>} />
           <Route
             path="/setor/outros-servicos"
-            element={<OutrosServicosPage />}
+            element={<RequireLogin><OutrosServicosPage /></RequireLogin>}
           />
-          <Route path="/setor/:slug" element={<SectorPage />} />
+          <Route path="/setor/:slug" element={<RequireLogin><SectorPage /></RequireLogin>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
