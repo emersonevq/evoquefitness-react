@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 type TicketStatus = "ABERTO" | "AGUARDANDO" | "CONCLUIDO" | "CANCELADO";
 
 interface UiTicket {
@@ -558,7 +558,7 @@ export default function ChamadosPage() {
                           onChange={(e) => setPriority(e.target.checked)}
                           className="h-4 w-4 rounded border-border"
                         />
-                        Marcar como priorit��rio
+                        Marcar como prioritário
                       </label>
                       <label className="inline-flex items-center gap-2 text-sm">
                         <input
