@@ -41,6 +41,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/setor/ti" element={<TiPage />} />
           <Route path="/setor/ti/admin" element={<AdminLayout />}>
             <Route index element={<Overview />} />
