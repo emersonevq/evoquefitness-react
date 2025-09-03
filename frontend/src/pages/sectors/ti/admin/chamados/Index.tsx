@@ -238,90 +238,151 @@ export default function ChamadosPage() {
                   <StatusPill status={selected.status} />
                 </div>
 
-                <div className="p-4 grid gap-6 md:grid-cols-[1fr,320px]">
-                  {/* Timeline */}
-                  <div>
+                {/* Tabs */}
+                <div className="px-4 pt-3">
+                  <div className="flex gap-2">
+                    {(["resumo","historico","ticket"] as const).map((k) => (
+                      <button
+                        key={k}
+                        onClick={() => setTab(k)}
+                        className={`rounded-full px-3 py-1.5 text-sm ${tab===k?"bg-primary text-primary-foreground":"bg-secondary hover:bg-secondary/80"}`}
+                      >
+                        {k === "resumo" ? "Resumo" : k === "historico" ? "Histórico" : "Ticket"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {tab === "resumo" && (
+                  <div className="p-4 grid gap-6 md:grid-cols-[1fr,320px]">
+                    <div className="rounded-lg border border-border/60 bg-card p-4 h-max">
+                      <div className="font-semibold mb-3">Ficha do chamado</div>
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                        <div className="text-muted-foreground">Solicitante</div>
+                        <div className="text-right">{selected.solicitante}</div>
+                        <div className="text-muted-foreground">Cargo</div>
+                        <div className="text-right">{selected.cargo}</div>
+                        <div className="text-muted-foreground">Gerente</div>
+                        <div className="text-right">{selected.gerente}</div>
+                        <div className="text-muted-foreground">E-mail</div>
+                        <div className="text-right">{selected.email}</div>
+                        <div className="text-muted-foreground">Telefone</div>
+                        <div className="text-right">{selected.telefone}</div>
+                        <div className="text-muted-foreground">Unidade</div>
+                        <div className="text-right">{selected.unidade}</div>
+                        <div className="text-muted-foreground">Problema</div>
+                        <div className="text-right">{selected.categoria}</div>
+                        {selected.internetItem && (
+                          <>
+                            <div className="text-muted-foreground">Item Internet</div>
+                            <div className="text-right">{selected.internetItem}</div>
+                          </>
+                        )}
+                        <div className="text-muted-foreground">Data de abertura</div>
+                        <div className="text-right">{new Date(selected.criadoEm).toLocaleString()}</div>
+                        <div className="text-muted-foreground">Visita técnica</div>
+                        <div className="text-right">{selected.visita || "—"}</div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-border/60 bg-card p-4 h-max">
+                      <div className="font-semibold mb-3">Ações</div>
+                      <div className="grid gap-3">
+                        <Select defaultValue={selected.status}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="ABERTO">Aberto</SelectItem>
+                            <SelectItem value="AGUARDANDO">Aguardando</SelectItem>
+                            <SelectItem value="CONCLUIDO">Concluído</SelectItem>
+                            <SelectItem value="CANCELADO">Cancelado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button variant="success">
+                          <UserPlus className="size-4" /> Atribuir
+                        </Button>
+                        <Button variant="warning">
+                          <Save className="size-4" /> Atualizar
+                        </Button>
+                        <Button variant="destructive">
+                          <Trash2 className="size-4" /> Excluir
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {tab === "historico" && (
+                  <div className="p-4">
                     <div className="text-sm font-medium mb-3">Linha do tempo</div>
                     <div className="relative border-s">
-                      {[(() => {
-                        const base = new Date(selected.criadoEm).getTime();
-                        const pad = (ms: number) => new Date(base + ms);
-                        const arr = [
-                          { t: pad(0), label: "Chamado aberto" },
-                          { t: pad(45 * 60 * 1000), label: `Status: ${selected.status}` },
-                        ];
-                        if (selected.visita) arr.push({ t: pad(3 * 60 * 60 * 1000), label: `Visita técnica: ${selected.visita}` });
-                        return arr;
-                      })()].flat().map((ev, idx) => (
+                      {history.map((ev, idx) => (
                         <div key={idx} className="relative pl-6 mb-5 last:mb-0">
                           <div className="absolute left-0 top-1.5 h-3 w-3 rounded-full bg-primary ring-4 ring-primary/20" />
                           <div className="text-sm">{ev.label}</div>
                           <div className="text-xs text-muted-foreground">
                             {new Date(ev.t).toLocaleString()}
                           </div>
+                          {ev.attachments && ev.attachments.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-2">
+                              {ev.attachments.map((a, i) => (
+                                <span key={i} className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs">
+                                  📎 {a}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
                   </div>
+                )}
 
-                  {/* Ficha */}
-                  <div className="rounded-lg border border-border/60 bg-card p-4 h-max">
-                    <div className="font-semibold mb-3">Ficha do chamado</div>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                      <div className="text-muted-foreground">Solicitante</div>
-                      <div className="text-right">{selected.solicitante}</div>
-                      <div className="text-muted-foreground">Cargo</div>
-                      <div className="text-right">{selected.cargo}</div>
-                      <div className="text-muted-foreground">Gerente</div>
-                      <div className="text-right">{selected.gerente}</div>
-                      <div className="text-muted-foreground">E-mail</div>
-                      <div className="text-right">{selected.email}</div>
-                      <div className="text-muted-foreground">Telefone</div>
-                      <div className="text-right">{selected.telefone}</div>
-                      <div className="text-muted-foreground">Unidade</div>
-                      <div className="text-right">{selected.unidade}</div>
-                      <div className="text-muted-foreground">Problema</div>
-                      <div className="text-right">{selected.categoria}</div>
-                      {selected.internetItem && (
-                        <>
-                          <div className="text-muted-foreground">Item Internet</div>
-                          <div className="text-right">{selected.internetItem}</div>
-                        </>
-                      )}
+                {tab === "ticket" && (
+                  <div className="p-4 grid gap-4">
+                    <div className="grid gap-2">
+                      <label className="text-sm">Modelo de Mensagem</label>
+                      <Select value={template} onValueChange={setTemplate}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um modelo (opcional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Sem modelo</SelectItem>
+                          <SelectItem value="atualizacao">Atualização padrão</SelectItem>
+                          <SelectItem value="info">Solicitar mais informações</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-sm">Assunto</label>
+                      <input className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={subject} onChange={(e)=>setSubject(e.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-sm">Mensagem</label>
+                      <textarea className="min-h-[120px] w-full rounded-md border border-input bg-background p-3 text-sm" value={message} onChange={(e)=>setMessage(e.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-sm">Anexos</label>
+                      <input type="file" multiple onChange={(e)=>setFiles(Array.from(e.target.files||[]))} />
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <label className="inline-flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={priority} onChange={(e)=>setPriority(e.target.checked)} className="h-4 w-4 rounded border-border" />
+                        Marcar como prioritário
+                      </label>
+                      <label className="inline-flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={ccMe} onChange={(e)=>setCcMe(e.target.checked)} className="h-4 w-4 rounded border-border" />
+                        Enviar cópia para mim
+                      </label>
+                    </div>
+                    <div className="flex justify-end">
+                      <Button onClick={handleSendTicket}>
+                        <TicketIcon className="size-4" /> Enviar Ticket
+                      </Button>
                     </div>
                   </div>
-                </div>
-
-                {/* Sticky footer actions */}
-                <div className="border-t border-border/60 bg-background/50 p-3 sm:p-4 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
-                  <div className="w-full sm:w-64">
-                    <Select defaultValue={selected.status}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ABERTO">Aberto</SelectItem>
-                        <SelectItem value="AGUARDANDO">Aguardando</SelectItem>
-                        <SelectItem value="CONCLUIDO">Concluído</SelectItem>
-                        <SelectItem value="CANCELADO">Cancelado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Button variant="success">
-                      <UserPlus className="size-4" /> Atribuir
-                    </Button>
-                    <Button variant="warning">
-                      <Save className="size-4" /> Atualizar
-                    </Button>
-                    <Button variant="destructive">
-                      <Trash2 className="size-4" /> Excluir
-                    </Button>
-                    <Button variant="info">
-                      <TicketIcon className="size-4" /> Ticket
-                    </Button>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           )}
