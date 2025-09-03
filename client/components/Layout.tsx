@@ -18,7 +18,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               loading="lazy"
               decoding="async"
             />
-            <span className="text-lg">Evoque Fitness ERP</span>
+            <span className="text-lg">Evoque Fitness</span>
           </Link>
           <nav className="flex items-center gap-2">
             <NavLink
@@ -56,7 +56,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <footer className="border-t border-border/60">
         <div className="container py-6 text-xs text-muted-foreground flex items-center justify-between">
           <p>© {new Date().getFullYear()} Evoque Fitness</p>
-          <p>ERP interno</p>
+          <p>Sistema interno</p>
         </div>
       </footer>
     </div>
