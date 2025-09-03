@@ -1,9 +1,9 @@
 from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from ...core.db import get_db
-from ..schemas.user import UserCreate, UserOut
-from ..services.users import criar_usuario as service_criar
+from core.db import get_db
+from ti.schemas.user import UserCreate, UserOut
+from ti.services.users import criar_usuario as service_criar
 
 router = APIRouter(prefix="/usuarios", tags=["TI - Usuarios"])
 
