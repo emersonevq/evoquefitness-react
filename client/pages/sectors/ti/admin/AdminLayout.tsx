@@ -55,10 +55,7 @@ export default function AdminLayout() {
                       <NavLink
                         key={i.to}
                         to={i.to}
-                        className={({ isActive }) =>
-                          `sidebar-link ${isActive ? "data-[active=true]" : ""}`
-                        }
-                        data-active={({ isActive }: any) => isActive}
+                        className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
                       >
                         {i.label}
                       </NavLink>
