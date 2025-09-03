@@ -2,6 +2,7 @@ from __future__ import annotations
 import os
 from typing import Generator, Dict, Any
 from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from dotenv import load_dotenv
 
@@ -19,14 +20,22 @@ DB_NAME = (_env.DB_NAME if _env and _env.DB_NAME else os.getenv("DB_NAME", "test
 DB_PORT = int((_env.DB_PORT if _env and _env.DB_PORT else os.getenv("DB_PORT", "3306")))
 DB_SSL_CA = (_env.DB_SSL_CA if _env and _env.DB_SSL_CA else os.getenv("DB_SSL_CA"))
 
-MYSQL_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
+url = URL.create(
+    drivername="mysql+pymysql",
+    username=DB_USER,
+    password=DB_PASSWORD,
+    host=DB_HOST,
+    port=int(DB_PORT),
+    database=DB_NAME,
+    query={"charset": "utf8mb4"},
+)
 
 connect_args: Dict[str, Any] = {}
 if DB_SSL_CA:
     connect_args["ssl"] = {"ca": DB_SSL_CA}
 
 engine = create_engine(
-    MYSQL_URL,
+    url,
     pool_pre_ping=True,
     connect_args=connect_args,  # type: ignore[arg-type]
 )
