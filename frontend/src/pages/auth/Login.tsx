@@ -96,6 +96,8 @@ export default function Login() {
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border-border bg-background"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
                   />
                   Lembrar-me
                 </label>
