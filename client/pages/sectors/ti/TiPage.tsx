@@ -41,7 +41,8 @@ export default function TiPage() {
               <TicketForm onSubmit={(payload) => {
                 const now = new Date();
                 const id = Math.random().toString(36).slice(2, 8).toUpperCase();
-                setTickets((prev) => [{ id, protocolo: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}-${id}`, data: now.toISOString().slice(0,10), problema: payload.problema, status: "Aberto" }, ...prev]);
+                const problema = payload.problema === "Internet" && payload.internetItem ? `Internet - ${payload.internetItem}` : payload.problema;
+                setTickets((prev) => [{ id, protocolo: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}-${id}`, data: now.toISOString().slice(0,10), problema, status: "Aberto" }, ...prev]);
                 setOpen(false);
               }} />
             </DialogContent>
@@ -85,8 +86,8 @@ export default function TiPage() {
   );
 }
 
-function TicketForm({ onSubmit }: { onSubmit: (payload: { nome: string; cargo: string; gerente: string; email: string; telefone: string; unidade: string; problema: string; visita: string; }) => void; }) {
-  const [form, setForm] = useState({ nome: "", cargo: "", gerente: "", email: "", telefone: "", unidade: "", problema: "", visita: "" });
+function TicketForm({ onSubmit }: { onSubmit: (payload: { nome: string; cargo: string; gerente: string; email: string; telefone: string; unidade: string; problema: string; internetItem?: string; visita: string; }) => void; }) {
+  const [form, setForm] = useState({ nome: "", cargo: "", gerente: "", email: "", telefone: "", unidade: "", problema: "", internetItem: "", visita: "" });
   const submit = (e: React.FormEvent) => { e.preventDefault(); onSubmit(form); };
 
   return (
@@ -153,6 +154,26 @@ function TicketForm({ onSubmit }: { onSubmit: (payload: { nome: string; cargo: s
           </Select>
         </div>
       </div>
+
+      {form.problema === "Internet" && (
+        <div className="grid gap-2">
+          <Label>Selecione o item de Internet</Label>
+          <Select value={form.internetItem} onValueChange={(v) => setForm({ ...form, internetItem: v })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Antenas">Antenas</SelectItem>
+              <SelectItem value="Cabo de rede">Cabo de rede</SelectItem>
+              <SelectItem value="DVR">DVR</SelectItem>
+              <SelectItem value="Roteador/Modem">Roteador/Modem</SelectItem>
+              <SelectItem value="Switch">Switch</SelectItem>
+              <SelectItem value="Wi-fi">Wi-fi</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       <div className="grid gap-2">
         <Label htmlFor="visita">Visita Técnica</Label>
         <Input id="visita" type="date" placeholder="dd/mm/aaaa" value={form.visita} onChange={(e) => setForm({ ...form, visita: e.target.value })} />
