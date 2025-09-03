@@ -10,10 +10,26 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SectorPage from "./pages/Sector";
 import TiPage from "./pages/sectors/ti/TiPage";
-import { ComprasPage, ManutencaoPage, FinanceiroPage, MarketingPage, ProdutosPage, ComercialPage, OutrosServicosPage } from "./pages/sectors/_placeholders";
+import {
+  ComprasPage,
+  ManutencaoPage,
+  FinanceiroPage,
+  MarketingPage,
+  ProdutosPage,
+  ComercialPage,
+  OutrosServicosPage,
+} from "./pages/sectors/_placeholders";
 import AdminLayout from "./pages/sectors/ti/admin/AdminLayout";
 import Overview from "./pages/sectors/ti/admin/Overview";
-import { Chamados as AdminChamados, Usuarios as AdminUsuarios, Monitoramento as AdminMonitoramento, Integracoes as AdminIntegracoes, Sistema as AdminSistema, Historico as AdminHistorico, Configuracoes as AdminConfiguracoes } from "./pages/sectors/ti/admin/Sections";
+import {
+  Chamados as AdminChamados,
+  Usuarios as AdminUsuarios,
+  Monitoramento as AdminMonitoramento,
+  Integracoes as AdminIntegracoes,
+  Sistema as AdminSistema,
+  Historico as AdminHistorico,
+  Configuracoes as AdminConfiguracoes,
+} from "./pages/sectors/ti/admin/Sections";
 
 const queryClient = new QueryClient();
 
@@ -43,7 +59,10 @@ const App = () => (
           <Route path="/setor/marketing" element={<MarketingPage />} />
           <Route path="/setor/produtos" element={<ProdutosPage />} />
           <Route path="/setor/comercial" element={<ComercialPage />} />
-          <Route path="/setor/outros-servicos" element={<OutrosServicosPage />} />
+          <Route
+            path="/setor/outros-servicos"
+            element={<OutrosServicosPage />}
+          />
           <Route path="/setor/:slug" element={<SectorPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -36,8 +36,12 @@ export default function AdminLayout() {
       <section className="w-full border-b border-border/60">
         <div className="brand-gradient">
           <div className="container py-8 sm:py-10">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-primary-foreground">Painel administrativo — Setor de TI</h1>
-            <p className="mt-1 text-primary-foreground/90">Métricas, gerenciamento e configurações do setor</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-primary-foreground">
+              Painel administrativo — Setor de TI
+            </h1>
+            <p className="mt-1 text-primary-foreground/90">
+              Métricas, gerenciamento e configurações do setor
+            </p>
           </div>
         </div>
       </section>
@@ -55,7 +59,9 @@ export default function AdminLayout() {
                       <NavLink
                         key={i.to}
                         to={i.to}
-                        className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
+                        className={({ isActive }) =>
+                          `sidebar-link ${isActive ? "active" : ""}`
+                        }
                       >
                         {i.label}
                       </NavLink>
@@ -73,14 +79,25 @@ export default function AdminLayout() {
           <div className="mb-4 md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="secondary" className="rounded-md"><Menu className="size-4"/> Menu</Button>
+                <Button variant="secondary" className="rounded-md">
+                  <Menu className="size-4" /> Menu
+                </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[85%]">
                 <nav className="mt-6 grid gap-2">
                   {groups.flatMap((g) => [
-                    <div key={`${g.title}-title`} className="px-3 text-xs uppercase tracking-wide text-muted-foreground/80 mt-3">{g.title}</div>,
+                    <div
+                      key={`${g.title}-title`}
+                      className="px-3 text-xs uppercase tracking-wide text-muted-foreground/80 mt-3"
+                    >
+                      {g.title}
+                    </div>,
                     ...g.items.map((i) => (
-                      <Link key={i.to} to={i.to} className="rounded-md px-3 py-2 bg-secondary hover:bg-secondary/80">
+                      <Link
+                        key={i.to}
+                        to={i.to}
+                        className="rounded-md px-3 py-2 bg-secondary hover:bg-secondary/80"
+                      >
                         {i.label}
                       </Link>
                     )),

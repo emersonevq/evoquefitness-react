@@ -2,7 +2,9 @@ export function Placeholder({ title }: { title: string }) {
   return (
     <div className="card-surface rounded-xl p-6">
       <h2 className="text-xl font-semibold mb-2">{title}</h2>
-      <p className="text-sm text-muted-foreground">Conteúdo será adicionado conforme sua orientação.</p>
+      <p className="text-sm text-muted-foreground">
+        Conteúdo será adicionado conforme sua orientação.
+      </p>
     </div>
   );
 }

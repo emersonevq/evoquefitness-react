@@ -6,7 +6,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetClose, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetClose,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { sectors } from "@/data/sectors";
 import { ChevronDown, Menu } from "lucide-react";
 
@@ -82,15 +87,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </div>
                 <div className="p-4 space-y-2">
                   <SheetClose asChild>
-                    <Link to="/" className="block rounded-md px-3 py-2 bg-secondary">
+                    <Link
+                      to="/"
+                      className="block rounded-md px-3 py-2 bg-secondary"
+                    >
                       Início
                     </Link>
                   </SheetClose>
-                  <div className="mt-2 text-xs uppercase text-muted-foreground px-1">Setores</div>
+                  <div className="mt-2 text-xs uppercase text-muted-foreground px-1">
+                    Setores
+                  </div>
                   <div className="grid grid-cols-1 gap-1">
                     {sectors.map((s) => (
                       <SheetClose asChild key={s.slug}>
-                        <Link to={`/setor/${s.slug}`} className="block rounded-md px-3 py-2 hover:bg-secondary">
+                        <Link
+                          to={`/setor/${s.slug}`}
+                          className="block rounded-md px-3 py-2 hover:bg-secondary"
+                        >
                           {s.title}
                         </Link>
                       </SheetClose>
