@@ -15,6 +15,31 @@ def listar_problemas(db: Session = Depends(get_db)):
             Problema.__table__.create(bind=engine, checkfirst=True)
         except Exception:
             pass
+        # 1) Primeiro tenta tabela legada problema_reportado
+        for sql in (
+            "SELECT id, nome, prioridade_padrao, requer_item_internet FROM problema_reportado WHERE ativo = 1",
+            "SELECT id, nome, prioridade_padrao, requer_item_internet FROM problema_reportado WHERE ativo = 1 OR ativo IS NULL",
+            "SELECT id, nome, prioridade_padrao, requer_item_internet FROM problema_reportado",
+            "SELECT id, nome, prioridade_padrao, requer_item_internet FROM problemas_reportados WHERE ativo = 1",
+            "SELECT id, nome, prioridade_padrao, requer_item_internet FROM problemas_reportados WHERE ativo = 1 OR ativo IS NULL",
+            "SELECT id, nome, prioridade_padrao, requer_item_internet FROM problemas_reportados",
+        ):
+            try:
+                res = db.execute(text(sql))
+                fetched = res.fetchall()
+                if fetched:
+                    return [
+                        {
+                            "id": int(r[0]) if r[0] is not None else 0,
+                            "nome": str(r[1]),
+                            "prioridade": str(r[2] or "Normal"),
+                            "requer_internet": bool(r[3]) if len(r) > 3 else False,
+                        }
+                        for r in fetched
+                    ]
+            except Exception:
+                continue
+        # 2) ORM padrao
         try:
             rows = db.query(Problema).order_by(Problema.nome.asc()).all()
         except Exception:
@@ -28,7 +53,7 @@ def listar_problemas(db: Session = Depends(get_db)):
             }
             for r in rows
         ]
-        # Fallbacks: plural/legacy tables and different column names
+        # 3) Fallbacks: plural/legacy tables e colunas diferentes
         if not result:
             for sql in (
                 "SELECT id, nome, prioridade, requer_internet FROM problemas",
@@ -54,26 +79,6 @@ def listar_problemas(db: Session = Depends(get_db)):
                         break
                 except Exception:
                     continue
-        # Fallback: tabela legada problema_reportado
-        for sql in (
-            "SELECT nome, prioridade_padrao, requer_item_internet FROM problema_reportado WHERE ativo = 1",
-            "SELECT nome, prioridade_padrao, requer_item_internet FROM problemas_reportados WHERE ativo = 1",
-        ):
-            try:
-                res = db.execute(text(sql))
-                for nome, prioridade, requer in res.fetchall():
-                    if not any(x["nome"].lower() == str(nome).lower() for x in result):
-                        result.append(
-                            {
-                                "id": 0,
-                                "nome": str(nome),
-                                "prioridade": str(prioridade or "Normal"),
-                                "requer_internet": bool(requer),
-                            }
-                        )
-                break
-            except Exception:
-                continue
         try:
             existing_names = {r[0] for r in db.query(Chamado.problema).distinct().all() if r[0]}
         except Exception:

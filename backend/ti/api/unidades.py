@@ -69,6 +69,6 @@ def criar_unidade(payload: UnidadeCreate, db: Session = Depends(get_db)):
         from ti.services.unidades import criar_unidade as service_criar
         return service_criar(db, payload)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao criar unidade: {e}")

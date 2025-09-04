@@ -1,27 +1,40 @@
 import { useEffect, useState } from "react";
 
+import { apiFetch } from "@/lib/api";
+
 export function AdicionarUnidade() {
+  const [id, setId] = useState<string>("");
   const [nome, setNome] = useState("");
-  const [cidade, setCidade] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   async function handleAdd() {
     setMsg(null);
-    if (!nome || !cidade) return;
+    if (!nome) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/unidades", {
+      const res = await apiFetch("/unidades", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, cidade }),
+        body: JSON.stringify({ id: id ? Number(id) : undefined, nome }),
       });
-      if (!res.ok) throw new Error("Falha ao criar unidade");
+      if (!res.ok) {
+        let detail = "Não foi possível criar a unidade.";
+        try {
+          const data = await res.json();
+          if (data && typeof data.detail === "string") detail = data.detail;
+        } catch {}
+        if (res.status === 409) {
+          setMsg(detail);
+          return;
+        }
+        throw new Error(detail);
+      }
+      setId("");
       setNome("");
-      setCidade("");
       setMsg("Unidade criada com sucesso.");
-    } catch {
-      setMsg("Não foi possível criar a unidade.");
+    } catch (e: any) {
+      setMsg(e?.message || "Não foi possível criar a unidade.");
     } finally {
       setSaving(false);
     }
@@ -33,15 +46,15 @@ export function AdicionarUnidade() {
       <div className="grid sm:grid-cols-3 gap-3">
         <input
           className="rounded-md bg-background border px-3 py-2"
-          placeholder="Nome"
+          placeholder="Nome da unidade"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
         />
         <input
           className="rounded-md bg-background border px-3 py-2"
-          placeholder="Cidade"
-          value={cidade}
-          onChange={(e) => setCidade(e.target.value)}
+          placeholder="ID (opcional)"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
         />
         <button
           disabled={saving}
@@ -56,12 +69,12 @@ export function AdicionarUnidade() {
   );
 }
 export function ListarUnidades() {
-  type Unidade = { id: number; nome: string; cidade: string };
+  type Unidade = { id: number; nome: string; cidade?: string };
   const [items, setItems] = useState<Unidade[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/unidades")
+    apiFetch("/unidades")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
       .then((data: Unidade[]) => Array.isArray(data) && setItems(data))
       .catch(() => setItems([]))
@@ -82,7 +95,8 @@ export function ListarUnidades() {
               key={`${u.id}-${u.nome}`}
               className="rounded-md border border-border/60 p-3 bg-background"
             >
-              {u.nome} — {u.cidade}
+              <div className="font-medium">{u.nome}</div>
+              <div className="text-xs text-muted-foreground">ID: {u.id}</div>
             </li>
           ))}
         </ul>
@@ -106,7 +120,7 @@ export function AdicionarBanco() {
 
   const load = () => {
     setLoading(true);
-    fetch("/api/problemas")
+    apiFetch("/problemas")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
       .then((data: Problema[]) => Array.isArray(data) && setItems(data))
       .catch(() => setItems([]))
@@ -122,7 +136,7 @@ export function AdicionarBanco() {
     if (!nome) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/problemas", {
+      const res = await apiFetch("/problemas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, prioridade, requer_internet: requer }),

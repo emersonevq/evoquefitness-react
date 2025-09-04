@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/lib/api";
 
 const sector = sectors.find((s) => s.slug === "ti")!;
 
@@ -100,7 +101,7 @@ export default function TiPage() {
                 unidades={unidades}
                 onSubmit={async (payload) => {
                   try {
-                    const res = await fetch(`${API_BASE}/chamados`, {
+                    const res = await apiFetch("/chamados", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
@@ -322,7 +323,9 @@ function TicketForm(props: {
             <SelectContent>
               {listaUnidades.map((u) => (
                 <SelectItem key={u.id} value={u.nome}>
-                  {u.nome}
+                  {new RegExp(`(\\s*-\\s*${u.id})\\s*$`).test(u.nome)
+                    ? u.nome
+                    : `${u.nome} - ${u.id}`}
                 </SelectItem>
               ))}
             </SelectContent>
