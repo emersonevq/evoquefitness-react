@@ -127,3 +127,21 @@ def criar_chamado(db: Session, payload: ChamadoCreate) -> Chamado:
     db.commit()
     db.refresh(novo)
     return novo
+
+
+def ensure_codigo_protocolo(db: Session, ch: Chamado) -> Chamado:
+    """Garante formatos EVQ-XXXX e YYYYMMDD-N; corrige e persiste se necessário."""
+    pattern_cod = re.compile(r"^EVQ-\d{4}$")
+    pattern_prot = re.compile(r"^\d{8}-\d+$")
+    changed = False
+    if not isinstance(ch.codigo, str) or not pattern_cod.match(ch.codigo):
+        ch.codigo = _next_codigo(db)
+        changed = True
+    if not isinstance(ch.protocolo, str) or not pattern_prot.match(ch.protocolo):
+        ch.protocolo = _next_protocolo(db)
+        changed = True
+    if changed:
+        db.add(ch)
+        db.commit()
+        db.refresh(ch)
+    return ch
