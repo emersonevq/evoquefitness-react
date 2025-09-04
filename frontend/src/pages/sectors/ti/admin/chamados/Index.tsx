@@ -33,6 +33,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Save, Trash2, Ticket as TicketIcon, UserPlus } from "lucide-react";
+import { ticketsMock } from "../mock";
 
 const statusMap = [
   { key: "todos", label: "Todos" },
@@ -210,15 +211,39 @@ export default function ChamadosPage() {
     const apiConfigured =
       !!import.meta.env.VITE_API_BASE_URL ||
       !!import.meta.env.VITE_PROXY_TARGET;
+
+    function adaptMock(m: typeof ticketsMock[number]): UiTicket {
+      return {
+        id: m.id,
+        protocolo: m.protocolo,
+        titulo: m.titulo,
+        solicitante: m.solicitante,
+        unidade: m.unidade,
+        categoria: m.categoria,
+        status: m.status,
+        criadoEm: m.criadoEm,
+        cargo: m.cargo,
+        email: m.email,
+        telefone: m.telefone,
+        internetItem: m.internetItem ?? null,
+        visita: m.visita ?? null,
+        gerente: m.gerente ?? null,
+      };
+    }
+
     if (!apiConfigured) {
-      setItems([]);
+      setItems(ticketsMock.map(adaptMock));
       return;
     }
 
     fetch("/api/chamados")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
-      .then((data) => setItems(Array.isArray(data) ? data.map(adapt) : []))
-      .catch(() => setItems([]));
+      .then((data) =>
+        setItems(
+          Array.isArray(data) ? data.map(adapt) : ticketsMock.map(adaptMock),
+        ),
+      )
+      .catch(() => setItems(ticketsMock.map(adaptMock)));
   }, []);
 
   const counts = useMemo(
