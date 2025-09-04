@@ -107,6 +107,8 @@ function TicketCard({
   status,
   criadoEm,
   onTicket,
+  onUpdate,
+  onDelete,
 }: {
   id: string;
   titulo: string;
@@ -116,6 +118,8 @@ function TicketCard({
   status: TicketStatus;
   criadoEm: string;
   onTicket: () => void;
+  onUpdate: (id: string, status: TicketStatus) => void;
+  onDelete: (id: string) => void;
 }) {
   const [sel, setSel] = useState<TicketStatus>(status);
   return (
@@ -171,10 +175,22 @@ function TicketCard({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-          <Button variant="warning" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="warning"
+            onClick={(e) => {
+              e.stopPropagation();
+              onUpdate(id, sel);
+            }}
+          >
             <Save className="size-4" /> Atualizar
           </Button>
-          <Button variant="destructive" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(id);
+            }}
+          >
             <Trash2 className="size-4" /> Excluir
           </Button>
           <Button
@@ -196,6 +212,10 @@ export default function ChamadosPage() {
   const { filtro } = useParams<{ filtro?: string }>();
 
   const [items, setItems] = useState<UiTicket[]>([]);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const { user } = useAuthContext();
 
   useEffect(() => {
     function toUiStatus(s: string): TicketStatus {
@@ -250,16 +270,40 @@ export default function ChamadosPage() {
       };
     }
 
-    import("@/lib/api").then(({ apiFetch }) =>
-      apiFetch("/chamados")
-        .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
-        .then((data) =>
-          setItems(
-            Array.isArray(data) ? data.map(adapt) : ticketsMock.map(adaptMock),
+    apiFetch("/chamados")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
+      .then((data) =>
+        setItems(
+          Array.isArray(data) ? data.map(adapt) : ticketsMock.map(adaptMock),
+        ),
+      )
+      .catch(() => setItems(ticketsMock.map(adaptMock)));
+
+    // Socket.IO - realtime updates
+    import("socket.io-client").then(({ io }) => {
+      const base = API_BASE.replace(/\/?api$/, "");
+      const socket = io(base, { transports: ["websocket"], autoConnect: true });
+      socket.on("connect", () => {});
+      socket.on("chamado:status", (data: { id: number; status: string }) => {
+        setItems((prev) =>
+          prev.map((it) =>
+            String(it.id) === String(data.id)
+              ? { ...it, status: (() => {
+                  const n = data.status?.toUpperCase();
+                  if (n === "EM_ANDAMENTO") return "EM_ANDAMENTO";
+                  if (n === "EM_ANALISE" || n === "EM ANÁLISE" || n === "EM ANALISE") return "EM_ANALISE";
+                  if (n === "CONCLUIDO" || n === "CONCLUÍDO") return "CONCLUIDO";
+                  if (n === "CANCELADO") return "CANCELADO";
+                  return "ABERTO";
+                })() as TicketStatus }
+              : it,
           ),
-        )
-        .catch(() => setItems(ticketsMock.map(adaptMock))),
-    );
+        );
+      });
+      socket.on("chamado:deleted", (data: { id: number }) => {
+        setItems((prev) => prev.filter((it) => String(it.id) !== String(data.id)));
+      });
+    });
   }, []);
 
   const counts = useMemo(
@@ -402,10 +446,90 @@ export default function ChamadosPage() {
                 setTab("ticket");
                 setOpen(true);
               }}
+              onUpdate={async (id, sel) => {
+                const statusText =
+                  sel === "ABERTO"
+                    ? "Aberto"
+                    : sel === "EM_ANDAMENTO"
+                      ? "Em andamento"
+                      : sel === "EM_ANALISE"
+                        ? "Em análise"
+                        : sel === "CONCLUIDO"
+                          ? "Concluído"
+                          : "Cancelado";
+                try {
+                  const r = await apiFetch(`/chamados/${id}/status`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: statusText }),
+                  });
+                  if (!r.ok) throw new Error(await r.text());
+                  const updated = await r.json();
+                  setItems((prev) =>
+                    prev.map((it) =>
+                      it.id === id ? { ...it, status: sel } : it,
+                    ),
+                  );
+                } catch (e) {
+                  // noop: in real app show toast
+                }
+              }}
+              onDelete={(id) => setConfirmId(id)}
             />
           </div>
         ))}
       </div>
+
+      {/* Delete confirmation */}
+      <Dialog open={!!confirmId} onOpenChange={(o) => !o && setConfirmId(null)}>
+        <DialogContent className="max-w-md">
+          <div className="space-y-3">
+            <div className="text-lg font-semibold">Excluir chamado</div>
+            <p className="text-sm text-muted-foreground">
+              Esta ação apagará definitivamente o chamado e não poderá ser desfeita.
+            </p>
+            <div className="grid gap-2">
+              <label className="text-sm">Confirme sua senha</label>
+              <input
+                type="password"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="secondary" onClick={() => setConfirmId(null)}>
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={!confirmPwd || confirmLoading}
+                onClick={async () => {
+                  if (!confirmId || !user?.email) return;
+                  setConfirmLoading(true);
+                  try {
+                    const r = await apiFetch(`/chamados/${confirmId}`, {
+                      method: "DELETE",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: user.email, senha: confirmPwd }),
+                    });
+                    if (!r.ok) throw new Error(await r.text());
+                    setItems((prev) => prev.filter((it) => it.id !== confirmId));
+                    setConfirmId(null);
+                    setConfirmPwd("");
+                  } catch (e) {
+                    // noop: in real app show toast
+                  } finally {
+                    setConfirmLoading(false);
+                  }
+                }}
+              >
+                Confirmar exclusão
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-3xl">
