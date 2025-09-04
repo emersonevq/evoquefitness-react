@@ -158,6 +158,7 @@ export default function TiPage() {
                     ]);
                     setLastCreated({ codigo: created.codigo, protocolo: created.protocolo });
                     setOpen(false);
+                    setSuccessOpen(true);
                   } catch (e) {
                     console.error(e);
                     alert("Não foi possível abrir o chamado. Tente novamente.");
