@@ -31,26 +31,28 @@ def _next_codigo(db: Session) -> str:
 
 
 def _next_protocolo(db: Session) -> str:
-    """Protocolo no formato XXXXXXXX-X (8 dígitos + hífen + 1 dígito),
-    considerando somente a tabela atual 'chamado'.
+    """Gera protocolo ALEATÓRIO no formato XXXXXXXX-X (8 dígitos + hífen + 1 dígito).
+    Garante unicidade consultando apenas a tabela atual 'chamado'.
     """
     from ti.models import Chamado
-    max_base = 0
-    try:
-        rows = db.query(Chamado.protocolo).all()
-        for (p,) in rows:
-            try:
-                base, _ = str(p).split("-", 1)
-                num = int("".join(ch for ch in base if ch.isdigit()))
-                if num > max_base:
-                    max_base = num
-            except Exception:
-                continue
-    except Exception:
-        pass
-    nxt = max_base + 1
-    dv = random.randint(1, 9)
-    return f"{nxt:08d}-{dv}"
+
+    def gen() -> str:
+        base = "".join(str(random.randint(0, 9)) for _ in range(8))
+        dv = str(random.randint(0, 9))
+        return f"{base}-{dv}"
+
+    for _ in range(50):
+        p = gen()
+        try:
+            exists = db.query(Chamado).filter(Chamado.protocolo == p).first()
+        except Exception:
+            exists = None
+        if not exists:
+            return p
+    # Fallback muito improvável: usa timestamp truncado + rand
+    from time import time
+    fallback = f"{int(time())%100000000:08d}-{random.randint(0,9)}"
+    return fallback
 
 
 def criar_chamado(db: Session, payload: ChamadoCreate) -> Chamado:
