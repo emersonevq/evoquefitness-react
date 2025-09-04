@@ -293,6 +293,15 @@ export default function ChamadosPage() {
       const base = API_BASE.replace(/\/?api$/, "");
       const socket = io(base, { transports: ["websocket"], autoConnect: true });
       socket.on("connect", () => {});
+      socket.on("notification:new", (n: { titulo: string; mensagem?: string }) => {
+        toast({ title: n.titulo, description: n.mensagem || "" });
+      });
+      socket.on("chamado:created", () => {
+        apiFetch("/chamados")
+          .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
+          .then((data) => setItems(Array.isArray(data) ? data.map(adapt) : []))
+          .catch(() => {});
+      });
       socket.on("chamado:status", (data: { id: number; status: string }) => {
         setItems((prev) =>
           prev.map((it) =>
