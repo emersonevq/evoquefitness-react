@@ -37,7 +37,10 @@ interface Ticket {
 export default function TiPage() {
   const API_BASE: string = (import.meta as any)?.env?.VITE_API_BASE || "/api";
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [lastCreated, setLastCreated] = useState<{ codigo: string; protocolo: string } | null>(null);
+  const [lastCreated, setLastCreated] = useState<{
+    codigo: string;
+    protocolo: string;
+  } | null>(null);
   const [open, setOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [unidades, setUnidades] = useState<
@@ -83,9 +86,14 @@ export default function TiPage() {
           <div className="mb-4 rounded-lg border border-border/60 bg-card p-4 text-sm">
             <div className="font-semibold mb-1">Chamado criado com sucesso</div>
             <div>
-              Código <span className="font-semibold">{lastCreated.codigo}</span> e Protocolo <span className="font-semibold">{lastCreated.protocolo}</span> gerados e salvos.
+              Código <span className="font-semibold">{lastCreated.codigo}</span>{" "}
+              e Protocolo{" "}
+              <span className="font-semibold">{lastCreated.protocolo}</span>{" "}
+              gerados e salvos.
             </div>
-            <div className="text-muted-foreground mt-1">Guarde essas informações para futuras consultas.</div>
+            <div className="text-muted-foreground mt-1">
+              Guarde essas informações para futuras consultas.
+            </div>
           </div>
         )}
         <div className="flex items-center justify-between gap-4">
@@ -158,7 +166,10 @@ export default function TiPage() {
                       },
                       ...prev,
                     ]);
-                    setLastCreated({ codigo: created.codigo, protocolo: created.protocolo });
+                    setLastCreated({
+                      codigo: created.codigo,
+                      protocolo: created.protocolo,
+                    });
                     setOpen(false);
                     setSuccessOpen(true);
                   } catch (e) {
@@ -225,24 +236,36 @@ export default function TiPage() {
                   <CheckCircle className="size-6 text-primary-foreground" />
                 </div>
                 <div>
-                  <div className="text-sm/5 text-primary-foreground/90">Chamado aberto</div>
-                  <div className="text-xl font-extrabold text-primary-foreground drop-shadow">Sucesso!</div>
+                  <div className="text-sm/5 text-primary-foreground/90">
+                    Chamado aberto
+                  </div>
+                  <div className="text-xl font-extrabold text-primary-foreground drop-shadow">
+                    Sucesso!
+                  </div>
                 </div>
               </div>
 
               <div className="p-5 space-y-4">
-                <div className="text-sm text-muted-foreground">Guarde as informações abaixo:</div>
+                <div className="text-sm text-muted-foreground">
+                  Guarde as informações abaixo:
+                </div>
 
                 <div className="grid gap-3">
                   <div className="text-xs text-muted-foreground">Código</div>
                   <div className="flex items-center justify-between rounded-md border border-border/60 bg-background px-3 py-2">
-                    <div className="font-mono font-semibold text-base break-all">{lastCreated.codigo}</div>
+                    <div className="font-mono font-semibold text-base break-all">
+                      {lastCreated.codigo}
+                    </div>
                     <Button
                       variant="secondary"
                       size="sm"
                       className="ml-2"
                       onClick={async () => {
-                        try { await navigator.clipboard.writeText(lastCreated.codigo); } catch {}
+                        try {
+                          await navigator.clipboard.writeText(
+                            lastCreated.codigo,
+                          );
+                        } catch {}
                       }}
                     >
                       <Copy className="size-4 mr-1" /> Copiar
@@ -253,13 +276,19 @@ export default function TiPage() {
                 <div className="grid gap-3">
                   <div className="text-xs text-muted-foreground">Protocolo</div>
                   <div className="flex items-center justify-between rounded-md border border-border/60 bg-background px-3 py-2">
-                    <div className="font-mono font-semibold text-base break-all">{lastCreated.protocolo}</div>
+                    <div className="font-mono font-semibold text-base break-all">
+                      {lastCreated.protocolo}
+                    </div>
                     <Button
                       variant="secondary"
                       size="sm"
                       className="ml-2"
                       onClick={async () => {
-                        try { await navigator.clipboard.writeText(lastCreated.protocolo); } catch {}
+                        try {
+                          await navigator.clipboard.writeText(
+                            lastCreated.protocolo,
+                          );
+                        } catch {}
                       }}
                     >
                       <Copy className="size-4 mr-1" /> Copiar
@@ -273,7 +302,11 @@ export default function TiPage() {
                   <Button
                     variant="secondary"
                     onClick={async () => {
-                      try { await navigator.clipboard.writeText(`Código: ${lastCreated.codigo} | Protocolo: ${lastCreated.protocolo}`); } catch {}
+                      try {
+                        await navigator.clipboard.writeText(
+                          `Código: ${lastCreated.codigo} | Protocolo: ${lastCreated.protocolo}`,
+                        );
+                      } catch {}
                     }}
                   >
                     <Copy className="size-4 mr-1" /> Copiar tudo
@@ -323,7 +356,15 @@ function TicketForm(props: {
   });
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const must = [form.nome.trim(), form.cargo.trim(), form.email.trim(), form.telefone.trim(), form.unidade.trim(), form.problema.trim(), form.descricao.trim()];
+    const must = [
+      form.nome.trim(),
+      form.cargo.trim(),
+      form.email.trim(),
+      form.telefone.trim(),
+      form.unidade.trim(),
+      form.problema.trim(),
+      form.descricao.trim(),
+    ];
     if (must.some((v) => !v)) {
       alert("Preencha todos os campos obrigatórios.");
       return;

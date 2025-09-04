@@ -1,4 +1,9 @@
-export type TicketStatus = "ABERTO" | "EM_ANDAMENTO" | "EM_ANALISE" | "CONCLUIDO" | "CANCELADO";
+export type TicketStatus =
+  | "ABERTO"
+  | "EM_ANDAMENTO"
+  | "EM_ANALISE"
+  | "CONCLUIDO"
+  | "CANCELADO";
 
 export interface TicketMock {
   id: string;

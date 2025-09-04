@@ -302,9 +302,12 @@ export default function ChamadosPage() {
         reconnectionAttempts: 10,
       });
       socket.on("connect", () => {});
-      socket.on("notification:new", (n: { titulo: string; mensagem?: string }) => {
-        toast({ title: n.titulo, description: n.mensagem || "" });
-      });
+      socket.on(
+        "notification:new",
+        (n: { titulo: string; mensagem?: string }) => {
+          toast({ title: n.titulo, description: n.mensagem || "" });
+        },
+      );
       socket.on("chamado:created", () => {
         apiFetch("/chamados")
           .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
@@ -315,20 +318,31 @@ export default function ChamadosPage() {
         setItems((prev) =>
           prev.map((it) =>
             String(it.id) === String(data.id)
-              ? { ...it, status: (() => {
-                  const n = data.status?.toUpperCase();
-                  if (n === "EM_ANDAMENTO") return "EM_ANDAMENTO";
-                  if (n === "EM_ANALISE" || n === "EM ANÁLISE" || n === "EM ANALISE") return "EM_ANALISE";
-                  if (n === "CONCLUIDO" || n === "CONCLUÍDO") return "CONCLUIDO";
-                  if (n === "CANCELADO") return "CANCELADO";
-                  return "ABERTO";
-                })() as TicketStatus }
+              ? {
+                  ...it,
+                  status: (() => {
+                    const n = data.status?.toUpperCase();
+                    if (n === "EM_ANDAMENTO") return "EM_ANDAMENTO";
+                    if (
+                      n === "EM_ANALISE" ||
+                      n === "EM ANÁLISE" ||
+                      n === "EM ANALISE"
+                    )
+                      return "EM_ANALISE";
+                    if (n === "CONCLUIDO" || n === "CONCLUÍDO")
+                      return "CONCLUIDO";
+                    if (n === "CANCELADO") return "CANCELADO";
+                    return "ABERTO";
+                  })() as TicketStatus,
+                }
               : it,
           ),
         );
       });
       socket.on("chamado:deleted", (data: { id: number }) => {
-        setItems((prev) => prev.filter((it) => String(it.id) !== String(data.id)));
+        setItems((prev) =>
+          prev.filter((it) => String(it.id) !== String(data.id)),
+        );
       });
     });
   }, []);
@@ -386,7 +400,10 @@ export default function ChamadosPage() {
     const base = new Date(s.criadoEm).getTime();
     const arr: { t: number; label: string; attachments?: string[] }[] = [
       { t: base, label: "Chamado aberto" },
-      { t: base + 45 * 60 * 1000, label: `Status: ${s.status === "ABERTO" ? "Aberto" : s.status === "EM_ANDAMENTO" ? "Em andamento" : s.status === "EM_ANALISE" ? "Em análise" : s.status === "CONCLUIDO" ? "Concluído" : "Cancelado"}` },
+      {
+        t: base + 45 * 60 * 1000,
+        label: `Status: ${s.status === "ABERTO" ? "Aberto" : s.status === "EM_ANDAMENTO" ? "Em andamento" : s.status === "EM_ANALISE" ? "Em análise" : s.status === "CONCLUIDO" ? "Concluído" : "Cancelado"}`,
+      },
     ];
     if (s.visita)
       arr.push({
@@ -513,7 +530,8 @@ export default function ChamadosPage() {
           <div className="space-y-3">
             <div className="text-lg font-semibold">Excluir chamado</div>
             <p className="text-sm text-muted-foreground">
-              Esta ação apagará definitivamente o chamado e não poderá ser desfeita.
+              Esta ação apagará definitivamente o chamado e não poderá ser
+              desfeita.
             </p>
             <div className="grid gap-2">
               <label className="text-sm">Confirme sua senha</label>
@@ -538,10 +556,15 @@ export default function ChamadosPage() {
                     const r = await apiFetch(`/chamados/${confirmId}`, {
                       method: "DELETE",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ email: user.email, senha: confirmPwd }),
+                      body: JSON.stringify({
+                        email: user.email,
+                        senha: confirmPwd,
+                      }),
                     });
                     if (!r.ok) throw new Error(await r.text());
-                    setItems((prev) => prev.filter((it) => it.id !== confirmId));
+                    setItems((prev) =>
+                      prev.filter((it) => it.id !== confirmId),
+                    );
                     setConfirmId(null);
                     setConfirmPwd("");
                   } catch (e) {
@@ -614,7 +637,9 @@ export default function ChamadosPage() {
                           {selected.gerente || "—"}
                         </div>
                         <div className="text-muted-foreground">E-mail</div>
-                        <div className="text-right break-all">{selected.email}</div>
+                        <div className="text-right break-all">
+                          {selected.email}
+                        </div>
                         <div className="text-muted-foreground">Telefone</div>
                         <div className="text-right">{selected.telefone}</div>
                         <div className="text-muted-foreground">Unidade</div>
@@ -623,8 +648,12 @@ export default function ChamadosPage() {
                         <div className="text-right">{selected.categoria}</div>
                         {selected.descricao && (
                           <>
-                            <div className="text-muted-foreground">Descrição</div>
-                            <div className="text-right whitespace-pre-line break-words">{selected.descricao}</div>
+                            <div className="text-muted-foreground">
+                              Descrição
+                            </div>
+                            <div className="text-right whitespace-pre-line break-words">
+                              {selected.descricao}
+                            </div>
                           </>
                         )}
                         {selected.internetItem && (
@@ -657,7 +686,11 @@ export default function ChamadosPage() {
                       <div className="grid gap-3">
                         <Select
                           defaultValue={selected.status}
-                          onValueChange={(v) => setSelected((s) => (s ? { ...s, status: v as TicketStatus } : s))}
+                          onValueChange={(v) =>
+                            setSelected((s) =>
+                              s ? { ...s, status: v as TicketStatus } : s,
+                            )
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -693,14 +726,23 @@ export default function ChamadosPage() {
                                       ? "Concluído"
                                       : "Cancelado";
                             try {
-                              const r = await apiFetch(`/chamados/${selected.id}/status`, {
-                                method: "PATCH",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ status: statusText }),
-                              });
+                              const r = await apiFetch(
+                                `/chamados/${selected.id}/status`,
+                                {
+                                  method: "PATCH",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({ status: statusText }),
+                                },
+                              );
                               if (!r.ok) throw new Error(await r.text());
                               setItems((prev) =>
-                                prev.map((it) => (it.id === selected.id ? { ...it, status: sel } : it)),
+                                prev.map((it) =>
+                                  it.id === selected.id
+                                    ? { ...it, status: sel }
+                                    : it,
+                                ),
                               );
                             } catch (e) {
                               // noop

@@ -35,7 +35,12 @@ export default function NotificationBell() {
         if (!r.ok) throw new Error("fail");
         const arr = await r.json();
         const mapped = Array.isArray(arr)
-          ? arr.map((n: any) => ({ id: n.id, titulo: n.titulo, mensagem: n.mensagem ?? null, lido: !!n.lido }))
+          ? arr.map((n: any) => ({
+              id: n.id,
+              titulo: n.titulo,
+              mensagem: n.mensagem ?? null,
+              lido: !!n.lido,
+            }))
           : [];
         setItems(mapped);
       } catch {}
@@ -45,14 +50,26 @@ export default function NotificationBell() {
     import("socket.io-client").then(({ io }) => {
       const base = (import.meta as any)?.env?.VITE_API_BASE || "/api";
       const origin = String(base).replace(/\/?api$/, "");
-      const path = String(base).endsWith("/api") ? "/api/socket.io" : "/socket.io";
+      const path = String(base).endsWith("/api")
+        ? "/api/socket.io"
+        : "/socket.io";
       const socket = io(origin, {
         path,
         transports: ["websocket", "polling"],
         autoConnect: true,
       });
       socket.on("notification:new", (n: any) => {
-        setItems((prev) => [{ id: n.id, titulo: n.titulo, mensagem: n.mensagem ?? null, lido: !!n.lido }, ...prev].slice(0, 20));
+        setItems((prev) =>
+          [
+            {
+              id: n.id,
+              titulo: n.titulo,
+              mensagem: n.mensagem ?? null,
+              lido: !!n.lido,
+            },
+            ...prev,
+          ].slice(0, 20),
+        );
         toast({ title: n.titulo, description: n.mensagem || "" });
       });
     });
@@ -68,7 +85,9 @@ export default function NotificationBell() {
       }
       if (!r.ok) throw new Error();
       const updated = await r.json();
-      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, lido: updated.lido } : i)));
+      setItems((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, lido: updated.lido } : i)),
+      );
     } catch {}
   };
 
@@ -84,7 +103,12 @@ export default function NotificationBell() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="secondary" className="relative rounded-full" size="icon" aria-label="Notificações">
+        <Button
+          variant="secondary"
+          className="relative rounded-full"
+          size="icon"
+          aria-label="Notificações"
+        >
           <Bell className="size-5" />
           {unread > 0 && (
             <span className="absolute -top-1 -right-1 min-w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] leading-5 text-center px-1">
@@ -97,22 +121,35 @@ export default function NotificationBell() {
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notificações</span>
           {unread > 0 && (
-            <button onClick={markAll} className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+            <button
+              onClick={markAll}
+              className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+            >
               <Check className="size-3" /> Marcar como lidas
             </button>
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {items.length === 0 ? (
-          <div className="px-3 py-6 text-sm text-muted-foreground">Sem notificações</div>
+          <div className="px-3 py-6 text-sm text-muted-foreground">
+            Sem notificações
+          </div>
         ) : (
           items.map((n) => (
-            <DropdownMenuItem key={n.id} className="flex items-start gap-2" onClick={() => markAsRead(n.id)}>
-              <div className={`mt-1 size-2 rounded-full ${n.lido ? "bg-muted" : "bg-primary"}`} />
+            <DropdownMenuItem
+              key={n.id}
+              className="flex items-start gap-2"
+              onClick={() => markAsRead(n.id)}
+            >
+              <div
+                className={`mt-1 size-2 rounded-full ${n.lido ? "bg-muted" : "bg-primary"}`}
+              />
               <div>
                 <div className="text-sm font-medium leading-5">{n.titulo}</div>
                 {n.mensagem && (
-                  <div className="text-xs text-muted-foreground leading-4 mt-0.5 line-clamp-3">{n.mensagem}</div>
+                  <div className="text-xs text-muted-foreground leading-4 mt-0.5 line-clamp-3">
+                    {n.mensagem}
+                  </div>
                 )}
               </div>
             </DropdownMenuItem>
