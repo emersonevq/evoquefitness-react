@@ -291,7 +291,7 @@ export default function ChamadosPage() {
     // Socket.IO - realtime updates
     import("socket.io-client").then(({ io }) => {
       const base = API_BASE.replace(/\/?api$/, "");
-      const socket = io(base, { transports: ["websocket"], autoConnect: true });
+      const socket = io(base || undefined, { transports: ["websocket"], autoConnect: true, path: "/api/socket.io" });
       socket.on("connect", () => {});
       socket.on("notification:new", (n: { titulo: string; mensagem?: string }) => {
         toast({ title: n.titulo, description: n.mensagem || "" });
