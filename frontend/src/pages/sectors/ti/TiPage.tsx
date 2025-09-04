@@ -217,31 +217,69 @@ export default function TiPage() {
       </section>
 
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Chamado criado com sucesso</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-md overflow-hidden p-0">
           {lastCreated && (
-            <div className="space-y-3">
-              <div className="text-sm">Guarde as informações abaixo:</div>
-              <div className="grid grid-cols-3 items-center gap-2">
-                <div className="text-sm text-muted-foreground col-span-1">Código</div>
-                <div className="font-semibold col-span-2 break-all">{lastCreated.codigo}</div>
+            <div className="w-full">
+              <div className="brand-gradient px-5 py-4 flex items-center gap-3">
+                <div className="rounded-full bg-white/15 p-2">
+                  <CheckCircle className="size-6 text-primary-foreground" />
+                </div>
+                <div>
+                  <div className="text-sm/5 text-primary-foreground/90">Chamado aberto</div>
+                  <div className="text-xl font-extrabold text-primary-foreground drop-shadow">Sucesso!</div>
+                </div>
               </div>
-              <div className="grid grid-cols-3 items-center gap-2">
-                <div className="text-sm text-muted-foreground col-span-1">Protocolo</div>
-                <div className="font-semibold col-span-2 break-all">{lastCreated.protocolo}</div>
-              </div>
-              <div className="pt-2 flex justify-end">
-                <Button
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(`Código: ${lastCreated.codigo} | Protocolo: ${lastCreated.protocolo}`);
-                    } catch {}
-                  }}
-                >
-                  Copiar
-                </Button>
+
+              <div className="p-5 space-y-4">
+                <div className="text-sm text-muted-foreground">Guarde as informações abaixo:</div>
+
+                <div className="grid gap-3">
+                  <div className="text-xs text-muted-foreground">Código</div>
+                  <div className="flex items-center justify-between rounded-md border border-border/60 bg-background px-3 py-2">
+                    <div className="font-mono font-semibold text-base break-all">{lastCreated.codigo}</div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="ml-2"
+                      onClick={async () => {
+                        try { await navigator.clipboard.writeText(lastCreated.codigo); } catch {}
+                      }}
+                    >
+                      <Copy className="size-4 mr-1" /> Copiar
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <div className="text-xs text-muted-foreground">Protocolo</div>
+                  <div className="flex items-center justify-between rounded-md border border-border/60 bg-background px-3 py-2">
+                    <div className="font-mono font-semibold text-base break-all">{lastCreated.protocolo}</div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="ml-2"
+                      onClick={async () => {
+                        try { await navigator.clipboard.writeText(lastCreated.protocolo); } catch {}
+                      }}
+                    >
+                      <Copy className="size-4 mr-1" /> Copiar
+                    </Button>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex flex-wrap gap-2 justify-end">
+                  <Button
+                    variant="secondary"
+                    onClick={async () => {
+                      try { await navigator.clipboard.writeText(`Código: ${lastCreated.codigo} | Protocolo: ${lastCreated.protocolo}`); } catch {}
+                    }}
+                  >
+                    <Copy className="size-4 mr-1" /> Copiar tudo
+                  </Button>
+                  <Button onClick={() => setSuccessOpen(false)}>Fechar</Button>
+                </div>
               </div>
             </div>
           )}
