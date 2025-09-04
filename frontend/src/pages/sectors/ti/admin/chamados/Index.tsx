@@ -182,7 +182,8 @@ export default function ChamadosPage() {
   useEffect(() => {
     function toUiStatus(s: string): TicketStatus {
       const n = s?.toUpperCase();
-      if (n === "AGUARDANDO") return "AGUARDANDO";
+      if (n === "EM_ANDAMENTO" || n === "AGUARDANDO") return "EM_ANDAMENTO";
+      if (n === "EM_ANALISE" || n === "EM ANÁLISE" || n === "EM ANALISE") return "EM_ANALISE";
       if (n === "CONCLUIDO" || n === "CONCLUÍDO") return "CONCLUIDO";
       if (n === "CANCELADO") return "CANCELADO";
       return "ABERTO";
