@@ -27,6 +27,7 @@ class ChamadoOut(BaseModel):
     unidade: str
     problema: str
     internet_item: str | None
+    descricao: str | None = None
     data_visita: date | None
     data_abertura: datetime | None
     status: str
