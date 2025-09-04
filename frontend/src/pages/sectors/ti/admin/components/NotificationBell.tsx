@@ -57,6 +57,15 @@ export default function NotificationBell() {
         path,
         transports: ["websocket", "polling"],
         autoConnect: true,
+        reconnection: true,
+      });
+      socket.on("connect_error", () => {
+        const alt = path === "/api/socket.io" ? "/socket.io" : "/api/socket.io";
+        // switch path and retry once
+        if ((socket.io as any).opts.path !== alt) {
+          (socket.io as any).opts.path = alt;
+          socket.connect();
+        }
       });
       socket.on("notification:new", (n: any) => {
         setItems((prev) =>
