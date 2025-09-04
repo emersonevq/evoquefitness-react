@@ -1,7 +1,7 @@
 from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from ti.api import chamados_router
+from ti.api import chamados_router, unidades_router, problemas_router
 from ti.api.usuarios import router as usuarios_router
 
 app = FastAPI(title="Evoque API - TI", version="1.0.0")
