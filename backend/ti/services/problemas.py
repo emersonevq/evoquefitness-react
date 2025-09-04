@@ -8,18 +8,20 @@ from ti.schemas.problema import ProblemaCreate
 VALID_PRIORIDADES = {"Crítica", "Alta", "Normal", "Baixa"}
 
 def criar_problema(db: Session, payload: ProblemaCreate) -> Problema:
-    if not payload.nome:
+    nome = (payload.nome or "").strip()
+    if not nome:
         raise ValueError("Nome do problema é obrigatório")
-    if payload.prioridade not in VALID_PRIORIDADES:
-        raise ValueError("Prioridade inválida")
+    prioridade = (payload.prioridade or "Normal").strip().title()
+    if prioridade not in VALID_PRIORIDADES:
+        prioridade = "Normal"
 
-    # Uniqueness check in both ORM table and legacy table
-    existe = db.query(Problema).filter(Problema.nome == payload.nome).first()
+    # Uniqueness check in both ORM table and legacy table (case-insensitive)
+    existe = db.query(Problema).filter(Problema.nome.ilike(nome)).first()
     if not existe:
         try:
             row = db.execute(
-                text("SELECT id FROM problema_reportado WHERE nome = :nome LIMIT 1"),
-                {"nome": payload.nome},
+                text("SELECT id FROM problema_reportado WHERE LOWER(nome) = LOWER(:nome) LIMIT 1"),
+                {"nome": nome},
             ).first()
             if row is not None:
                 existe = True  # type: ignore
@@ -55,15 +57,15 @@ def criar_problema(db: Session, payload: ProblemaCreate) -> Problema:
                 inserted_id = 0
         return Problema(  # return a Problema-like object for response model
             id=inserted_id or 0,  # type: ignore[arg-type]
-            nome=payload.nome,
-            prioridade=payload.prioridade,
+            nome=nome,
+            prioridade=prioridade,
             requer_internet=payload.requer_internet,
         )
     except Exception:
         # Fallback to ORM table
         novo = Problema(
-            nome=payload.nome,
-            prioridade=payload.prioridade,
+            nome=nome,
+            prioridade=prioridade,
             requer_internet=payload.requer_internet,
         )
         db.add(novo)
