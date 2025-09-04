@@ -290,9 +290,11 @@ export default function ChamadosPage() {
 
     // Socket.IO - realtime updates
     import("socket.io-client").then(({ io }) => {
-      const origin = typeof window !== "undefined" ? `${window.location.protocol}//${window.location.host}` : undefined;
+      const base = API_BASE;
+      const origin = base.replace(/\/?api$/, "");
+      const path = base.endsWith("/api") ? "/api/socket.io" : "/socket.io";
       const socket = io(origin, {
-        path: "/api/socket.io",
+        path,
         transports: ["websocket", "polling"],
         autoConnect: true,
         withCredentials: false,
