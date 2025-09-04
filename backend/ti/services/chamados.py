@@ -7,6 +7,7 @@ from core.utils import now_brazil_naive
 from ti.models import Chamado
 from core.db import engine
 from ti.schemas.chamado import ChamadoCreate
+import re
 
 
 def _next_codigo(db: Session) -> str:
