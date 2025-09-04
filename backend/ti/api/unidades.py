@@ -8,10 +8,21 @@ router = APIRouter(prefix="/unidades", tags=["TI - Unidades"])
 
 @router.get("", response_model=list[UnidadeOut])
 def listar_unidades(db: Session = Depends(get_db)):
-    from ..models import Unidade
+    from ..models import Unidade, Chamado
     try:
-        Unidade.__table__.create(bind=engine, checkfirst=True)
-        return db.query(Unidade).order_by(Unidade.id.desc()).all()
+        try:
+            Unidade.__table__.create(bind=engine, checkfirst=True)
+        except Exception:
+            pass
+        rows = db.query(Unidade).order_by(Unidade.id.desc()).all()
+        if rows:
+            return rows
+        # Fallback: derivar unidades dos chamados existentes
+        distinct = [r[0] for r in db.query(Chamado.unidade).distinct().all() if r[0]]
+        return [
+            {"id": 0, "nome": nome, "cidade": ""}
+            for nome in sorted(distinct)
+        ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar unidades: {e}")
 
@@ -19,7 +30,10 @@ def listar_unidades(db: Session = Depends(get_db)):
 def criar_unidade(payload: UnidadeCreate, db: Session = Depends(get_db)):
     try:
         from ..models import Unidade
-        Unidade.__table__.create(bind=engine, checkfirst=True)
+        try:
+            Unidade.__table__.create(bind=engine, checkfirst=True)
+        except Exception:
+            pass
         from ti.services.unidades import criar_unidade as service_criar
         return service_criar(db, payload)
     except ValueError as e:
