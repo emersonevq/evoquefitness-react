@@ -208,10 +208,6 @@ export default function ChamadosPage() {
       };
     }
 
-    const apiConfigured =
-      !!import.meta.env.VITE_API_BASE_URL ||
-      !!import.meta.env.VITE_PROXY_TARGET;
-
     function adaptMock(m: typeof ticketsMock[number]): UiTicket {
       return {
         id: m.id,
@@ -229,11 +225,6 @@ export default function ChamadosPage() {
         visita: m.visita ?? null,
         gerente: m.gerente ?? null,
       };
-    }
-
-    if (!apiConfigured) {
-      setItems(ticketsMock.map(adaptMock));
-      return;
     }
 
     fetch("/api/chamados")
