@@ -91,9 +91,42 @@ def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
             pass
         ch = service_criar(db, payload)
         try:
-            # Notificar criação
+            # Garantir tabela de notificações
+            Notification.__table__.create(bind=engine, checkfirst=True)
+            # Persistir notificação de criação
+            dados = json.dumps({
+                "id": ch.id,
+                "codigo": ch.codigo,
+                "protocolo": ch.protocolo,
+                "status": ch.status,
+            }, ensure_ascii=False)
+            n = Notification(
+                tipo="chamado",
+                titulo=f"Novo chamado {ch.codigo}",
+                mensagem=f"{ch.solicitante} abriu um chamado de {ch.problema} na unidade {ch.unidade}",
+                recurso="chamado",
+                recurso_id=ch.id,
+                acao="criado",
+                dados=dados,
+            )
+            db.add(n)
+            db.commit()
+            db.refresh(n)
+            # Notificar via socket
             import anyio  # ensure async context exists when possible
             anyio.from_thread.run(sio.emit, "chamado:created", {"id": ch.id})
+            anyio.from_thread.run(sio.emit, "notification:new", {
+                "id": n.id,
+                "tipo": n.tipo,
+                "titulo": n.titulo,
+                "mensagem": n.mensagem,
+                "recurso": n.recurso,
+                "recurso_id": n.recurso_id,
+                "acao": n.acao,
+                "dados": n.dados,
+                "lido": n.lido,
+                "criado_em": n.criado_em.isoformat() if n.criado_em else None,
+            })
         except Exception:
             pass
         return ch
