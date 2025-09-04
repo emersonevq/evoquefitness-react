@@ -191,7 +191,7 @@ export function AdicionarBanco() {
           <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {items.map((p) => (
               <li
-                key={p.id}
+                key={`${p.id}-${p.nome}`}
                 className="rounded-md border border-border/60 p-3 bg-background"
               >
                 <div className="font-medium">{p.nome}</div>
