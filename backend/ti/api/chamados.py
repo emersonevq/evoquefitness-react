@@ -7,6 +7,27 @@ from ti.services.chamados import criar_chamado as service_criar
 
 router = APIRouter(prefix="/chamados", tags=["TI - Chamados"])
 
+def _normalize_status(s: str) -> str:
+    if not s:
+        return "Aberto"
+    s_up = s.strip().upper()
+    mapping = {
+        "ABERTO": "Aberto",
+        "AGUARDANDO": "Em andamento",
+        "EM_ANDAMENTO": "Em andamento",
+        "EM ANDAMENTO": "Em andamento",
+        "EM_ANALISE": "Em análise",
+        "EM ANÁLISE": "Em análise",
+        "EM ANALISE": "Em análise",
+        "CONCLUIDO": "Concluído",
+        "CONCLUÍDO": "Concluído",
+        "CANCELADO": "Cancelado",
+    }
+    if s_up in mapping:
+        return mapping[s_up]
+    s_title = s.strip().title()
+    return s_title if s_title in ALLOWED_STATUSES else "Aberto"
+
 @router.get("", response_model=list[ChamadoOut])
 def listar_chamados(db: Session = Depends(get_db)):
     from ..models import Chamado
