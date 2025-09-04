@@ -7,6 +7,7 @@ export type TicketStatus =
 
 export interface TicketMock {
   id: string;
+  codigo: string;
   titulo: string;
   solicitante: string;
   unidade: string;
@@ -51,6 +52,7 @@ export const ticketsMock: TicketMock[] = Array.from({ length: 24 }).map(
     const categoria = cats[i % cats.length];
     const criado = new Date(2025, 0, day, 9 + (i % 8));
     const id = `TCK-${(1000 + i).toString()}`;
+    const codigo = `EVQ-${String(81 + i).padStart(4, "0")}`;
     const solicitante = ["Bruna", "Carlos", "Diego", "Fernanda", "Gustavo"][
       i % 5
     ];
@@ -74,13 +76,14 @@ export const ticketsMock: TicketMock[] = Array.from({ length: 24 }).map(
 
     return {
       id,
+      codigo,
       titulo: `${categoria} - Ocorrência ${i + 1}`,
       solicitante,
       unidade: ["Centro", "Zona Sul", "Zona Norte", "Zona Leste"][i % 4],
       categoria,
       status,
       criadoEm: criado.toISOString(),
-      protocolo: `${criado.getFullYear()}-${String(criado.getMonth() + 1).padStart(2, "0")}-${String(criado.getDate()).padStart(2, "0")}-${id}`,
+      protocolo: `${criado.getFullYear()}${String(criado.getMonth() + 1).padStart(2, "0")}${String(criado.getDate()).padStart(2, "0")}-${(i % 9) + 1}`,
       cargo: cargos[i % cargos.length],
       gerente: gerentes[i % gerentes.length],
       email,
