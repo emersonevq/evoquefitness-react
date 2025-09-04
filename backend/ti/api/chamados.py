@@ -83,3 +83,30 @@ def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao criar chamado: {e}")
+
+@router.patch("/{chamado_id}/status", response_model=ChamadoOut)
+def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session = Depends(get_db)):
+    from ..models import Chamado
+    try:
+        novo = _normalize_status(payload.status)
+        if novo not in ALLOWED_STATUSES:
+            raise HTTPException(status_code=400, detail="Status inválido")
+        ch = db.query(Chamado).filter(Chamado.id == chamado_id).first()
+        if not ch:
+            raise HTTPException(status_code=404, detail="Chamado não encontrado")
+        prev = ch.status or "Aberto"
+        ch.status = novo
+        # timestamps
+        from core.utils import now_brazil_naive
+        if prev == "Aberto" and novo != "Aberto" and ch.data_primeira_resposta is None:
+            ch.data_primeira_resposta = now_brazil_naive()
+        if novo == "Concluído":
+            ch.data_conclusao = now_brazil_naive()
+        db.add(ch)
+        db.commit()
+        db.refresh(ch)
+        return ch
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao atualizar status: {e}")
