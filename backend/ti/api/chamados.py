@@ -52,7 +52,7 @@ def listar_chamados(db: Session = Depends(get_db)):
         from sqlalchemy import text
         try:
             res = db.execute(text(
-                "SELECT id, codigo, protocolo, solicitante, cargo, email, telefone, unidade, problema, internet_item, data_visita, data_abertura, status, prioridade FROM chamados ORDER BY id DESC"
+                "SELECT id, codigo, protocolo, solicitante, cargo, email, telefone, unidade, problema, internet_item, descricao, data_visita, data_abertura, status, prioridade FROM chamados ORDER BY id DESC"
             ))
             rows = []
             for r in res.fetchall():
@@ -67,10 +67,11 @@ def listar_chamados(db: Session = Depends(get_db)):
                     "unidade": r[7],
                     "problema": r[8],
                     "internet_item": r[9],
-                    "data_visita": r[10],
-                    "data_abertura": r[11],
-                    "status": r[12],
-                    "prioridade": r[13],
+                    "descricao": r[10],
+                    "data_visita": r[11],
+                    "data_abertura": r[12],
+                    "status": r[13],
+                    "prioridade": r[14],
                 })
             return rows
         except Exception:
