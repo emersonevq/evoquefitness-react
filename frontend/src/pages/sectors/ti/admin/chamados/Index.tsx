@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-type TicketStatus = "ABERTO" | "EM_ANDAMENTO" | "EM_ANALISE" | "CONCLUIDO" | "CANCELADO";
+type TicketStatus =
+  | "ABERTO"
+  | "EM_ANDAMENTO"
+  | "EM_ANALISE"
+  | "CONCLUIDO"
+  | "CANCELADO";
 
 interface UiTicket {
   id: string;
@@ -183,7 +188,8 @@ export default function ChamadosPage() {
     function toUiStatus(s: string): TicketStatus {
       const n = s?.toUpperCase();
       if (n === "EM_ANDAMENTO" || n === "AGUARDANDO") return "EM_ANDAMENTO";
-      if (n === "EM_ANALISE" || n === "EM ANÁLISE" || n === "EM ANALISE") return "EM_ANALISE";
+      if (n === "EM_ANALISE" || n === "EM ANÁLISE" || n === "EM ANALISE")
+        return "EM_ANALISE";
       if (n === "CONCLUIDO" || n === "CONCLUÍDO") return "CONCLUIDO";
       if (n === "CANCELADO") return "CANCELADO";
       return "ABERTO";
@@ -239,7 +245,7 @@ export default function ChamadosPage() {
             Array.isArray(data) ? data.map(adapt) : ticketsMock.map(adaptMock),
           ),
         )
-        .catch(() => setItems(ticketsMock.map(adaptMock)))
+        .catch(() => setItems(ticketsMock.map(adaptMock))),
     );
   }, []);
 
@@ -485,8 +491,12 @@ export default function ChamadosPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="ABERTO">Aberto</SelectItem>
-                            <SelectItem value="EM_ANDAMENTO">Em andamento</SelectItem>
-                            <SelectItem value="EM_ANALISE">Em análise</SelectItem>
+                            <SelectItem value="EM_ANDAMENTO">
+                              Em andamento
+                            </SelectItem>
+                            <SelectItem value="EM_ANALISE">
+                              Em análise
+                            </SelectItem>
                             <SelectItem value="CONCLUIDO">Concluído</SelectItem>
                             <SelectItem value="CANCELADO">Cancelado</SelectItem>
                           </SelectContent>
