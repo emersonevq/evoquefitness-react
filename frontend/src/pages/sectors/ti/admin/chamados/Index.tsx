@@ -142,7 +142,8 @@ function TicketCard({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ABERTO">Aberto</SelectItem>
-              <SelectItem value="AGUARDANDO">Aguardando</SelectItem>
+              <SelectItem value="EM_ANDAMENTO">Em andamento</SelectItem>
+              <SelectItem value="EM_ANALISE">Em análise</SelectItem>
               <SelectItem value="CONCLUIDO">Concluído</SelectItem>
               <SelectItem value="CANCELADO">Cancelado</SelectItem>
             </SelectContent>
