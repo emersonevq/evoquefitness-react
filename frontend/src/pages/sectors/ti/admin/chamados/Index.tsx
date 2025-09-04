@@ -301,6 +301,13 @@ export default function ChamadosPage() {
         reconnection: true,
         reconnectionAttempts: 10,
       });
+      socket.on("connect_error", () => {
+        const alt = path === "/api/socket.io" ? "/socket.io" : "/api/socket.io";
+        if ((socket.io as any).opts.path !== alt) {
+          (socket.io as any).opts.path = alt;
+          socket.connect();
+        }
+      });
       socket.on("connect", () => {});
       socket.on(
         "notification:new",
