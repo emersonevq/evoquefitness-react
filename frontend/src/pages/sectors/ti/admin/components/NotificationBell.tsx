@@ -27,7 +27,11 @@ export default function NotificationBell() {
     const load = async () => {
       try {
         let r = await apiFetch("/notifications?limit=20");
-        if (r.status === 404) r = await fetch("/notifications?limit=20");
+        if (r.status === 404) {
+          const base = (import.meta as any)?.env?.VITE_API_BASE || "/api";
+          const url = `${String(base).replace(/\/?api$/, "")}/notifications?limit=20`;
+          r = await fetch(url);
+        }
         if (!r.ok) throw new Error("fail");
         const arr = await r.json();
         const mapped = Array.isArray(arr)
@@ -39,9 +43,11 @@ export default function NotificationBell() {
     load();
 
     import("socket.io-client").then(({ io }) => {
-      const origin = typeof window !== "undefined" ? `${window.location.protocol}//${window.location.host}` : undefined;
+      const base = (import.meta as any)?.env?.VITE_API_BASE || "/api";
+      const origin = String(base).replace(/\/?api$/, "");
+      const path = String(base).endsWith("/api") ? "/api/socket.io" : "/socket.io";
       const socket = io(origin, {
-        path: "/api/socket.io",
+        path,
         transports: ["websocket", "polling"],
         autoConnect: true,
       });
@@ -55,7 +61,11 @@ export default function NotificationBell() {
   const markAsRead = async (id: number) => {
     try {
       let r = await apiFetch(`/notifications/${id}/read`, { method: "PATCH" });
-      if (r.status === 404) r = await fetch(`/notifications/${id}/read`, { method: "PATCH" });
+      if (r.status === 404) {
+        const base = (import.meta as any)?.env?.VITE_API_BASE || "/api";
+        const url = `${String(base).replace(/\/?api$/, "")}/notifications/${id}/read`;
+        r = await fetch(url, { method: "PATCH" });
+      }
       if (!r.ok) throw new Error();
       const updated = await r.json();
       setItems((prev) => prev.map((i) => (i.id === id ? { ...i, lido: updated.lido } : i)));
