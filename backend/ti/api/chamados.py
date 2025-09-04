@@ -12,6 +12,8 @@ from ti.schemas.chamado import (
 from ti.services.chamados import criar_chamado as service_criar
 from core.realtime import sio
 from werkzeug.security import check_password_hash
+from ..models.notification import Notification
+import json
 
 router = APIRouter(prefix="/chamados", tags=["TI - Chamados"])
 
