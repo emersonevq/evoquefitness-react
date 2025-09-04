@@ -41,15 +41,16 @@ export default function TiPage() {
   >([]);
 
   useEffect(() => {
+    if (!open) return;
     fetch("/api/unidades")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
-      .then((data) => Array.isArray(data) && setUnidades(data))
+      .then((data) => Array.isArray(data) ? setUnidades(data) : setUnidades([]))
       .catch(() => setUnidades([]));
     fetch("/api/problemas")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
-      .then((data) => Array.isArray(data) && setProblemas(data))
+      .then((data) => Array.isArray(data) ? setProblemas(data) : setProblemas([]))
       .catch(() => setProblemas([]));
-  }, []);
+  }, [open]);
 
   return (
     <Layout>
