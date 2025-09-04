@@ -257,8 +257,10 @@ export default function ChamadosPage() {
     switch (filtro) {
       case "abertos":
         return items.filter((t) => t.status === "ABERTO");
-      case "aguardando":
-        return items.filter((t) => t.status === "AGUARDANDO");
+      case "em-andamento":
+        return items.filter((t) => t.status === "EM_ANDAMENTO");
+      case "em-analise":
+        return items.filter((t) => t.status === "EM_ANALISE");
       case "concluidos":
         return items.filter((t) => t.status === "CONCLUIDO");
       case "cancelados":
