@@ -31,6 +31,7 @@ interface Ticket {
 }
 
 export default function TiPage() {
+  const API_BASE: string = (import.meta as any)?.env?.VITE_API_BASE || "/api";
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [open, setOpen] = useState(false);
   const [unidades, setUnidades] = useState<
@@ -42,13 +43,13 @@ export default function TiPage() {
 
   useEffect(() => {
     if (!open) return;
-    fetch("/api/unidades")
+    fetch(`${API_BASE}/unidades`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
       .then((data) =>
         Array.isArray(data) ? setUnidades(data) : setUnidades([]),
       )
       .catch(() => setUnidades([]));
-    fetch("/api/problemas")
+    fetch(`${API_BASE}/problemas`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
       .then((data) =>
         Array.isArray(data) ? setProblemas(data) : setProblemas([]),
@@ -99,7 +100,7 @@ export default function TiPage() {
                 unidades={unidades}
                 onSubmit={async (payload) => {
                   try {
-                    const res = await fetch("/api/chamados", {
+                    const res = await fetch(`${API_BASE}/chamados`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
