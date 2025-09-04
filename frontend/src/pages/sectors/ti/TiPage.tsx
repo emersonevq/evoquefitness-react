@@ -107,14 +107,13 @@ export default function TiPage() {
                       body: JSON.stringify({
                         solicitante: payload.nome,
                         cargo: payload.cargo,
-                        gerente: payload.gerente,
                         email: payload.email,
                         telefone: payload.telefone,
                         unidade: payload.unidade,
                         problema: payload.problema,
                         internetItem: payload.internetItem || null,
                         visita: payload.visita || null,
-                        descricao: null,
+                        descricao: payload.descricao || null,
                       }),
                     });
                     if (!res.ok) throw new Error("Falha ao criar chamado");
@@ -214,13 +213,13 @@ function TicketForm(props: {
   onSubmit: (payload: {
     nome: string;
     cargo: string;
-    gerente: string;
     email: string;
     telefone: string;
     unidade: string;
     problema: string;
     internetItem?: string;
     visita: string;
+    descricao?: string;
   }) => void;
 }) {
   const { onSubmit } = props;
@@ -229,13 +228,13 @@ function TicketForm(props: {
   const [form, setForm] = useState({
     nome: "",
     cargo: "",
-    gerente: "",
     email: "",
     telefone: "",
     unidade: "",
     problema: "",
     internetItem: "",
     visita: "",
+    descricao: "",
   });
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -275,15 +274,6 @@ function TicketForm(props: {
               <SelectItem value="Gerente regional">Gerente regional</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="gerente">Gerente</Label>
-          <Input
-            id="gerente"
-            placeholder="Nome do gerente"
-            value={form.gerente}
-            onChange={(e) => setForm({ ...form, gerente: e.target.value })}
-          />
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
@@ -381,6 +371,16 @@ function TicketForm(props: {
           placeholder="dd/mm/aaaa"
           value={form.visita}
           onChange={(e) => setForm({ ...form, visita: e.target.value })}
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="descricao">Descrição do problema</Label>
+        <textarea
+          id="descricao"
+          className="min-h-[100px] rounded-md border border-input bg-background p-3 text-sm"
+          placeholder="Descreva o que está acontecendo"
+          value={form.descricao}
+          onChange={(e) => setForm({ ...form, descricao: e.target.value })}
         />
       </div>
       <div className="flex items-center justify-end gap-3 pt-2">
