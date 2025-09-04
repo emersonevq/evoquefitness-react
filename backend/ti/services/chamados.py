@@ -5,6 +5,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 from core.utils import now_brazil_naive
 from ti.models import Chamado
+from core.db import engine
 from ti.schemas.chamado import ChamadoCreate
 
 
@@ -18,6 +19,10 @@ def _gerar_protocolo(codigo: str) -> str:
 
 
 def criar_chamado(db: Session, payload: ChamadoCreate) -> Chamado:
+    try:
+        Chamado.__table__.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
     for _ in range(5):
         codigo = _gerar_codigo(6)
         protocolo = _gerar_protocolo(codigo)
