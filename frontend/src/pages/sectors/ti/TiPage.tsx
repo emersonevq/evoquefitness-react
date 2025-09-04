@@ -91,6 +91,7 @@ export default function TiPage() {
               </DialogHeader>
               <TicketForm
                 problemas={problemas}
+                unidades={unidades}
                 onSubmit={async (payload) => {
                   try {
                     const res = await fetch("/api/chamados", {
