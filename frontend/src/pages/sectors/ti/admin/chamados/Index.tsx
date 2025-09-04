@@ -227,14 +227,16 @@ export default function ChamadosPage() {
       };
     }
 
-    fetch("/api/chamados")
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
-      .then((data) =>
-        setItems(
-          Array.isArray(data) ? data.map(adapt) : ticketsMock.map(adaptMock),
-        ),
-      )
-      .catch(() => setItems(ticketsMock.map(adaptMock)));
+    import("@/lib/api").then(({ apiFetch }) =>
+      apiFetch("/chamados")
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
+        .then((data) =>
+          setItems(
+            Array.isArray(data) ? data.map(adapt) : ticketsMock.map(adaptMock),
+          ),
+        )
+        .catch(() => setItems(ticketsMock.map(adaptMock)))
+    );
   }, []);
 
   const counts = useMemo(
