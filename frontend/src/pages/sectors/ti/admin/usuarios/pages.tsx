@@ -398,10 +398,68 @@ export function Bloqueios() {
 }
 
 export function Permissoes() {
+  type ApiUser = {
+    id: number;
+    nome: string;
+    sobrenome: string;
+    usuario: string;
+    email: string;
+    nivel_acesso: string;
+    setor: string | null;
+  };
+  const [users, setUsers] = useState<ApiUser[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/usuarios")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
+      .then((data: ApiUser[]) => {
+        if (Array.isArray(data)) setUsers(data);
+      })
+      .catch(() => setUsers([]))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
-    <div className="card-surface rounded-xl p-4 text-sm">
-      <div className="font-semibold mb-2">Permissões</div>
-      <p className="text-muted-foreground">Defina perfis e escopos (mock).</p>
+    <div className="space-y-3">
+      <div className="card-surface rounded-xl p-4">
+        <div className="font-semibold mb-2">Permissões</div>
+        <p className="text-muted-foreground text-sm">
+          Liste e gerencie os usuários cadastrados.
+        </p>
+      </div>
+
+      <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {loading && (
+          <div className="text-sm text-muted-foreground">Carregando...</div>
+        )}
+        {!loading && users.length === 0 && (
+          <div className="text-sm text-muted-foreground">
+            Nenhum usuário encontrado.
+          </div>
+        )}
+        {users.map((u) => (
+          <div
+            key={u.id}
+            className="rounded-xl border border-border/60 bg-card overflow-hidden"
+          >
+            <div className="px-4 py-3 border-b border-border/60 bg-muted/30 flex items-center justify-between">
+              <div className="font-semibold">{u.nome} {u.sobrenome}</div>
+              <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">
+                {u.nivel_acesso}
+              </span>
+            </div>
+            <div className="p-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+              <div className="text-muted-foreground">Usuário</div>
+              <div className="text-right">{u.usuario}</div>
+              <div className="text-muted-foreground">E-mail</div>
+              <div className="text-right">{u.email}</div>
+              <div className="text-muted-foreground">Setor</div>
+              <div className="text-right">{u.setor || "—"}</div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
