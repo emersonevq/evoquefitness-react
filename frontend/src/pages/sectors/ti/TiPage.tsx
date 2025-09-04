@@ -90,6 +90,7 @@ export default function TiPage() {
                 <DialogTitle>Abrir chamado</DialogTitle>
               </DialogHeader>
               <TicketForm
+                problemas={problemas}
                 onSubmit={async (payload) => {
                   try {
                     const res = await fetch("/api/chamados", {
@@ -195,8 +196,10 @@ export default function TiPage() {
 }
 
 function TicketForm({
+  problemas,
   onSubmit,
 }: {
+  problemas: { id: number; nome: string; prioridade: string; requer_internet: boolean }[];
   onSubmit: (payload: {
     nome: string;
     cargo: string;
