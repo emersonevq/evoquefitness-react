@@ -44,11 +44,15 @@ export default function TiPage() {
     if (!open) return;
     fetch("/api/unidades")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
-      .then((data) => Array.isArray(data) ? setUnidades(data) : setUnidades([]))
+      .then((data) =>
+        Array.isArray(data) ? setUnidades(data) : setUnidades([]),
+      )
       .catch(() => setUnidades([]));
     fetch("/api/problemas")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
-      .then((data) => Array.isArray(data) ? setProblemas(data) : setProblemas([]))
+      .then((data) =>
+        Array.isArray(data) ? setProblemas(data) : setProblemas([]),
+      )
       .catch(() => setProblemas([]));
   }, [open]);
 
@@ -197,23 +201,26 @@ export default function TiPage() {
   );
 }
 
-function TicketForm(
-  props: {
-    problemas?: { id: number; nome: string; prioridade: string; requer_internet: boolean }[];
-    unidades?: { id: number; nome: string; cidade: string }[];
-    onSubmit: (payload: {
-      nome: string;
-      cargo: string;
-      gerente: string;
-      email: string;
-      telefone: string;
-      unidade: string;
-      problema: string;
-      internetItem?: string;
-      visita: string;
-    }) => void;
-  },
-) {
+function TicketForm(props: {
+  problemas?: {
+    id: number;
+    nome: string;
+    prioridade: string;
+    requer_internet: boolean;
+  }[];
+  unidades?: { id: number; nome: string; cidade: string }[];
+  onSubmit: (payload: {
+    nome: string;
+    cargo: string;
+    gerente: string;
+    email: string;
+    telefone: string;
+    unidade: string;
+    problema: string;
+    internetItem?: string;
+    visita: string;
+  }) => void;
+}) {
   const { onSubmit } = props;
   const listaProblemas = Array.isArray(props.problemas) ? props.problemas : [];
   const listaUnidades = Array.isArray(props.unidades) ? props.unidades : [];
