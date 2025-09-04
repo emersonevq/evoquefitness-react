@@ -2,8 +2,9 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 class UnidadeCreate(BaseModel):
+    id: int | None = None
     nome: str
-    cidade: str
+    cidade: str | None = None
 
 class UnidadeOut(BaseModel):
     id: int
