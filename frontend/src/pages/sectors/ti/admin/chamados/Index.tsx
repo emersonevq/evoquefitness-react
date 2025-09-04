@@ -7,7 +7,8 @@ type TicketStatus =
   | "CANCELADO";
 
 interface UiTicket {
-  id: string;
+  id: string; // database id
+  codigo: string; // EVQ-0001
   protocolo: string;
   titulo: string;
   solicitante: string;
@@ -101,6 +102,7 @@ function StatusPill({ status }: { status: TicketStatus }) {
 
 function TicketCard({
   id,
+  codigo,
   titulo,
   solicitante,
   unidade,
@@ -112,6 +114,7 @@ function TicketCard({
   onDelete,
 }: {
   id: string;
+  codigo: string;
   titulo: string;
   solicitante: string;
   unidade: string;
@@ -126,7 +129,7 @@ function TicketCard({
   return (
     <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
       <div className="px-4 py-3 border-b border-border/60 bg-muted/30 flex items-center justify-between">
-        <div className="font-semibold text-orange-400">{id}</div>
+        <div className="font-semibold text-orange-400">{codigo}</div>
         <StatusPill status={status} />
       </div>
 
@@ -236,6 +239,7 @@ export default function ChamadosPage() {
           : it.problema;
       return {
         id: String(it.id),
+        codigo: it.codigo,
         protocolo: it.protocolo,
         titulo,
         solicitante: it.solicitante,
@@ -256,6 +260,7 @@ export default function ChamadosPage() {
     function adaptMock(m: (typeof ticketsMock)[number]): UiTicket {
       return {
         id: m.id,
+        codigo: (m as any).codigo || String(m.id),
         protocolo: m.protocolo,
         titulo: m.titulo,
         solicitante: m.solicitante,
