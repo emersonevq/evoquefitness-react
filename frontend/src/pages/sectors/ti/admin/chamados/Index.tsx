@@ -622,7 +622,10 @@ export default function ChamadosPage() {
                     <div className="rounded-lg border border-border/60 bg-card p-4 h-max">
                       <div className="font-semibold mb-3">Ações</div>
                       <div className="grid gap-3">
-                        <Select defaultValue={selected.status}>
+                        <Select
+                          defaultValue={selected.status}
+                          onValueChange={(v) => setSelected((s) => (s ? { ...s, status: v as TicketStatus } : s))}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -641,10 +644,42 @@ export default function ChamadosPage() {
                         <Button variant="success">
                           <UserPlus className="size-4" /> Atribuir
                         </Button>
-                        <Button variant="warning">
+                        <Button
+                          variant="warning"
+                          onClick={async () => {
+                            if (!selected) return;
+                            const sel = selected.status;
+                            const statusText =
+                              sel === "ABERTO"
+                                ? "Aberto"
+                                : sel === "EM_ANDAMENTO"
+                                  ? "Em andamento"
+                                  : sel === "EM_ANALISE"
+                                    ? "Em análise"
+                                    : sel === "CONCLUIDO"
+                                      ? "Concluído"
+                                      : "Cancelado";
+                            try {
+                              const r = await apiFetch(`/chamados/${selected.id}/status`, {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ status: statusText }),
+                              });
+                              if (!r.ok) throw new Error(await r.text());
+                              setItems((prev) =>
+                                prev.map((it) => (it.id === selected.id ? { ...it, status: sel } : it)),
+                              );
+                            } catch (e) {
+                              // noop
+                            }
+                          }}
+                        >
                           <Save className="size-4" /> Atualizar
                         </Button>
-                        <Button variant="destructive">
+                        <Button
+                          variant="destructive"
+                          onClick={() => setConfirmId(selected?.id || null)}
+                        >
                           <Trash2 className="size-4" /> Excluir
                         </Button>
                       </div>
