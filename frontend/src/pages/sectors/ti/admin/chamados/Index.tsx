@@ -246,7 +246,7 @@ export default function ChamadosPage() {
     () => ({
       todos: items.length,
       abertos: items.filter((t) => t.status === "ABERTO").length,
-      aguardando: items.filter((t) => t.status === "AGUARDANDO").length,
+      aguardando: items.filter((t) => t.status === "EM_ANDAMENTO").length,
       concluidos: items.filter((t) => t.status === "CONCLUIDO").length,
       cancelados: items.filter((t) => t.status === "CANCELADO").length,
     }),
