@@ -35,15 +35,15 @@ export function AdicionarUnidade() {
       <div className="grid sm:grid-cols-3 gap-3">
         <input
           className="rounded-md bg-background border px-3 py-2"
-          placeholder="ID (opcional)"
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-        />
-        <input
-          className="rounded-md bg-background border px-3 py-2"
           placeholder="Nome da unidade"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
+        />
+        <input
+          className="rounded-md bg-background border px-3 py-2"
+          placeholder="ID (opcional)"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
         />
         <button
           disabled={saving}
