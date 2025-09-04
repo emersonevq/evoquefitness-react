@@ -292,9 +292,8 @@ export default function ChamadosPage() {
     import("socket.io-client").then(({ io }) => {
       const base = API_BASE;
       const origin = base.replace(/\/?api$/, "");
-      const path = base.endsWith("/api") ? "/api/socket.io" : "/socket.io";
       const socket = io(origin, {
-        path,
+        path: "/socket.io",
         transports: ["websocket", "polling"],
         autoConnect: true,
         withCredentials: false,
