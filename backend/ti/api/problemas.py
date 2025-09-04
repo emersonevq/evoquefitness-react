@@ -14,7 +14,10 @@ def listar_problemas(db: Session = Depends(get_db)):
             Problema.__table__.create(bind=engine, checkfirst=True)
         except Exception:
             pass
-        rows = db.query(Problema).order_by(Problema.nome.asc()).all()
+        try:
+            rows = db.query(Problema).order_by(Problema.nome.asc()).all()
+        except Exception:
+            rows = []
         result = [
             {
                 "id": r.id,
