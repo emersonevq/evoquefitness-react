@@ -64,11 +64,13 @@ function StatusPill({ status }: { status: TicketStatus }) {
   const styles =
     status === "ABERTO"
       ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300"
-      : status === "AGUARDANDO"
+      : status === "EM_ANDAMENTO"
         ? "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300"
-        : status === "CONCLUIDO"
-          ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300"
-          : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300";
+        : status === "EM_ANALISE"
+          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300"
+          : status === "CONCLUIDO"
+            ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300"
+            : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${styles}`}
