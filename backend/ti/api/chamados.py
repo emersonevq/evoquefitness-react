@@ -2,8 +2,18 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from core.db import get_db, engine
-from ti.schemas.chamado import ChamadoCreate, ChamadoOut, ChamadoStatusUpdate, ALLOWED_STATUSES
+from ti.schemas.chamado import (
+    ChamadoCreate,
+    ChamadoOut,
+    ChamadoStatusUpdate,
+    ChamadoDeleteRequest,
+    ALLOWED_STATUSES,
+)
 from ti.services.chamados import criar_chamado as service_criar
+from core.realtime import sio
+from werkzeug.security import check_password_hash
+from ..models.notification import Notification
+import json
 
 router = APIRouter(prefix="/chamados", tags=["TI - Chamados"])
 
@@ -44,7 +54,7 @@ def listar_chamados(db: Session = Depends(get_db)):
         from sqlalchemy import text
         try:
             res = db.execute(text(
-                "SELECT id, codigo, protocolo, solicitante, cargo, email, telefone, unidade, problema, internet_item, data_visita, data_abertura, status, prioridade FROM chamados ORDER BY id DESC"
+                "SELECT id, codigo, protocolo, solicitante, cargo, email, telefone, unidade, problema, internet_item, descricao, data_visita, data_abertura, status, prioridade FROM chamados ORDER BY id DESC"
             ))
             rows = []
             for r in res.fetchall():
@@ -59,10 +69,11 @@ def listar_chamados(db: Session = Depends(get_db)):
                     "unidade": r[7],
                     "problema": r[8],
                     "internet_item": r[9],
-                    "data_visita": r[10],
-                    "data_abertura": r[11],
-                    "status": r[12],
-                    "prioridade": r[13],
+                    "descricao": r[10],
+                    "data_visita": r[11],
+                    "data_abertura": r[12],
+                    "status": r[13],
+                    "prioridade": r[14],
                 })
             return rows
         except Exception:
@@ -78,7 +89,47 @@ def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
             Chamado.__table__.create(bind=engine, checkfirst=True)
         except Exception:
             pass
-        return service_criar(db, payload)
+        ch = service_criar(db, payload)
+        try:
+            # Garantir tabela de notificações
+            Notification.__table__.create(bind=engine, checkfirst=True)
+            # Persistir notificação de criação
+            dados = json.dumps({
+                "id": ch.id,
+                "codigo": ch.codigo,
+                "protocolo": ch.protocolo,
+                "status": ch.status,
+            }, ensure_ascii=False)
+            n = Notification(
+                tipo="chamado",
+                titulo=f"Novo chamado {ch.codigo}",
+                mensagem=f"{ch.solicitante} abriu um chamado de {ch.problema} na unidade {ch.unidade}",
+                recurso="chamado",
+                recurso_id=ch.id,
+                acao="criado",
+                dados=dados,
+            )
+            db.add(n)
+            db.commit()
+            db.refresh(n)
+            # Notificar via socket
+            import anyio  # ensure async context exists when possible
+            anyio.from_thread.run(sio.emit, "chamado:created", {"id": ch.id})
+            anyio.from_thread.run(sio.emit, "notification:new", {
+                "id": n.id,
+                "tipo": n.tipo,
+                "titulo": n.titulo,
+                "mensagem": n.mensagem,
+                "recurso": n.recurso,
+                "recurso_id": n.recurso_id,
+                "acao": n.acao,
+                "dados": n.dados,
+                "lido": n.lido,
+                "criado_em": n.criado_em.isoformat() if n.criado_em else None,
+            })
+        except Exception:
+            pass
+        return ch
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -105,8 +156,102 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
         db.add(ch)
         db.commit()
         db.refresh(ch)
+        try:
+            # Persistir notificação de mudança de status
+            Notification.__table__.create(bind=engine, checkfirst=True)
+            dados = json.dumps({
+                "id": ch.id,
+                "codigo": ch.codigo,
+                "protocolo": ch.protocolo,
+                "status": ch.status,
+                "status_anterior": prev,
+            }, ensure_ascii=False)
+            n = Notification(
+                tipo="chamado",
+                titulo=f"Status atualizado: {ch.codigo}",
+                mensagem=f"{prev} → {ch.status}",
+                recurso="chamado",
+                recurso_id=ch.id,
+                acao="status",
+                dados=dados,
+            )
+            db.add(n)
+            db.commit()
+            db.refresh(n)
+            import anyio
+            anyio.from_thread.run(sio.emit, "chamado:status", {"id": ch.id, "status": ch.status})
+            anyio.from_thread.run(sio.emit, "notification:new", {
+                "id": n.id,
+                "tipo": n.tipo,
+                "titulo": n.titulo,
+                "mensagem": n.mensagem,
+                "recurso": n.recurso,
+                "recurso_id": n.recurso_id,
+                "acao": n.acao,
+                "dados": n.dados,
+                "lido": n.lido,
+                "criado_em": n.criado_em.isoformat() if n.criado_em else None,
+            })
+        except Exception:
+            pass
         return ch
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao atualizar status: {e}")
+
+@router.delete("/{chamado_id}")
+def deletar_chamado(chamado_id: int, payload: ChamadoDeleteRequest, db: Session = Depends(get_db)):
+    from ..models import Chamado, User
+    try:
+        user = db.query(User).filter(User.email == payload.email).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="Usuário não encontrado")
+        if not check_password_hash(user.senha_hash, payload.senha):
+            raise HTTPException(status_code=401, detail="Senha inválida")
+        ch = db.query(Chamado).filter(Chamado.id == chamado_id).first()
+        if not ch:
+            raise HTTPException(status_code=404, detail="Chamado não encontrado")
+        db.delete(ch)
+        db.commit()
+        try:
+            # Persistir notificação de exclusão
+            Notification.__table__.create(bind=engine, checkfirst=True)
+            dados = json.dumps({
+                "id": chamado_id,
+                "codigo": ch.codigo,
+                "protocolo": ch.protocolo,
+            }, ensure_ascii=False)
+            n = Notification(
+                tipo="chamado",
+                titulo=f"Chamado excluído: {ch.codigo}",
+                mensagem=f"Chamado {ch.protocolo} removido",
+                recurso="chamado",
+                recurso_id=chamado_id,
+                acao="excluido",
+                dados=dados,
+            )
+            db.add(n)
+            db.commit()
+            db.refresh(n)
+            import anyio
+            anyio.from_thread.run(sio.emit, "chamado:deleted", {"id": chamado_id})
+            anyio.from_thread.run(sio.emit, "notification:new", {
+                "id": n.id,
+                "tipo": n.tipo,
+                "titulo": n.titulo,
+                "mensagem": n.mensagem,
+                "recurso": n.recurso,
+                "recurso_id": n.recurso_id,
+                "acao": n.acao,
+                "dados": n.dados,
+                "lido": n.lido,
+                "criado_em": n.criado_em.isoformat() if n.criado_em else None,
+            })
+        except Exception:
+            pass
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao excluir chamado: {e}")

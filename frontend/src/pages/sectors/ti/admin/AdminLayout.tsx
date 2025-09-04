@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import NotificationBell from "./components/NotificationBell";
 
 const groups = [
   {
@@ -35,13 +36,18 @@ export default function AdminLayout() {
     <Layout>
       <section className="w-full border-b border-border/60">
         <div className="brand-gradient">
-          <div className="container py-8 sm:py-10">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-primary-foreground">
-              Painel administrativo — Setor de TI
-            </h1>
-            <p className="mt-1 text-primary-foreground/90">
-              Métricas, gerenciamento e configurações do setor
-            </p>
+          <div className="container py-8 sm:py-10 flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-primary-foreground">
+                Painel administrativo — Setor de TI
+              </h1>
+              <p className="mt-1 text-primary-foreground/90">
+                Métricas, gerenciamento e configurações do setor
+              </p>
+            </div>
+            <div className="pt-1">
+              <NotificationBell />
+            </div>
           </div>
         </div>
       </section>

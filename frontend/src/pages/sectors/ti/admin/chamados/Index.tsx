@@ -7,7 +7,8 @@ type TicketStatus =
   | "CANCELADO";
 
 interface UiTicket {
-  id: string;
+  id: string; // database id
+  codigo: string; // EVQ-0001
   protocolo: string;
   titulo: string;
   solicitante: string;
@@ -21,6 +22,7 @@ interface UiTicket {
   internetItem?: string | null;
   visita?: string | null;
   gerente?: string | null;
+  descricao?: string | null;
 }
 import { NavLink, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -39,11 +41,15 @@ import {
 } from "@/components/ui/dialog";
 import { Save, Trash2, Ticket as TicketIcon, UserPlus } from "lucide-react";
 import { ticketsMock } from "../mock";
+import { apiFetch, API_BASE } from "@/lib/api";
+import { useAuthContext } from "@/lib/auth-context";
+import { toast } from "@/hooks/use-toast";
 
 const statusMap = [
   { key: "todos", label: "Todos" },
   { key: "abertos", label: "Abertos" },
-  { key: "aguardando", label: "Aguardando" },
+  { key: "em-andamento", label: "Em andamento" },
+  { key: "em-analise", label: "Em análise" },
   { key: "concluidos", label: "Concluídos" },
   { key: "cancelados", label: "Cancelados" },
 ] as const;
@@ -76,17 +82,28 @@ function StatusPill({ status }: { status: TicketStatus }) {
           : status === "CONCLUIDO"
             ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300"
             : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300";
+  const label =
+    status === "ABERTO"
+      ? "Aberto"
+      : status === "EM_ANDAMENTO"
+        ? "Em andamento"
+        : status === "EM_ANALISE"
+          ? "Em análise"
+          : status === "CONCLUIDO"
+            ? "Concluído"
+            : "Cancelado";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${styles}`}
     >
-      {status}
+      {label}
     </span>
   );
 }
 
 function TicketCard({
   id,
+  codigo,
   titulo,
   solicitante,
   unidade,
@@ -94,8 +111,11 @@ function TicketCard({
   status,
   criadoEm,
   onTicket,
+  onUpdate,
+  onDelete,
 }: {
   id: string;
+  codigo: string;
   titulo: string;
   solicitante: string;
   unidade: string;
@@ -103,12 +123,14 @@ function TicketCard({
   status: TicketStatus;
   criadoEm: string;
   onTicket: () => void;
+  onUpdate: (id: string, status: TicketStatus) => void;
+  onDelete: (id: string) => void;
 }) {
   const [sel, setSel] = useState<TicketStatus>(status);
   return (
     <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
       <div className="px-4 py-3 border-b border-border/60 bg-muted/30 flex items-center justify-between">
-        <div className="font-semibold text-orange-400">{id}</div>
+        <div className="font-semibold text-orange-400">{codigo}</div>
         <StatusPill status={status} />
       </div>
 
@@ -158,10 +180,22 @@ function TicketCard({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-          <Button variant="warning" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="warning"
+            onClick={(e) => {
+              e.stopPropagation();
+              onUpdate(id, sel);
+            }}
+          >
             <Save className="size-4" /> Atualizar
           </Button>
-          <Button variant="destructive" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(id);
+            }}
+          >
             <Trash2 className="size-4" /> Excluir
           </Button>
           <Button
@@ -183,6 +217,10 @@ export default function ChamadosPage() {
   const { filtro } = useParams<{ filtro?: string }>();
 
   const [items, setItems] = useState<UiTicket[]>([]);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const { user } = useAuthContext();
 
   useEffect(() => {
     function toUiStatus(s: string): TicketStatus {
@@ -202,6 +240,7 @@ export default function ChamadosPage() {
           : it.problema;
       return {
         id: String(it.id),
+        codigo: it.codigo,
         protocolo: it.protocolo,
         titulo,
         solicitante: it.solicitante,
@@ -215,12 +254,14 @@ export default function ChamadosPage() {
         internetItem: it.internet_item ?? null,
         visita: it.data_visita ?? null,
         gerente: null,
+        descricao: it.descricao ?? null,
       };
     }
 
     function adaptMock(m: (typeof ticketsMock)[number]): UiTicket {
       return {
         id: m.id,
+        codigo: (m as any).codigo || String(m.id),
         protocolo: m.protocolo,
         titulo: m.titulo,
         solicitante: m.solicitante,
@@ -234,19 +275,76 @@ export default function ChamadosPage() {
         internetItem: m.internetItem ?? null,
         visita: m.visita ?? null,
         gerente: m.gerente ?? null,
+        descricao: (m as any).descricao ?? null,
       };
     }
 
-    import("@/lib/api").then(({ apiFetch }) =>
-      apiFetch("/chamados")
-        .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
-        .then((data) =>
-          setItems(
-            Array.isArray(data) ? data.map(adapt) : ticketsMock.map(adaptMock),
+    apiFetch("/chamados")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
+      .then((data) =>
+        setItems(
+          Array.isArray(data) ? data.map(adapt) : ticketsMock.map(adaptMock),
+        ),
+      )
+      .catch(() => setItems(ticketsMock.map(adaptMock)));
+
+    // Socket.IO - realtime updates
+    import("socket.io-client").then(({ io }) => {
+      const base = API_BASE;
+      const origin = base.replace(/\/?api$/, "");
+      const path = base.endsWith("/api") ? "/api/socket.io" : "/socket.io";
+      const socket = io(origin, {
+        path,
+        transports: ["websocket", "polling"],
+        autoConnect: true,
+        withCredentials: false,
+        reconnection: true,
+        reconnectionAttempts: 10,
+      });
+      socket.on("connect", () => {});
+      socket.on(
+        "notification:new",
+        (n: { titulo: string; mensagem?: string }) => {
+          toast({ title: n.titulo, description: n.mensagem || "" });
+        },
+      );
+      socket.on("chamado:created", () => {
+        apiFetch("/chamados")
+          .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
+          .then((data) => setItems(Array.isArray(data) ? data.map(adapt) : []))
+          .catch(() => {});
+      });
+      socket.on("chamado:status", (data: { id: number; status: string }) => {
+        setItems((prev) =>
+          prev.map((it) =>
+            String(it.id) === String(data.id)
+              ? {
+                  ...it,
+                  status: (() => {
+                    const n = data.status?.toUpperCase();
+                    if (n === "EM_ANDAMENTO") return "EM_ANDAMENTO";
+                    if (
+                      n === "EM_ANALISE" ||
+                      n === "EM ANÁLISE" ||
+                      n === "EM ANALISE"
+                    )
+                      return "EM_ANALISE";
+                    if (n === "CONCLUIDO" || n === "CONCLUÍDO")
+                      return "CONCLUIDO";
+                    if (n === "CANCELADO") return "CANCELADO";
+                    return "ABERTO";
+                  })() as TicketStatus,
+                }
+              : it,
           ),
-        )
-        .catch(() => setItems(ticketsMock.map(adaptMock))),
-    );
+        );
+      });
+      socket.on("chamado:deleted", (data: { id: number }) => {
+        setItems((prev) =>
+          prev.filter((it) => String(it.id) !== String(data.id)),
+        );
+      });
+    });
   }, []);
 
   const counts = useMemo(
@@ -302,7 +400,10 @@ export default function ChamadosPage() {
     const base = new Date(s.criadoEm).getTime();
     const arr: { t: number; label: string; attachments?: string[] }[] = [
       { t: base, label: "Chamado aberto" },
-      { t: base + 45 * 60 * 1000, label: `Status: ${s.status}` },
+      {
+        t: base + 45 * 60 * 1000,
+        label: `Status: ${s.status === "ABERTO" ? "Aberto" : s.status === "EM_ANDAMENTO" ? "Em andamento" : s.status === "EM_ANALISE" ? "Em análise" : s.status === "CONCLUIDO" ? "Concluído" : "Cancelado"}`,
+      },
     ];
     if (s.visita)
       arr.push({
@@ -340,7 +441,7 @@ export default function ChamadosPage() {
           bgClass="bg-gradient-to-br from-orange-500 to-orange-400"
         />
         <SummaryCard
-          title="Aguardando"
+          title="Em andamento"
           value={counts.aguardando}
           bgClass="bg-gradient-to-br from-amber-500 to-amber-600"
         />
@@ -389,10 +490,96 @@ export default function ChamadosPage() {
                 setTab("ticket");
                 setOpen(true);
               }}
+              onUpdate={async (id, sel) => {
+                const statusText =
+                  sel === "ABERTO"
+                    ? "Aberto"
+                    : sel === "EM_ANDAMENTO"
+                      ? "Em andamento"
+                      : sel === "EM_ANALISE"
+                        ? "Em análise"
+                        : sel === "CONCLUIDO"
+                          ? "Concluído"
+                          : "Cancelado";
+                try {
+                  const r = await apiFetch(`/chamados/${id}/status`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: statusText }),
+                  });
+                  if (!r.ok) throw new Error(await r.text());
+                  const updated = await r.json();
+                  setItems((prev) =>
+                    prev.map((it) =>
+                      it.id === id ? { ...it, status: sel } : it,
+                    ),
+                  );
+                } catch (e) {
+                  // noop: in real app show toast
+                }
+              }}
+              onDelete={(id) => setConfirmId(id)}
             />
           </div>
         ))}
       </div>
+
+      {/* Delete confirmation */}
+      <Dialog open={!!confirmId} onOpenChange={(o) => !o && setConfirmId(null)}>
+        <DialogContent className="max-w-md">
+          <div className="space-y-3">
+            <div className="text-lg font-semibold">Excluir chamado</div>
+            <p className="text-sm text-muted-foreground">
+              Esta ação apagará definitivamente o chamado e não poderá ser
+              desfeita.
+            </p>
+            <div className="grid gap-2">
+              <label className="text-sm">Confirme sua senha</label>
+              <input
+                type="password"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="secondary" onClick={() => setConfirmId(null)}>
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={!confirmPwd || confirmLoading}
+                onClick={async () => {
+                  if (!confirmId || !user?.email) return;
+                  setConfirmLoading(true);
+                  try {
+                    const r = await apiFetch(`/chamados/${confirmId}`, {
+                      method: "DELETE",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        email: user.email,
+                        senha: confirmPwd,
+                      }),
+                    });
+                    if (!r.ok) throw new Error(await r.text());
+                    setItems((prev) =>
+                      prev.filter((it) => it.id !== confirmId),
+                    );
+                    setConfirmId(null);
+                    setConfirmPwd("");
+                  } catch (e) {
+                    // noop: in real app show toast
+                  } finally {
+                    setConfirmLoading(false);
+                  }
+                }}
+              >
+                Confirmar exclusão
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-3xl">
@@ -450,13 +637,25 @@ export default function ChamadosPage() {
                           {selected.gerente || "—"}
                         </div>
                         <div className="text-muted-foreground">E-mail</div>
-                        <div className="text-right">{selected.email}</div>
+                        <div className="text-right break-all">
+                          {selected.email}
+                        </div>
                         <div className="text-muted-foreground">Telefone</div>
                         <div className="text-right">{selected.telefone}</div>
                         <div className="text-muted-foreground">Unidade</div>
                         <div className="text-right">{selected.unidade}</div>
                         <div className="text-muted-foreground">Problema</div>
                         <div className="text-right">{selected.categoria}</div>
+                        {selected.descricao && (
+                          <>
+                            <div className="text-muted-foreground">
+                              Descrição
+                            </div>
+                            <div className="text-right whitespace-pre-line break-words">
+                              {selected.descricao}
+                            </div>
+                          </>
+                        )}
                         {selected.internetItem && (
                           <>
                             <div className="text-muted-foreground">
@@ -485,7 +684,14 @@ export default function ChamadosPage() {
                     <div className="rounded-lg border border-border/60 bg-card p-4 h-max">
                       <div className="font-semibold mb-3">Ações</div>
                       <div className="grid gap-3">
-                        <Select defaultValue={selected.status}>
+                        <Select
+                          defaultValue={selected.status}
+                          onValueChange={(v) =>
+                            setSelected((s) =>
+                              s ? { ...s, status: v as TicketStatus } : s,
+                            )
+                          }
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -504,10 +710,51 @@ export default function ChamadosPage() {
                         <Button variant="success">
                           <UserPlus className="size-4" /> Atribuir
                         </Button>
-                        <Button variant="warning">
+                        <Button
+                          variant="warning"
+                          onClick={async () => {
+                            if (!selected) return;
+                            const sel = selected.status;
+                            const statusText =
+                              sel === "ABERTO"
+                                ? "Aberto"
+                                : sel === "EM_ANDAMENTO"
+                                  ? "Em andamento"
+                                  : sel === "EM_ANALISE"
+                                    ? "Em análise"
+                                    : sel === "CONCLUIDO"
+                                      ? "Concluído"
+                                      : "Cancelado";
+                            try {
+                              const r = await apiFetch(
+                                `/chamados/${selected.id}/status`,
+                                {
+                                  method: "PATCH",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({ status: statusText }),
+                                },
+                              );
+                              if (!r.ok) throw new Error(await r.text());
+                              setItems((prev) =>
+                                prev.map((it) =>
+                                  it.id === selected.id
+                                    ? { ...it, status: sel }
+                                    : it,
+                                ),
+                              );
+                            } catch (e) {
+                              // noop
+                            }
+                          }}
+                        >
                           <Save className="size-4" /> Atualizar
                         </Button>
-                        <Button variant="destructive">
+                        <Button
+                          variant="destructive"
+                          onClick={() => setConfirmId(selected?.id || null)}
+                        >
                           <Trash2 className="size-4" /> Excluir
                         </Button>
                       </div>

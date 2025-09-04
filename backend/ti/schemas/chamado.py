@@ -27,6 +27,7 @@ class ChamadoOut(BaseModel):
     unidade: str
     problema: str
     internet_item: str | None
+    descricao: str | None = None
     data_visita: date | None
     data_abertura: datetime | None
     status: str
@@ -37,3 +38,7 @@ class ChamadoOut(BaseModel):
 
 class ChamadoStatusUpdate(BaseModel):
     status: str = Field(..., description="Novo status do chamado")
+
+class ChamadoDeleteRequest(BaseModel):
+    email: EmailStr = Field(..., description="E-mail do usuário autenticado")
+    senha: str = Field(..., min_length=6, description="Senha do usuário para confirmar exclusão")

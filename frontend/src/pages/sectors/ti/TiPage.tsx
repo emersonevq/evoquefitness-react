@@ -2,6 +2,8 @@ import Layout from "@/components/layout/Layout";
 import { sectors } from "@/data/sectors";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { CheckCircle, Copy } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +27,7 @@ const sector = sectors.find((s) => s.slug === "ti")!;
 
 interface Ticket {
   id: string;
+  codigo: string;
   protocolo: string;
   data: string;
   problema: string;
@@ -34,7 +37,12 @@ interface Ticket {
 export default function TiPage() {
   const API_BASE: string = (import.meta as any)?.env?.VITE_API_BASE || "/api";
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [lastCreated, setLastCreated] = useState<{
+    codigo: string;
+    protocolo: string;
+  } | null>(null);
   const [open, setOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
   const [unidades, setUnidades] = useState<
     { id: number; nome: string; cidade: string }[]
   >([]);
@@ -74,6 +82,20 @@ export default function TiPage() {
       </section>
 
       <section className="container py-8">
+        {lastCreated && (
+          <div className="mb-4 rounded-lg border border-border/60 bg-card p-4 text-sm">
+            <div className="font-semibold mb-1">Chamado criado com sucesso</div>
+            <div>
+              Código <span className="font-semibold">{lastCreated.codigo}</span>{" "}
+              e Protocolo{" "}
+              <span className="font-semibold">{lastCreated.protocolo}</span>{" "}
+              gerados e salvos.
+            </div>
+            <div className="text-muted-foreground mt-1">
+              Guarde essas informações para futuras consultas.
+            </div>
+          </div>
+        )}
         <div className="flex items-center justify-between gap-4">
           <div className="md:hidden">
             <Button asChild variant="secondary" className="rounded-full">
@@ -107,19 +129,18 @@ export default function TiPage() {
                       body: JSON.stringify({
                         solicitante: payload.nome,
                         cargo: payload.cargo,
-                        gerente: payload.gerente,
                         email: payload.email,
                         telefone: payload.telefone,
                         unidade: payload.unidade,
                         problema: payload.problema,
                         internetItem: payload.internetItem || null,
-                        visita: payload.visita || null,
-                        descricao: null,
+                        descricao: payload.descricao || null,
                       }),
                     });
                     if (!res.ok) throw new Error("Falha ao criar chamado");
                     const created: {
                       id: number;
+                      codigo: string;
                       protocolo: string;
                       data_abertura: string;
                       problema: string;
@@ -135,6 +156,7 @@ export default function TiPage() {
                     setTickets((prev) => [
                       {
                         id: String(created.id),
+                        codigo: created.codigo,
                         protocolo: created.protocolo,
                         data:
                           created.data_abertura?.slice(0, 10) ||
@@ -144,7 +166,12 @@ export default function TiPage() {
                       },
                       ...prev,
                     ]);
+                    setLastCreated({
+                      codigo: created.codigo,
+                      protocolo: created.protocolo,
+                    });
                     setOpen(false);
+                    setSuccessOpen(true);
                   } catch (e) {
                     console.error(e);
                     alert("Não foi possível abrir o chamado. Tente novamente.");
@@ -180,7 +207,7 @@ export default function TiPage() {
               ) : (
                 tickets.map((t) => (
                   <tr key={t.id} className="border-t border-border/60">
-                    <td className="px-4 py-3">{t.id}</td>
+                    <td className="px-4 py-3">{t.codigo}</td>
                     <td className="px-4 py-3">{t.protocolo}</td>
                     <td className="px-4 py-3">
                       {new Date(t.data).toLocaleDateString()}
@@ -199,6 +226,98 @@ export default function TiPage() {
           </table>
         </div>
       </section>
+
+      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+        <DialogContent className="max-w-md overflow-hidden p-0">
+          {lastCreated && (
+            <div className="w-full">
+              <div className="brand-gradient px-5 py-4 flex items-center gap-3">
+                <div className="rounded-full bg-white/15 p-2">
+                  <CheckCircle className="size-6 text-primary-foreground" />
+                </div>
+                <div>
+                  <div className="text-sm/5 text-primary-foreground/90">
+                    Chamado aberto
+                  </div>
+                  <div className="text-xl font-extrabold text-primary-foreground drop-shadow">
+                    Sucesso!
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-5 space-y-4">
+                <div className="text-sm text-muted-foreground">
+                  Guarde as informações abaixo:
+                </div>
+
+                <div className="grid gap-3">
+                  <div className="text-xs text-muted-foreground">Código</div>
+                  <div className="flex items-center justify-between rounded-md border border-border/60 bg-background px-3 py-2">
+                    <div className="font-mono font-semibold text-base break-all">
+                      {lastCreated.codigo}
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="ml-2"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(
+                            lastCreated.codigo,
+                          );
+                        } catch {}
+                      }}
+                    >
+                      <Copy className="size-4 mr-1" /> Copiar
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <div className="text-xs text-muted-foreground">Protocolo</div>
+                  <div className="flex items-center justify-between rounded-md border border-border/60 bg-background px-3 py-2">
+                    <div className="font-mono font-semibold text-base break-all">
+                      {lastCreated.protocolo}
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="ml-2"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(
+                            lastCreated.protocolo,
+                          );
+                        } catch {}
+                      }}
+                    >
+                      <Copy className="size-4 mr-1" /> Copiar
+                    </Button>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex flex-wrap gap-2 justify-end">
+                  <Button
+                    variant="secondary"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(
+                          `Código: ${lastCreated.codigo} | Protocolo: ${lastCreated.protocolo}`,
+                        );
+                      } catch {}
+                    }}
+                  >
+                    <Copy className="size-4 mr-1" /> Copiar tudo
+                  </Button>
+                  <Button onClick={() => setSuccessOpen(false)}>Fechar</Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
@@ -214,13 +333,12 @@ function TicketForm(props: {
   onSubmit: (payload: {
     nome: string;
     cargo: string;
-    gerente: string;
     email: string;
     telefone: string;
     unidade: string;
     problema: string;
     internetItem?: string;
-    visita: string;
+    descricao?: string;
   }) => void;
 }) {
   const { onSubmit } = props;
@@ -229,16 +347,32 @@ function TicketForm(props: {
   const [form, setForm] = useState({
     nome: "",
     cargo: "",
-    gerente: "",
     email: "",
     telefone: "",
     unidade: "",
     problema: "",
     internetItem: "",
-    visita: "",
+    descricao: "",
   });
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    const must = [
+      form.nome.trim(),
+      form.cargo.trim(),
+      form.email.trim(),
+      form.telefone.trim(),
+      form.unidade.trim(),
+      form.problema.trim(),
+      form.descricao.trim(),
+    ];
+    if (must.some((v) => !v)) {
+      alert("Preencha todos os campos obrigatórios.");
+      return;
+    }
+    if (selectedProblem?.requer_internet && !form.internetItem.trim()) {
+      alert("Selecione o item de Internet.");
+      return;
+    }
     onSubmit(form);
   };
 
@@ -275,15 +409,6 @@ function TicketForm(props: {
               <SelectItem value="Gerente regional">Gerente regional</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="gerente">Gerente</Label>
-          <Input
-            id="gerente"
-            placeholder="Nome do gerente"
-            value={form.gerente}
-            onChange={(e) => setForm({ ...form, gerente: e.target.value })}
-          />
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
@@ -374,13 +499,14 @@ function TicketForm(props: {
       )}
 
       <div className="grid gap-2">
-        <Label htmlFor="visita">Visita Técnica</Label>
-        <Input
-          id="visita"
-          type="date"
-          placeholder="dd/mm/aaaa"
-          value={form.visita}
-          onChange={(e) => setForm({ ...form, visita: e.target.value })}
+        <Label htmlFor="descricao">Descrição do problema</Label>
+        <textarea
+          id="descricao"
+          className="min-h-[100px] rounded-md border border-input bg-background p-3 text-sm"
+          placeholder="Descreva o que está acontecendo"
+          value={form.descricao}
+          onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+          required
         />
       </div>
       <div className="flex items-center justify-end gap-3 pt-2">
