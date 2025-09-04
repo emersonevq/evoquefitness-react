@@ -14,11 +14,16 @@ def listar_unidades(db: Session = Depends(get_db)):
             Unidade.__table__.create(bind=engine, checkfirst=True)
         except Exception:
             pass
-        rows = db.query(Unidade).order_by(Unidade.id.desc()).all()
+        try:
+            rows = db.query(Unidade).order_by(Unidade.id.desc()).all()
+        except Exception:
+            rows = []
         if rows:
             return rows
-        # Fallback: derivar unidades dos chamados existentes
-        distinct = [r[0] for r in db.query(Chamado.unidade).distinct().all() if r[0]]
+        try:
+            distinct = [r[0] for r in db.query(Chamado.unidade).distinct().all() if r[0]]
+        except Exception:
+            distinct = []
         return [
             {"id": 0, "nome": nome, "cidade": ""}
             for nome in sorted(distinct)
