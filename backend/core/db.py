@@ -5,20 +5,31 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from dotenv import load_dotenv
+import pathlib
 
+# Load .env first
 load_dotenv()
 
+# Try to import env.py as module; if not valid python, fall back to parsing it as dotenv
 try:
     import env as _env  # type: ignore
 except Exception:
     _env = None
+    # Try to load key=value from backend/env.py as dotenv-format
+    try:
+        base_dir = pathlib.Path(__file__).resolve().parent.parent  # backend/
+        alt_env = base_dir / "env.py"
+        if alt_env.exists():
+            load_dotenv(alt_env.as_posix())
+    except Exception:
+        pass
 
-DB_HOST = (_env.DB_HOST if _env and _env.DB_HOST else os.getenv("DB_HOST", "localhost"))
-DB_USER = (_env.DB_USER if _env and _env.DB_USER else os.getenv("DB_USER", "root"))
-DB_PASSWORD = (_env.DB_PASSWORD if _env and _env.DB_PASSWORD else os.getenv("DB_PASSWORD", ""))
-DB_NAME = (_env.DB_NAME if _env and _env.DB_NAME else os.getenv("DB_NAME", "test"))
-DB_PORT = int((_env.DB_PORT if _env and _env.DB_PORT else os.getenv("DB_PORT", "3306")))
-DB_SSL_CA = (_env.DB_SSL_CA if _env and _env.DB_SSL_CA else os.getenv("DB_SSL_CA"))
+DB_HOST = (_env.DB_HOST if _env and getattr(_env, "DB_HOST", None) else os.getenv("DB_HOST", "localhost"))
+DB_USER = (_env.DB_USER if _env and getattr(_env, "DB_USER", None) else os.getenv("DB_USER", "root"))
+DB_PASSWORD = (_env.DB_PASSWORD if _env and getattr(_env, "DB_PASSWORD", None) else os.getenv("DB_PASSWORD", ""))
+DB_NAME = (_env.DB_NAME if _env and getattr(_env, "DB_NAME", None) else os.getenv("DB_NAME", "test"))
+DB_PORT = int((_env.DB_PORT if _env and getattr(_env, "DB_PORT", None) else os.getenv("DB_PORT", "3306")))
+DB_SSL_CA = (_env.DB_SSL_CA if _env and getattr(_env, "DB_SSL_CA", None) else os.getenv("DB_SSL_CA"))
 
 url = URL.create(
     drivername="mysql+pymysql",
