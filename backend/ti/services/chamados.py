@@ -11,81 +11,48 @@ from ti.schemas.chamado import ChamadoCreate
 
 def _next_codigo(db: Session) -> str:
     """Gera código sequencial no formato EVQ-XXXX (4 dígitos), iniciando em EVQ-0081.
-    Considera também tabela legada 'chamados'.
+    Apenas considera a tabela atual 'chamado'.
     """
     from ti.models import Chamado
-    max_n = 0
+    max_n = 80  # garante mínimo EVQ-0081
     try:
         rows = db.query(Chamado.codigo).filter(Chamado.codigo.like("EVQ-%")).all()
         for (cod,) in rows:
             try:
-                if isinstance(cod, str) and cod.upper().startswith("EVQ-"):
-                    suf = cod.split("-", 1)[1]
-                    num = int("".join(ch for ch in suf if ch.isdigit()))
-                    if num > max_n:
-                        max_n = num
+                suf = str(cod).split("-", 1)[1]
+                n = int("".join(ch for ch in suf if ch.isdigit()))
+                if n > max_n:
+                    max_n = n
             except Exception:
                 continue
     except Exception:
         pass
-    # Legacy table
-    try:
-        from sqlalchemy import text
-        with engine.connect() as conn:
-            res = conn.execute(text("SELECT codigo FROM chamados WHERE codigo LIKE 'EVQ-%'"))
-            for row in res.fetchall():
-                cod = row[0]
-                try:
-                    if isinstance(cod, str) and cod.upper().startswith("EVQ-"):
-                        suf = cod.split("-", 1)[1]
-                        num = int("".join(ch for ch in suf if ch.isdigit()))
-                        if num > max_n:
-                            max_n = num
-                except Exception:
-                    continue
-    except Exception:
-        pass
-    # Inicia em 81 se base estiver vazia ou abaixo disso
-    base_min = 81
-    nxt = max(max_n + 1, base_min)
-    return f"EVQ-{nxt:04d}"
+    return f"EVQ-{max_n + 1:04d}"
 
 
 def _next_protocolo(db: Session) -> str:
-    """Protocolo no formato YYYYMMDD-N, onde N é sequencial por dia; considera tabela legada 'chamados'."""
+    """Gera protocolo ALEATÓRIO no formato XXXXXXXX-X (8 dígitos + hífen + 1 dígito).
+    Garante unicidade consultando apenas a tabela atual 'chamado'.
+    """
     from ti.models import Chamado
-    d = now_brazil_naive().date()
-    ymd = f"{d.year}{d.month:02d}{d.day:02d}"
-    max_n = 0
-    try:
-        rows = db.query(Chamado.protocolo).filter(Chamado.protocolo.like(f"{ymd}-%")).all()
-        for (p,) in rows:
-            try:
-                suf = str(p).split("-", 1)[1]
-                num = int("".join(ch for ch in suf if ch.isdigit()))
-                if num > max_n:
-                    max_n = num
-            except Exception:
-                continue
-    except Exception:
-        pass
-    try:
-        from sqlalchemy import text
-        with engine.connect() as conn:
-            res = conn.execute(text("SELECT protocolo FROM chamados WHERE protocolo LIKE :pfx"), {"pfx": f"{ymd}-%"})
-            for row in res.fetchall():
-                p = row[0]
-                try:
-                    suf = str(p).split("-", 1)[1]
-                    num = int("".join(ch for ch in suf if ch.isdigit()))
-                    if num > max_n:
-                        max_n = num
-                except Exception:
-                    continue
-    except Exception:
-        pass
-    nxt = max_n + 1
-    return f"{ymd}-{nxt}"
+
+    def gen() -> str:
+        base = "".join(str(random.randint(0, 9)) for _ in range(8))
+        dv = str(random.randint(0, 9))
+        return f"{base}-{dv}"
+
+    for _ in range(50):
+        p = gen()
+        try:
+            exists = db.query(Chamado).filter(Chamado.protocolo == p).first()
+        except Exception:
+            exists = None
+        if not exists:
+            return p
+    # Fallback muito improvável: usa timestamp truncado + rand
+    from time import time
+    fallback = f"{int(time())%100000000:08d}-{random.randint(0,9)}"
+    return fallback
 
 
 def criar_chamado(db: Session, payload: ChamadoCreate) -> Chamado:

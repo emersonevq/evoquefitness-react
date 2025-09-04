@@ -49,34 +49,6 @@ def listar_chamados(db: Session = Depends(get_db)):
         try:
             return db.query(Chamado).order_by(Chamado.id.desc()).all()
         except Exception:
-            pass
-        # Fallback: tabela legada "chamados"
-        from sqlalchemy import text
-        try:
-            res = db.execute(text(
-                "SELECT id, codigo, protocolo, solicitante, cargo, email, telefone, unidade, problema, internet_item, descricao, data_visita, data_abertura, status, prioridade FROM chamados ORDER BY id DESC"
-            ))
-            rows = []
-            for r in res.fetchall():
-                rows.append({
-                    "id": r[0],
-                    "codigo": r[1],
-                    "protocolo": r[2],
-                    "solicitante": r[3],
-                    "cargo": r[4],
-                    "email": r[5],
-                    "telefone": r[6],
-                    "unidade": r[7],
-                    "problema": r[8],
-                    "internet_item": r[9],
-                    "descricao": r[10],
-                    "data_visita": r[11],
-                    "data_abertura": r[12],
-                    "status": r[13],
-                    "prioridade": r[14],
-                })
-            return rows
-        except Exception:
             return []
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar chamados: {e}")

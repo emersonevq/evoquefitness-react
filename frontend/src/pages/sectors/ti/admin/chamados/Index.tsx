@@ -292,9 +292,8 @@ export default function ChamadosPage() {
     import("socket.io-client").then(({ io }) => {
       const base = API_BASE;
       const origin = base.replace(/\/?api$/, "");
-      const path = base.endsWith("/api") ? "/api/socket.io" : "/socket.io";
       const socket = io(origin, {
-        path,
+        path: "/socket.io",
         transports: ["websocket", "polling"],
         autoConnect: true,
         withCredentials: false,
@@ -390,7 +389,7 @@ export default function ChamadosPage() {
 
   function initFromSelected(s: UiTicket) {
     setTab("resumo");
-    setSubject(`Atualização do Chamado ${s.id}`);
+    setSubject(`Atualiza��ão do Chamado ${s.id}`);
     setMessage("");
     setTemplate("");
     setPriority(false);
