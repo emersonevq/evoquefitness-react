@@ -54,7 +54,8 @@ export default function NotificationBell() {
 
   const markAsRead = async (id: number) => {
     try {
-      const r = await apiFetch(`/notifications/${id}/read`, { method: "PATCH" });
+      let r = await apiFetch(`/notifications/${id}/read`, { method: "PATCH" });
+      if (r.status === 404) r = await fetch(`/notifications/${id}/read`, { method: "PATCH" });
       if (!r.ok) throw new Error();
       const updated = await r.json();
       setItems((prev) => prev.map((i) => (i.id === id ? { ...i, lido: updated.lido } : i)));
