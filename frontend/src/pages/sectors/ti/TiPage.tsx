@@ -195,23 +195,24 @@ export default function TiPage() {
   );
 }
 
-function TicketForm({
-  problemas,
-  onSubmit,
-}: {
-  problemas: { id: number; nome: string; prioridade: string; requer_internet: boolean }[];
-  onSubmit: (payload: {
-    nome: string;
-    cargo: string;
-    gerente: string;
-    email: string;
-    telefone: string;
-    unidade: string;
-    problema: string;
-    internetItem?: string;
-    visita: string;
-  }) => void;
-}) {
+function TicketForm(
+  props: {
+    problemas?: { id: number; nome: string; prioridade: string; requer_internet: boolean }[];
+    onSubmit: (payload: {
+      nome: string;
+      cargo: string;
+      gerente: string;
+      email: string;
+      telefone: string;
+      unidade: string;
+      problema: string;
+      internetItem?: string;
+      visita: string;
+    }) => void;
+  },
+) {
+  const { onSubmit } = props;
+  const listaProblemas = Array.isArray(props.problemas) ? props.problemas : [];
   const [form, setForm] = useState({
     nome: "",
     cargo: "",
@@ -229,8 +230,8 @@ function TicketForm({
   };
 
   const selectedProblem = useMemo(
-    () => problemas.find((p) => p.nome === form.problema) || null,
-    [problemas, form.problema],
+    () => listaProblemas.find((p) => p.nome === form.problema) || null,
+    [listaProblemas, form.problema],
   );
 
   return (
@@ -334,7 +335,7 @@ function TicketForm({
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
-              {problemas.length === 0 ? (
+              {listaProblemas.length === 0 ? (
                 <>
                   <SelectItem value="Catraca">Catraca</SelectItem>
                   <SelectItem value="CFTV">CFTV</SelectItem>
@@ -350,7 +351,7 @@ function TicketForm({
                   <SelectItem value="TVs">TVs</SelectItem>
                 </>
               ) : (
-                problemas.map((p) => (
+                listaProblemas.map((p) => (
                   <SelectItem key={p.id} value={p.nome}>
                     {p.nome}
                   </SelectItem>
