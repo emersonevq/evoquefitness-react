@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-type TicketStatus = "ABERTO" | "AGUARDANDO" | "CONCLUIDO" | "CANCELADO";
+type TicketStatus =
+  | "ABERTO"
+  | "EM_ANDAMENTO"
+  | "EM_ANALISE"
+  | "CONCLUIDO"
+  | "CANCELADO";
 
 interface UiTicket {
   id: string;
@@ -64,11 +69,13 @@ function StatusPill({ status }: { status: TicketStatus }) {
   const styles =
     status === "ABERTO"
       ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300"
-      : status === "AGUARDANDO"
+      : status === "EM_ANDAMENTO"
         ? "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300"
-        : status === "CONCLUIDO"
-          ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300"
-          : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300";
+        : status === "EM_ANALISE"
+          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300"
+          : status === "CONCLUIDO"
+            ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300"
+            : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${styles}`}
@@ -142,7 +149,8 @@ function TicketCard({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ABERTO">Aberto</SelectItem>
-              <SelectItem value="AGUARDANDO">Aguardando</SelectItem>
+              <SelectItem value="EM_ANDAMENTO">Em andamento</SelectItem>
+              <SelectItem value="EM_ANALISE">Em análise</SelectItem>
               <SelectItem value="CONCLUIDO">Concluído</SelectItem>
               <SelectItem value="CANCELADO">Cancelado</SelectItem>
             </SelectContent>
@@ -179,7 +187,9 @@ export default function ChamadosPage() {
   useEffect(() => {
     function toUiStatus(s: string): TicketStatus {
       const n = s?.toUpperCase();
-      if (n === "AGUARDANDO") return "AGUARDANDO";
+      if (n === "EM_ANDAMENTO" || n === "AGUARDANDO") return "EM_ANDAMENTO";
+      if (n === "EM_ANALISE" || n === "EM ANÁLISE" || n === "EM ANALISE")
+        return "EM_ANALISE";
       if (n === "CONCLUIDO" || n === "CONCLUÍDO") return "CONCLUIDO";
       if (n === "CANCELADO") return "CANCELADO";
       return "ABERTO";
@@ -227,21 +237,23 @@ export default function ChamadosPage() {
       };
     }
 
-    fetch("/api/chamados")
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
-      .then((data) =>
-        setItems(
-          Array.isArray(data) ? data.map(adapt) : ticketsMock.map(adaptMock),
-        ),
-      )
-      .catch(() => setItems(ticketsMock.map(adaptMock)));
+    import("@/lib/api").then(({ apiFetch }) =>
+      apiFetch("/chamados")
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
+        .then((data) =>
+          setItems(
+            Array.isArray(data) ? data.map(adapt) : ticketsMock.map(adaptMock),
+          ),
+        )
+        .catch(() => setItems(ticketsMock.map(adaptMock))),
+    );
   }, []);
 
   const counts = useMemo(
     () => ({
       todos: items.length,
       abertos: items.filter((t) => t.status === "ABERTO").length,
-      aguardando: items.filter((t) => t.status === "AGUARDANDO").length,
+      aguardando: items.filter((t) => t.status === "EM_ANDAMENTO").length,
       concluidos: items.filter((t) => t.status === "CONCLUIDO").length,
       cancelados: items.filter((t) => t.status === "CANCELADO").length,
     }),
@@ -252,8 +264,10 @@ export default function ChamadosPage() {
     switch (filtro) {
       case "abertos":
         return items.filter((t) => t.status === "ABERTO");
-      case "aguardando":
-        return items.filter((t) => t.status === "AGUARDANDO");
+      case "em-andamento":
+        return items.filter((t) => t.status === "EM_ANDAMENTO");
+      case "em-analise":
+        return items.filter((t) => t.status === "EM_ANALISE");
       case "concluidos":
         return items.filter((t) => t.status === "CONCLUIDO");
       case "cancelados":
@@ -477,8 +491,11 @@ export default function ChamadosPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="ABERTO">Aberto</SelectItem>
-                            <SelectItem value="AGUARDANDO">
-                              Aguardando
+                            <SelectItem value="EM_ANDAMENTO">
+                              Em andamento
+                            </SelectItem>
+                            <SelectItem value="EM_ANALISE">
+                              Em análise
                             </SelectItem>
                             <SelectItem value="CONCLUIDO">Concluído</SelectItem>
                             <SelectItem value="CANCELADO">Cancelado</SelectItem>

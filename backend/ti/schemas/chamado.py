@@ -1,6 +1,8 @@
 from __future__ import annotations
 from datetime import date, datetime
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
+
+ALLOWED_STATUSES = {"Aberto", "Em andamento", "Em análise", "Concluído", "Cancelado"}
 
 class ChamadoCreate(BaseModel):
     solicitante: str
@@ -32,3 +34,6 @@ class ChamadoOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ChamadoStatusUpdate(BaseModel):
+    status: str = Field(..., description="Novo status do chamado")
