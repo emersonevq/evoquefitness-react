@@ -2,8 +2,16 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from core.db import get_db, engine
-from ti.schemas.chamado import ChamadoCreate, ChamadoOut, ChamadoStatusUpdate, ALLOWED_STATUSES
+from ti.schemas.chamado import (
+    ChamadoCreate,
+    ChamadoOut,
+    ChamadoStatusUpdate,
+    ChamadoDeleteRequest,
+    ALLOWED_STATUSES,
+)
 from ti.services.chamados import criar_chamado as service_criar
+from core.realtime import sio
+from werkzeug.security import check_password_hash
 
 router = APIRouter(prefix="/chamados", tags=["TI - Chamados"])
 
@@ -78,7 +86,14 @@ def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
             Chamado.__table__.create(bind=engine, checkfirst=True)
         except Exception:
             pass
-        return service_criar(db, payload)
+        ch = service_criar(db, payload)
+        try:
+            # Notificar criação
+            import anyio  # ensure async context exists when possible
+            anyio.from_thread.run(sio.emit, "chamado:created", {"id": ch.id})
+        except Exception:
+            pass
+        return ch
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -105,8 +120,38 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
         db.add(ch)
         db.commit()
         db.refresh(ch)
+        try:
+            import anyio
+            anyio.from_thread.run(sio.emit, "chamado:status", {"id": ch.id, "status": ch.status})
+        except Exception:
+            pass
         return ch
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao atualizar status: {e}")
+
+@router.delete("/{chamado_id}")
+def deletar_chamado(chamado_id: int, payload: ChamadoDeleteRequest, db: Session = Depends(get_db)):
+    from ..models import Chamado, User
+    try:
+        user = db.query(User).filter(User.email == payload.email).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="Usuário não encontrado")
+        if not check_password_hash(user.senha_hash, payload.senha):
+            raise HTTPException(status_code=401, detail="Senha inválida")
+        ch = db.query(Chamado).filter(Chamado.id == chamado_id).first()
+        if not ch:
+            raise HTTPException(status_code=404, detail="Chamado não encontrado")
+        db.delete(ch)
+        db.commit()
+        try:
+            import anyio
+            anyio.from_thread.run(sio.emit, "chamado:deleted", {"id": chamado_id})
+        except Exception:
+            pass
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao excluir chamado: {e}")
