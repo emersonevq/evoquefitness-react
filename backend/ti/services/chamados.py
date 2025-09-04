@@ -10,46 +10,77 @@ from ti.schemas.chamado import ChamadoCreate
 
 
 def _next_codigo(db: Session) -> str:
-    """Gera código sequencial no formato EVQ-0001, EVQ-0002, ..."""
+    """Gera código sequencial no formato EVQ-0001, considerando também tabela legada 'chamados'."""
     from ti.models import Chamado
+    max_n = 0
     try:
-      # pegar maior sufixo numérico já usado
-      rows = db.query(Chamado.codigo).filter(Chamado.codigo.like("EVQ-%")).all()
-      max_n = 0
-      for (cod,) in rows:
-          try:
-              if isinstance(cod, str) and cod.upper().startswith("EVQ-"):
-                  suf = cod.split("-", 1)[1]
-                  num = int("".join(ch for ch in suf if ch.isdigit()))
-                  if num > max_n:
-                      max_n = num
-          except Exception:
-              continue
-      nxt = max_n + 1
+        rows = db.query(Chamado.codigo).filter(Chamado.codigo.like("EVQ-%")).all()
+        for (cod,) in rows:
+            try:
+                if isinstance(cod, str) and cod.upper().startswith("EVQ-"):
+                    suf = cod.split("-", 1)[1]
+                    num = int("".join(ch for ch in suf if ch.isdigit()))
+                    if num > max_n:
+                        max_n = num
+            except Exception:
+                continue
     except Exception:
-      nxt = 1
+        pass
+    # Legacy table
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            res = conn.execute(text("SELECT codigo FROM chamados WHERE codigo LIKE 'EVQ-%'"))
+            for row in res.fetchall():
+                cod = row[0]
+                try:
+                    if isinstance(cod, str) and cod.upper().startswith("EVQ-"):
+                        suf = cod.split("-", 1)[1]
+                        num = int("".join(ch for ch in suf if ch.isdigit()))
+                        if num > max_n:
+                            max_n = num
+                except Exception:
+                    continue
+    except Exception:
+        pass
+    nxt = max_n + 1
     return f"EVQ-{nxt:04d}"
 
 
 def _next_protocolo(db: Session) -> str:
-    """Protocolo no formato YYYYMMDD-N, onde N é sequencial por dia."""
+    """Protocolo no formato YYYYMMDD-N, onde N é sequencial por dia; considera tabela legada 'chamados'."""
     from ti.models import Chamado
     d = now_brazil_naive().date()
     ymd = f"{d.year}{d.month:02d}{d.day:02d}"
+    max_n = 0
     try:
-      rows = db.query(Chamado.protocolo).filter(Chamado.protocolo.like(f"{ymd}-%")).all()
-      max_n = 0
-      for (p,) in rows:
-          try:
-              suf = str(p).split("-", 1)[1]
-              num = int("".join(ch for ch in suf if ch.isdigit()))
-              if num > max_n:
-                  max_n = num
-          except Exception:
-              continue
-      nxt = max_n + 1
+        rows = db.query(Chamado.protocolo).filter(Chamado.protocolo.like(f"{ymd}-%")).all()
+        for (p,) in rows:
+            try:
+                suf = str(p).split("-", 1)[1]
+                num = int("".join(ch for ch in suf if ch.isdigit()))
+                if num > max_n:
+                    max_n = num
+            except Exception:
+                continue
     except Exception:
-      nxt = 1
+        pass
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            res = conn.execute(text("SELECT protocolo FROM chamados WHERE protocolo LIKE :pfx"), {"pfx": f"{ymd}-%"})
+            for row in res.fetchall():
+                p = row[0]
+                try:
+                    suf = str(p).split("-", 1)[1]
+                    num = int("".join(ch for ch in suf if ch.isdigit()))
+                    if num > max_n:
+                        max_n = num
+                except Exception:
+                    continue
+    except Exception:
+        pass
+    nxt = max_n + 1
     return f"{ymd}-{nxt}"
 
 
