@@ -24,15 +24,19 @@ export default function NotificationBell() {
   const unread = items.filter((i) => !i.lido).length;
 
   useEffect(() => {
-    apiFetch("/notifications?limit=20")
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
-      .then((arr: any[]) => {
+    const load = async () => {
+      try {
+        let r = await apiFetch("/notifications?limit=20");
+        if (r.status === 404) r = await fetch("/notifications?limit=20");
+        if (!r.ok) throw new Error("fail");
+        const arr = await r.json();
         const mapped = Array.isArray(arr)
-          ? arr.map((n) => ({ id: n.id, titulo: n.titulo, mensagem: n.mensagem ?? null, lido: !!n.lido }))
+          ? arr.map((n: any) => ({ id: n.id, titulo: n.titulo, mensagem: n.mensagem ?? null, lido: !!n.lido }))
           : [];
         setItems(mapped);
-      })
-      .catch(() => {});
+      } catch {}
+    };
+    load();
 
     import("socket.io-client").then(({ io }) => {
       const origin = typeof window !== "undefined" ? `${window.location.protocol}//${window.location.host}` : undefined;
