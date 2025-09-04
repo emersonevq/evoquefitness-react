@@ -206,7 +206,7 @@ def deletar_chamado(chamado_id: int, payload: ChamadoDeleteRequest, db: Session 
     try:
         user = db.query(User).filter(User.email == payload.email).first()
         if not user:
-            raise HTTPException(status_code=401, detail="Usu��rio não encontrado")
+            raise HTTPException(status_code=401, detail="Usuário não encontrado")
         if not check_password_hash(user.senha_hash, payload.senha):
             raise HTTPException(status_code=401, detail="Senha inválida")
         ch = db.query(Chamado).filter(Chamado.id == chamado_id).first()
@@ -215,8 +215,39 @@ def deletar_chamado(chamado_id: int, payload: ChamadoDeleteRequest, db: Session 
         db.delete(ch)
         db.commit()
         try:
+            # Persistir notificação de exclusão
+            Notification.__table__.create(bind=engine, checkfirst=True)
+            dados = json.dumps({
+                "id": chamado_id,
+                "codigo": ch.codigo,
+                "protocolo": ch.protocolo,
+            }, ensure_ascii=False)
+            n = Notification(
+                tipo="chamado",
+                titulo=f"Chamado excluído: {ch.codigo}",
+                mensagem=f"Chamado {ch.protocolo} removido",
+                recurso="chamado",
+                recurso_id=chamado_id,
+                acao="excluido",
+                dados=dados,
+            )
+            db.add(n)
+            db.commit()
+            db.refresh(n)
             import anyio
             anyio.from_thread.run(sio.emit, "chamado:deleted", {"id": chamado_id})
+            anyio.from_thread.run(sio.emit, "notification:new", {
+                "id": n.id,
+                "tipo": n.tipo,
+                "titulo": n.titulo,
+                "mensagem": n.mensagem,
+                "recurso": n.recurso,
+                "recurso_id": n.recurso_id,
+                "acao": n.acao,
+                "dados": n.dados,
+                "lido": n.lido,
+                "criado_em": n.criado_em.isoformat() if n.criado_em else None,
+            })
         except Exception:
             pass
         return {"ok": True}
