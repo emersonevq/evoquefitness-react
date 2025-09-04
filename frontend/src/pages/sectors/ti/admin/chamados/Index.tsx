@@ -39,6 +39,8 @@ import {
 } from "@/components/ui/dialog";
 import { Save, Trash2, Ticket as TicketIcon, UserPlus } from "lucide-react";
 import { ticketsMock } from "../mock";
+import { apiFetch, API_BASE } from "@/lib/api";
+import { useAuthContext } from "@/lib/auth-context";
 
 const statusMap = [
   { key: "todos", label: "Todos" },
