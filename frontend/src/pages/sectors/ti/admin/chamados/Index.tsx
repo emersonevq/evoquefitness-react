@@ -290,8 +290,15 @@ export default function ChamadosPage() {
 
     // Socket.IO - realtime updates
     import("socket.io-client").then(({ io }) => {
-      const base = API_BASE.replace(/\/?api$/, "");
-      const socket = io(base || undefined, { transports: ["websocket"], autoConnect: true, path: "/api/socket.io" });
+      const origin = typeof window !== "undefined" ? `${window.location.protocol}//${window.location.host}` : undefined;
+      const socket = io(origin, {
+        path: "/api/socket.io",
+        transports: ["websocket", "polling"],
+        autoConnect: true,
+        withCredentials: false,
+        reconnection: true,
+        reconnectionAttempts: 10,
+      });
       socket.on("connect", () => {});
       socket.on("notification:new", (n: { titulo: string; mensagem?: string }) => {
         toast({ title: n.titulo, description: n.mensagem || "" });
