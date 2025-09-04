@@ -28,6 +28,32 @@ def listar_problemas(db: Session = Depends(get_db)):
             }
             for r in rows
         ]
+        # Fallbacks: plural/legacy tables and different column names
+        if not result:
+            for sql in (
+                "SELECT id, nome, prioridade, requer_internet FROM problemas",
+                "SELECT id, nome, prioridade_padrao, requer_item_internet FROM problemas",
+                "SELECT id, problema AS nome, prioridade, requer_internet FROM problemas",
+                "SELECT id, problema AS nome, prioridade_padrao, requer_item_internet FROM problemas",
+            ):
+                try:
+                    res = db.execute(text(sql))
+                    fetched = res.fetchall()
+                    if fetched:
+                        for r in fetched:
+                            rid = int(r[0]) if r[0] is not None else 0
+                            nome = str(r[1])
+                            prioridade = str(r[2]) if len(r) > 2 and r[2] is not None else "Normal"
+                            requer = bool(r[3]) if len(r) > 3 else False
+                            result.append({
+                                "id": rid,
+                                "nome": nome,
+                                "prioridade": prioridade,
+                                "requer_internet": requer,
+                            })
+                        break
+                except Exception:
+                    continue
         # Fallback: tabela legada problema_reportado
         for sql in (
             "SELECT nome, prioridade_padrao, requer_item_internet FROM problema_reportado WHERE ativo = 1",
