@@ -310,7 +310,7 @@ function TicketForm(
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
-              {unidades.length === 0 ? (
+              {listaUnidades.length === 0 ? (
                 <>
                   <SelectItem value="Centro">Centro</SelectItem>
                   <SelectItem value="Zona Sul">Zona Sul</SelectItem>
