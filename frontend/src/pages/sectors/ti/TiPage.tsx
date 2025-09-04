@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const sector = sectors.find((s) => s.slug === "ti")!;
 
@@ -33,6 +33,19 @@ interface Ticket {
 export default function TiPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [open, setOpen] = useState(false);
+  const [unidades, setUnidades] = useState<{ id: number; nome: string; cidade: string }[]>([]);
+  const [problemas, setProblemas] = useState<{ id: number; nome: string; prioridade: string; requer_internet: boolean }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/unidades")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
+      .then((data) => Array.isArray(data) && setUnidades(data))
+      .catch(() => setUnidades([]));
+    fetch("/api/problemas")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
+      .then((data) => Array.isArray(data) && setProblemas(data))
+      .catch(() => setProblemas([]));
+  }, []);
 
   return (
     <Layout>
@@ -206,6 +219,11 @@ function TicketForm({
     onSubmit(form);
   };
 
+  const selectedProblem = useMemo(
+    () => problemas.find((p) => p.nome === form.problema) || null,
+    [problemas, form.problema],
+  );
+
   return (
     <form onSubmit={submit} className="grid gap-4">
       <div className="grid gap-2">
@@ -280,10 +298,20 @@ function TicketForm({
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Centro">Centro</SelectItem>
-              <SelectItem value="Zona Sul">Zona Sul</SelectItem>
-              <SelectItem value="Zona Norte">Zona Norte</SelectItem>
-              <SelectItem value="Zona Leste">Zona Leste</SelectItem>
+              {unidades.length === 0 ? (
+                <>
+                  <SelectItem value="Centro">Centro</SelectItem>
+                  <SelectItem value="Zona Sul">Zona Sul</SelectItem>
+                  <SelectItem value="Zona Norte">Zona Norte</SelectItem>
+                  <SelectItem value="Zona Leste">Zona Leste</SelectItem>
+                </>
+              ) : (
+                unidades.map((u) => (
+                  <SelectItem key={u.id} value={u.nome}>
+                    {u.nome}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -297,22 +325,32 @@ function TicketForm({
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Catraca">Catraca</SelectItem>
-              <SelectItem value="CFTV">CFTV</SelectItem>
-              <SelectItem value="Internet">Internet</SelectItem>
-              <SelectItem value="Notebook/Desktop">Notebook/Desktop</SelectItem>
-              <SelectItem value="Sistema EVO">Sistema EVO</SelectItem>
-              <SelectItem value="Som">Som</SelectItem>
-              <SelectItem value="Totalpass/Gympass">
-                Totalpass/Gympass
-              </SelectItem>
-              <SelectItem value="TVs">TVs</SelectItem>
+              {problemas.length === 0 ? (
+                <>
+                  <SelectItem value="Catraca">Catraca</SelectItem>
+                  <SelectItem value="CFTV">CFTV</SelectItem>
+                  <SelectItem value="Internet">Internet</SelectItem>
+                  <SelectItem value="Notebook/Desktop">Notebook/Desktop</SelectItem>
+                  <SelectItem value="Sistema EVO">Sistema EVO</SelectItem>
+                  <SelectItem value="Som">Som</SelectItem>
+                  <SelectItem value="Totalpass/Gympass">
+                    Totalpass/Gympass
+                  </SelectItem>
+                  <SelectItem value="TVs">TVs</SelectItem>
+                </>
+              ) : (
+                problemas.map((p) => (
+                  <SelectItem key={p.id} value={p.nome}>
+                    {p.nome}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {form.problema === "Internet" && (
+      {selectedProblem?.requer_internet && (
         <div className="grid gap-2">
           <Label>Selecione o item de Internet</Label>
           <Select
