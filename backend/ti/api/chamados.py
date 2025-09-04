@@ -157,8 +157,41 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
         db.commit()
         db.refresh(ch)
         try:
+            # Persistir notificação de mudança de status
+            Notification.__table__.create(bind=engine, checkfirst=True)
+            dados = json.dumps({
+                "id": ch.id,
+                "codigo": ch.codigo,
+                "protocolo": ch.protocolo,
+                "status": ch.status,
+                "status_anterior": prev,
+            }, ensure_ascii=False)
+            n = Notification(
+                tipo="chamado",
+                titulo=f"Status atualizado: {ch.codigo}",
+                mensagem=f"{prev} → {ch.status}",
+                recurso="chamado",
+                recurso_id=ch.id,
+                acao="status",
+                dados=dados,
+            )
+            db.add(n)
+            db.commit()
+            db.refresh(n)
             import anyio
             anyio.from_thread.run(sio.emit, "chamado:status", {"id": ch.id, "status": ch.status})
+            anyio.from_thread.run(sio.emit, "notification:new", {
+                "id": n.id,
+                "tipo": n.tipo,
+                "titulo": n.titulo,
+                "mensagem": n.mensagem,
+                "recurso": n.recurso,
+                "recurso_id": n.recurso_id,
+                "acao": n.acao,
+                "dados": n.dados,
+                "lido": n.lido,
+                "criado_em": n.criado_em.isoformat() if n.criado_em else None,
+            })
         except Exception:
             pass
         return ch
@@ -173,7 +206,7 @@ def deletar_chamado(chamado_id: int, payload: ChamadoDeleteRequest, db: Session 
     try:
         user = db.query(User).filter(User.email == payload.email).first()
         if not user:
-            raise HTTPException(status_code=401, detail="Usuário não encontrado")
+            raise HTTPException(status_code=401, detail="Usu��rio não encontrado")
         if not check_password_hash(user.senha_hash, payload.senha):
             raise HTTPException(status_code=401, detail="Senha inválida")
         ch = db.query(Chamado).filter(Chamado.id == chamado_id).first()
