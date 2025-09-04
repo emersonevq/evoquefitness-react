@@ -15,7 +15,30 @@ def listar_usuarios(db: Session = Depends(get_db)):
             User.__table__.create(bind=engine, checkfirst=True)
         except Exception:
             pass
-        return db.query(User).order_by(User.id.desc()).all()
+        try:
+            return db.query(User).order_by(User.id.desc()).all()
+        except Exception:
+            pass
+        # Fallback: tabela legada "usuarios"
+        from sqlalchemy import text
+        try:
+            res = db.execute(text(
+                "SELECT id, nome, sobrenome, usuario, email, nivel_acesso, setor FROM usuarios ORDER BY id DESC"
+            ))
+            rows = []
+            for r in res.fetchall():
+                rows.append({
+                    "id": r[0],
+                    "nome": r[1],
+                    "sobrenome": r[2],
+                    "usuario": r[3],
+                    "email": r[4],
+                    "nivel_acesso": r[5],
+                    "setor": r[6],
+                })
+            return rows
+        except Exception:
+            return []
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar usuários: {e}")
 
