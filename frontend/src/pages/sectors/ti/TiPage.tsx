@@ -330,28 +330,11 @@ function TicketForm(
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
-              {listaProblemas.length === 0 ? (
-                <>
-                  <SelectItem value="Catraca">Catraca</SelectItem>
-                  <SelectItem value="CFTV">CFTV</SelectItem>
-                  <SelectItem value="Internet">Internet</SelectItem>
-                  <SelectItem value="Notebook/Desktop">
-                    Notebook/Desktop
-                  </SelectItem>
-                  <SelectItem value="Sistema EVO">Sistema EVO</SelectItem>
-                  <SelectItem value="Som">Som</SelectItem>
-                  <SelectItem value="Totalpass/Gympass">
-                    Totalpass/Gympass
-                  </SelectItem>
-                  <SelectItem value="TVs">TVs</SelectItem>
-                </>
-              ) : (
-                listaProblemas.map((p) => (
-                  <SelectItem key={p.id} value={p.nome}>
-                    {p.nome}
-                  </SelectItem>
-                ))
-              )}
+              {listaProblemas.map((p) => (
+                <SelectItem key={p.id} value={p.nome}>
+                  {p.nome}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
