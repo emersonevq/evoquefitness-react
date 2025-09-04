@@ -43,7 +43,8 @@ import { ticketsMock } from "../mock";
 const statusMap = [
   { key: "todos", label: "Todos" },
   { key: "abertos", label: "Abertos" },
-  { key: "aguardando", label: "Aguardando" },
+  { key: "em-andamento", label: "Em andamento" },
+  { key: "em-analise", label: "Em análise" },
   { key: "concluidos", label: "Concluídos" },
   { key: "cancelados", label: "Cancelados" },
 ] as const;
@@ -76,11 +77,21 @@ function StatusPill({ status }: { status: TicketStatus }) {
           : status === "CONCLUIDO"
             ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300"
             : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300";
+  const label =
+    status === "ABERTO"
+      ? "Aberto"
+      : status === "EM_ANDAMENTO"
+        ? "Em andamento"
+        : status === "EM_ANALISE"
+          ? "Em análise"
+          : status === "CONCLUIDO"
+            ? "Concluído"
+            : "Cancelado";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${styles}`}
     >
-      {status}
+      {label}
     </span>
   );
 }
@@ -302,7 +313,7 @@ export default function ChamadosPage() {
     const base = new Date(s.criadoEm).getTime();
     const arr: { t: number; label: string; attachments?: string[] }[] = [
       { t: base, label: "Chamado aberto" },
-      { t: base + 45 * 60 * 1000, label: `Status: ${s.status}` },
+      { t: base + 45 * 60 * 1000, label: `Status: ${s.status === "ABERTO" ? "Aberto" : s.status === "EM_ANDAMENTO" ? "Em andamento" : s.status === "EM_ANALISE" ? "Em análise" : s.status === "CONCLUIDO" ? "Concluído" : "Cancelado"}` },
     ];
     if (s.visita)
       arr.push({
@@ -340,7 +351,7 @@ export default function ChamadosPage() {
           bgClass="bg-gradient-to-br from-orange-500 to-orange-400"
         />
         <SummaryCard
-          title="Aguardando"
+          title="Em andamento"
           value={counts.aguardando}
           bgClass="bg-gradient-to-br from-amber-500 to-amber-600"
         />
