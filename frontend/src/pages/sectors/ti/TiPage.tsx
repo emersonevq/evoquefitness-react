@@ -101,7 +101,7 @@ export default function TiPage() {
                 unidades={unidades}
                 onSubmit={async (payload) => {
                   try {
-                    const res = await fetch(`${API_BASE}/chamados`, {
+                    const res = await apiFetch("/chamados", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
