@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usuariosMock } from "../mock";
 import { sectors } from "@/data/sectors";
 import { Input } from "@/components/ui/input";
