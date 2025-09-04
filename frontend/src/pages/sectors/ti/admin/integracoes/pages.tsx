@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 
+import { apiFetch } from "@/lib/api";
+
 export function AdicionarUnidade() {
-  const API_BASE: string = (import.meta as any)?.env?.VITE_API_BASE || "/api";
   const [id, setId] = useState<string>("");
   const [nome, setNome] = useState("");
   const [saving, setSaving] = useState(false);
@@ -12,7 +13,7 @@ export function AdicionarUnidade() {
     if (!nome) return;
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE}/unidades`, {
+      const res = await apiFetch("/unidades", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: id ? Number(id) : undefined, nome }),
@@ -22,7 +23,7 @@ export function AdicionarUnidade() {
       setNome("");
       setMsg("Unidade criada com sucesso.");
     } catch {
-      setMsg("Não foi possível criar a unidade.");
+      setMsg("N��o foi possível criar a unidade.");
     } finally {
       setSaving(false);
     }
@@ -57,13 +58,12 @@ export function AdicionarUnidade() {
   );
 }
 export function ListarUnidades() {
-  const API_BASE: string = (import.meta as any)?.env?.VITE_API_BASE || "/api";
   type Unidade = { id: number; nome: string; cidade?: string };
   const [items, setItems] = useState<Unidade[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE}/unidades`)
+    apiFetch("/unidades")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
       .then((data: Unidade[]) => Array.isArray(data) && setItems(data))
       .catch(() => setItems([]))
@@ -94,7 +94,6 @@ export function ListarUnidades() {
   );
 }
 export function AdicionarBanco() {
-  const API_BASE: string = (import.meta as any)?.env?.VITE_API_BASE || "/api";
   type Problema = {
     id: number;
     nome: string;
@@ -110,7 +109,7 @@ export function AdicionarBanco() {
 
   const load = () => {
     setLoading(true);
-    fetch(`${API_BASE}/problemas`)
+    apiFetch("/problemas")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
       .then((data: Problema[]) => Array.isArray(data) && setItems(data))
       .catch(() => setItems([]))
@@ -126,7 +125,7 @@ export function AdicionarBanco() {
     if (!nome) return;
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE}/problemas`, {
+      const res = await apiFetch("/problemas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, prioridade, requer_internet: requer }),
