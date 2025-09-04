@@ -94,6 +94,7 @@ export function ListarUnidades() {
   );
 }
 export function AdicionarBanco() {
+  const API_BASE: string = (import.meta as any)?.env?.VITE_API_BASE || "/api";
   type Problema = {
     id: number;
     nome: string;
