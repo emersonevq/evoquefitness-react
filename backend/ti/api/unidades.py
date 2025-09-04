@@ -19,8 +19,12 @@ def listar_unidades(db: Session = Depends(get_db)):
         for sql in (
             "SELECT id, nome, cidade FROM unidade",
             "SELECT id, nome FROM unidade",
+            "SELECT id, unidade AS nome, cidade FROM unidade",
+            "SELECT id, unidade AS nome FROM unidade",
             "SELECT id, nome, cidade FROM unidades",
             "SELECT id, nome FROM unidades",
+            "SELECT id, unidade AS nome, cidade FROM unidades",
+            "SELECT id, unidade AS nome FROM unidades",
         ):
             try:
                 res = db.execute(text(sql))
