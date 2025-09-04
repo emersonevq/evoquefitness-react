@@ -112,7 +112,6 @@ export default function TiPage() {
                         unidade: payload.unidade,
                         problema: payload.problema,
                         internetItem: payload.internetItem || null,
-                        visita: payload.visita || null,
                         descricao: payload.descricao || null,
                       }),
                     });
@@ -218,7 +217,6 @@ function TicketForm(props: {
     unidade: string;
     problema: string;
     internetItem?: string;
-    visita: string;
     descricao?: string;
   }) => void;
 }) {
@@ -233,11 +231,19 @@ function TicketForm(props: {
     unidade: "",
     problema: "",
     internetItem: "",
-    visita: "",
     descricao: "",
   });
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    const must = [form.nome.trim(), form.cargo.trim(), form.email.trim(), form.telefone.trim(), form.unidade.trim(), form.problema.trim(), form.descricao.trim()];
+    if (must.some((v) => !v)) {
+      alert("Preencha todos os campos obrigatórios.");
+      return;
+    }
+    if (selectedProblem?.requer_internet && !form.internetItem.trim()) {
+      alert("Selecione o item de Internet.");
+      return;
+    }
     onSubmit(form);
   };
 
@@ -364,16 +370,6 @@ function TicketForm(props: {
       )}
 
       <div className="grid gap-2">
-        <Label htmlFor="visita">Visita Técnica</Label>
-        <Input
-          id="visita"
-          type="date"
-          placeholder="dd/mm/aaaa"
-          value={form.visita}
-          onChange={(e) => setForm({ ...form, visita: e.target.value })}
-        />
-      </div>
-      <div className="grid gap-2">
         <Label htmlFor="descricao">Descrição do problema</Label>
         <textarea
           id="descricao"
@@ -381,6 +377,7 @@ function TicketForm(props: {
           placeholder="Descreva o que está acontecendo"
           value={form.descricao}
           onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+          required
         />
       </div>
       <div className="flex items-center justify-end gap-3 pt-2">
