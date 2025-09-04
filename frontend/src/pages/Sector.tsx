@@ -22,6 +22,7 @@ import { useMemo, useState } from "react";
 
 interface Ticket {
   id: string;
+  codigo: string;
   protocolo: string;
   data: string;
   problema: string;
@@ -97,20 +98,34 @@ export default function SectorPage() {
               <TicketForm
                 onSubmit={(payload) => {
                   const now = new Date();
-                  const id = Math.random()
-                    .toString(36)
-                    .slice(2, 8)
-                    .toUpperCase();
-                  setTickets((prev) => [
-                    {
+                  setTickets((prev) => {
+                    const id = Math.random()
+                      .toString(36)
+                      .slice(2, 8)
+                      .toUpperCase();
+                    const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
+                    const seq = prev.filter((t) => t.protocolo.startsWith(`${ymd}-`)).length + 1;
+                    const protocolo = `${ymd}-${seq}`;
+                    let maxCode = 0;
+                    for (const t of prev) {
+                      const m = /^EVQ-(\d{4})$/.exec(t.codigo);
+                      if (m) {
+                        const n = parseInt(m[1], 10);
+                        if (!Number.isNaN(n) && n > maxCode) maxCode = n;
+                      }
+                    }
+                    const nextNum = Math.max(maxCode + 1, 81);
+                    const codigo = `EVQ-${String(nextNum).padStart(4, "0")}`;
+                    const novo: Ticket = {
                       id,
-                      protocolo: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}-${id}`,
+                      codigo,
+                      protocolo,
                       data: now.toISOString().slice(0, 10),
                       problema: payload.problema,
                       status: "Aberto",
-                    },
-                    ...prev,
-                  ]);
+                    };
+                    return [novo, ...prev];
+                  });
                   setOpen(false);
                 }}
               />
@@ -143,7 +158,7 @@ export default function SectorPage() {
               ) : (
                 tickets.map((t) => (
                   <tr key={t.id} className="border-t border-border/60">
-                    <td className="px-4 py-3">{t.id}</td>
+                    <td className="px-4 py-3">{t.codigo}</td>
                     <td className="px-4 py-3">{t.protocolo}</td>
                     <td className="px-4 py-3">
                       {new Date(t.data).toLocaleDateString()}
