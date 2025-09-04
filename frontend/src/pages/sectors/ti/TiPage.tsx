@@ -323,7 +323,9 @@ function TicketForm(props: {
             <SelectContent>
               {listaUnidades.map((u) => (
                 <SelectItem key={u.id} value={u.nome}>
-                  {new RegExp(`(\\s*-\\s*${u.id})\\s*$`).test(u.nome) ? u.nome : `${u.nome} - ${u.id}`}
+                  {new RegExp(`(\\s*-\\s*${u.id})\\s*$`).test(u.nome)
+                    ? u.nome
+                    : `${u.nome} - ${u.id}`}
                 </SelectItem>
               ))}
             </SelectContent>
