@@ -208,7 +208,7 @@ export default function ChamadosPage() {
       };
     }
 
-    function adaptMock(m: typeof ticketsMock[number]): UiTicket {
+    function adaptMock(m: (typeof ticketsMock)[number]): UiTicket {
       return {
         id: m.id,
         protocolo: m.protocolo,
