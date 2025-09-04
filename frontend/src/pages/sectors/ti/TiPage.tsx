@@ -198,6 +198,7 @@ export default function TiPage() {
 function TicketForm(
   props: {
     problemas?: { id: number; nome: string; prioridade: string; requer_internet: boolean }[];
+    unidades?: { id: number; nome: string; cidade: string }[];
     onSubmit: (payload: {
       nome: string;
       cargo: string;
@@ -213,6 +214,7 @@ function TicketForm(
 ) {
   const { onSubmit } = props;
   const listaProblemas = Array.isArray(props.problemas) ? props.problemas : [];
+  const listaUnidades = Array.isArray(props.unidades) ? props.unidades : [];
   const [form, setForm] = useState({
     nome: "",
     cargo: "",
