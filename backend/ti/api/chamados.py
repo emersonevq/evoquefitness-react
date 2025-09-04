@@ -90,6 +90,12 @@ def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
         except Exception:
             pass
         ch = service_criar(db, payload)
+        # Força o formato correto se backend antigo estiver retornando valores diferentes
+        try:
+            from ti.services.chamados import ensure_codigo_protocolo  # type: ignore
+            ch = ensure_codigo_protocolo(db, ch)
+        except Exception:
+            pass
         try:
             # Garantir tabela de notificações
             Notification.__table__.create(bind=engine, checkfirst=True)
