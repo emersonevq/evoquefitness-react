@@ -21,6 +21,7 @@ interface UiTicket {
   internetItem?: string | null;
   visita?: string | null;
   gerente?: string | null;
+  descricao?: string | null;
 }
 import { NavLink, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -248,6 +249,7 @@ export default function ChamadosPage() {
         internetItem: it.internet_item ?? null,
         visita: it.data_visita ?? null,
         gerente: null,
+        descricao: it.descricao ?? null,
       };
     }
 
@@ -267,6 +269,7 @@ export default function ChamadosPage() {
         internetItem: m.internetItem ?? null,
         visita: m.visita ?? null,
         gerente: m.gerente ?? null,
+        descricao: (m as any).descricao ?? null,
       };
     }
 
@@ -587,13 +590,19 @@ export default function ChamadosPage() {
                           {selected.gerente || "—"}
                         </div>
                         <div className="text-muted-foreground">E-mail</div>
-                        <div className="text-right">{selected.email}</div>
+                        <div className="text-right break-all">{selected.email}</div>
                         <div className="text-muted-foreground">Telefone</div>
                         <div className="text-right">{selected.telefone}</div>
                         <div className="text-muted-foreground">Unidade</div>
                         <div className="text-right">{selected.unidade}</div>
                         <div className="text-muted-foreground">Problema</div>
                         <div className="text-right">{selected.categoria}</div>
+                        {selected.descricao && (
+                          <>
+                            <div className="text-muted-foreground">Descrição</div>
+                            <div className="text-right whitespace-pre-line break-words">{selected.descricao}</div>
+                          </>
+                        )}
                         {selected.internetItem && (
                           <>
                             <div className="text-muted-foreground">
