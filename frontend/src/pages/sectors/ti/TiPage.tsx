@@ -323,7 +323,7 @@ function TicketForm(props: {
             <SelectContent>
               {listaUnidades.map((u) => (
                 <SelectItem key={u.id} value={u.nome}>
-                  {u.nome}
+                  {`${u.nome} - ${u.id}`}
                 </SelectItem>
               ))}
             </SelectContent>
