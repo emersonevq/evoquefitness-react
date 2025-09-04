@@ -18,7 +18,14 @@ app.add_middleware(
 def ping():
     return {"message": "pong"}
 
+# Primary mount under /api
 app.include_router(chamados_router, prefix="/api")
 app.include_router(usuarios_router, prefix="/api")
 app.include_router(unidades_router, prefix="/api")
 app.include_router(problemas_router, prefix="/api")
+
+# Compatibility mount without prefix, in case the server is run without proxy
+app.include_router(chamados_router)
+app.include_router(usuarios_router)
+app.include_router(unidades_router)
+app.include_router(problemas_router)
