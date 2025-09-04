@@ -50,22 +50,11 @@ export default function NotificationBell() {
     import("socket.io-client").then(({ io }) => {
       const base = (import.meta as any)?.env?.VITE_API_BASE || "/api";
       const origin = String(base).replace(/\/?api$/, "");
-      const path = String(base).endsWith("/api")
-        ? "/api/socket.io"
-        : "/socket.io";
       const socket = io(origin, {
-        path,
+        path: "/socket.io",
         transports: ["websocket", "polling"],
         autoConnect: true,
         reconnection: true,
-      });
-      socket.on("connect_error", () => {
-        const alt = path === "/api/socket.io" ? "/socket.io" : "/api/socket.io";
-        // switch path and retry once
-        if ((socket.io as any).opts.path !== alt) {
-          (socket.io as any).opts.path = alt;
-          socket.connect();
-        }
       });
       socket.on("notification:new", (n: any) => {
         setItems((prev) =>
