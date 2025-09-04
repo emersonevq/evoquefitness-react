@@ -10,7 +10,9 @@ from ti.schemas.chamado import ChamadoCreate
 
 
 def _next_codigo(db: Session) -> str:
-    """Gera código sequencial no formato EVQ-0001, considerando também tabela legada 'chamados'."""
+    """Gera código sequencial no formato EVQ-XXXX (4 dígitos), iniciando em EVQ-0081.
+    Considera também tabela legada 'chamados'.
+    """
     from ti.models import Chamado
     max_n = 0
     try:
@@ -43,7 +45,9 @@ def _next_codigo(db: Session) -> str:
                     continue
     except Exception:
         pass
-    nxt = max_n + 1
+    # Inicia em 81 se base estiver vazia ou abaixo disso
+    base_min = 81
+    nxt = max(max_n + 1, base_min)
     return f"EVQ-{nxt:04d}"
 
 
