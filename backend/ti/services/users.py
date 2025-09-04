@@ -5,6 +5,7 @@ import string
 from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash
 from ti.models import User
+from core.db import engine
 from ti.schemas.user import UserCreate, UserCreatedOut, UserAvailability
 
 
@@ -28,6 +29,10 @@ def _generate_password(length: int = 6) -> str:
 
 
 def check_user_availability(db: Session, email: str | None = None, username: str | None = None) -> UserAvailability:
+    try:
+        User.__table__.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
     availability = UserAvailability()
     if email is not None:
         availability.email_exists = db.query(User).filter(User.email == email).first() is not None
@@ -41,6 +46,10 @@ def generate_password(length: int = 6) -> str:
 
 
 def criar_usuario(db: Session, payload: UserCreate) -> UserCreatedOut:
+    try:
+        User.__table__.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
     # Uniqueness checks
     if payload.email and db.query(User).filter(User.email == str(payload.email)).first():
         raise ValueError("E-mail já cadastrado")
