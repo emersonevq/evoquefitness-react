@@ -15,22 +15,34 @@ def listar_unidades(db: Session = Depends(get_db)):
             Unidade.__table__.create(bind=engine, checkfirst=True)
         except Exception:
             pass
-        # Tenta seleção compatível com esquema legado (id, nome)
-        try:
-            res = db.execute(text("SELECT id, nome FROM unidade"))
-            rows = [{"id": r[0], "nome": r[1], "cidade": ""} for r in res.fetchall()]
-        except Exception:
-            rows = []
-        if rows:
-            return rows
-        # ORM padrão (caso exista coluna cidade)
+        # Tenta esquemas legados/plurais com e sem coluna cidade
+        for sql in (
+            "SELECT id, nome, cidade FROM unidade",
+            "SELECT id, nome FROM unidade",
+            "SELECT id, nome, cidade FROM unidades",
+            "SELECT id, nome FROM unidades",
+        ):
+            try:
+                res = db.execute(text(sql))
+                fetched = res.fetchall()
+                if fetched:
+                    out = []
+                    for r in fetched:
+                        if len(r) >= 3:
+                            out.append({"id": r[0], "nome": r[1], "cidade": r[2] or ""})
+                        else:
+                            out.append({"id": r[0], "nome": r[1], "cidade": ""})
+                    return out
+            except Exception:
+                pass
+        # ORM padrão (caso exista classe/tabela com cidade)
         try:
             rows_orm = db.query(Unidade).order_by(Unidade.id.desc()).all()
+            if rows_orm:
+                return rows_orm
         except Exception:
-            rows_orm = []
-        if rows_orm:
-            return rows_orm
-        # Fallback: derivar de chamados
+            pass
+        # Fallback: derivar de chamados existentes
         try:
             distinct = [r[0] for r in db.query(Chamado.unidade).distinct().all() if r[0]]
         except Exception:
