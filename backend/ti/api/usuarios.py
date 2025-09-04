@@ -1,7 +1,7 @@
 from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from core.db import get_db
+from core.db import get_db, engine
 from ti.schemas.user import UserCreate, UserCreatedOut, UserAvailability, UserOut
 from ti.services.users import criar_usuario as service_criar, check_user_availability, generate_password
 
@@ -11,6 +11,10 @@ router = APIRouter(prefix="/usuarios", tags=["TI - Usuarios"])
 def listar_usuarios(db: Session = Depends(get_db)):
     try:
         from ..models import User
+        try:
+            User.__table__.create(bind=engine, checkfirst=True)
+        except Exception:
+            pass
         return db.query(User).order_by(User.id.desc()).all()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar usuários: {e}")
@@ -18,6 +22,11 @@ def listar_usuarios(db: Session = Depends(get_db)):
 @router.post("", response_model=UserCreatedOut)
 def criar_usuario(payload: UserCreate, db: Session = Depends(get_db)):
     try:
+        from ..models import User
+        try:
+            User.__table__.create(bind=engine, checkfirst=True)
+        except Exception:
+            pass
         return service_criar(db, payload)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
