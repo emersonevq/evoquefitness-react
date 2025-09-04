@@ -25,6 +25,7 @@ const sector = sectors.find((s) => s.slug === "ti")!;
 
 interface Ticket {
   id: string;
+  codigo: string;
   protocolo: string;
   data: string;
   problema: string;
@@ -34,6 +35,7 @@ interface Ticket {
 export default function TiPage() {
   const API_BASE: string = (import.meta as any)?.env?.VITE_API_BASE || "/api";
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [lastCreated, setLastCreated] = useState<{ codigo: string; protocolo: string } | null>(null);
   const [open, setOpen] = useState(false);
   const [unidades, setUnidades] = useState<
     { id: number; nome: string; cidade: string }[]
@@ -74,6 +76,15 @@ export default function TiPage() {
       </section>
 
       <section className="container py-8">
+        {lastCreated && (
+          <div className="mb-4 rounded-lg border border-border/60 bg-card p-4 text-sm">
+            <div className="font-semibold mb-1">Chamado criado com sucesso</div>
+            <div>
+              Código <span className="font-semibold">{lastCreated.codigo}</span> e Protocolo <span className="font-semibold">{lastCreated.protocolo}</span> gerados e salvos.
+            </div>
+            <div className="text-muted-foreground mt-1">Guarde essas informações para futuras consultas.</div>
+          </div>
+        )}
         <div className="flex items-center justify-between gap-4">
           <div className="md:hidden">
             <Button asChild variant="secondary" className="rounded-full">
@@ -118,6 +129,7 @@ export default function TiPage() {
                     if (!res.ok) throw new Error("Falha ao criar chamado");
                     const created: {
                       id: number;
+                      codigo: string;
                       protocolo: string;
                       data_abertura: string;
                       problema: string;
@@ -133,6 +145,7 @@ export default function TiPage() {
                     setTickets((prev) => [
                       {
                         id: String(created.id),
+                        codigo: created.codigo,
                         protocolo: created.protocolo,
                         data:
                           created.data_abertura?.slice(0, 10) ||
@@ -142,6 +155,7 @@ export default function TiPage() {
                       },
                       ...prev,
                     ]);
+                    setLastCreated({ codigo: created.codigo, protocolo: created.protocolo });
                     setOpen(false);
                   } catch (e) {
                     console.error(e);
@@ -178,7 +192,7 @@ export default function TiPage() {
               ) : (
                 tickets.map((t) => (
                   <tr key={t.id} className="border-t border-border/60">
-                    <td className="px-4 py-3">{t.id}</td>
+                    <td className="px-4 py-3">{t.codigo}</td>
                     <td className="px-4 py-3">{t.protocolo}</td>
                     <td className="px-4 py-3">
                       {new Date(t.data).toLocaleDateString()}
