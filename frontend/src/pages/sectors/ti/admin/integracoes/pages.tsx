@@ -79,7 +79,7 @@ export function ListarUnidades() {
         <ul className="text-sm grid sm:grid-cols-2 gap-2">
           {items.map((u) => (
             <li
-              key={u.id}
+              key={`${u.id}-${u.nome}`}
               className="rounded-md border border-border/60 p-3 bg-background"
             >
               {u.nome} — {u.cidade}
