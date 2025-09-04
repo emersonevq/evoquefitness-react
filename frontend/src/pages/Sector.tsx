@@ -104,7 +104,9 @@ export default function SectorPage() {
                       .slice(2, 8)
                       .toUpperCase();
                     const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
-                    const seq = prev.filter((t) => t.protocolo.startsWith(`${ymd}-`)).length + 1;
+                    const seq =
+                      prev.filter((t) => t.protocolo.startsWith(`${ymd}-`))
+                        .length + 1;
                     const protocolo = `${ymd}-${seq}`;
                     let maxCode = 0;
                     for (const t of prev) {
