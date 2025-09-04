@@ -8,11 +8,34 @@ router = APIRouter(prefix="/problemas", tags=["TI - Problemas"])
 
 @router.get("", response_model=list[ProblemaOut])
 def listar_problemas(db: Session = Depends(get_db)):
-    from ..models import Problema
+    from ..models import Problema, Chamado
     try:
-        Problema.__table__.create(bind=engine, checkfirst=True)
-        items = db.query(Problema).order_by(Problema.nome.asc()).all()
-        return items
+        try:
+            Problema.__table__.create(bind=engine, checkfirst=True)
+        except Exception:
+            pass
+        rows = db.query(Problema).order_by(Problema.nome.asc()).all()
+        result = [
+            {
+                "id": r.id,
+                "nome": r.nome,
+                "prioridade": r.prioridade,
+                "requer_internet": bool(r.requer_internet),
+            }
+            for r in rows
+        ]
+        existing_names = {r[0] for r in db.query(Chamado.problema).distinct().all() if r[0]}
+        names_in_table = {r["nome"] for r in result}
+        for nome in sorted(existing_names - names_in_table):
+            result.append(
+                {
+                    "id": 0,
+                    "nome": nome,
+                    "prioridade": "Normal",
+                    "requer_internet": nome.lower() == "internet",
+                }
+            )
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar problemas: {e}")
 
