@@ -15,6 +15,12 @@ class _MultiPathSocketIO:
     async def __call__(self, scope: dict, receive: Callable[..., Awaitable[Any]], send: Callable[..., Awaitable[Any]]):
         p = scope.get("path", "") or ""
         if any(p.startswith(path) for path in self.paths):
+            # Normalize /api/socket.io -> /socket.io so inner ASGIApp matches its configured socketio_path
+            if p.startswith("/api/socket.io"):
+                # Clone scope with adjusted path
+                scope = dict(scope)
+                rest = p[len("/api/socket.io"):]
+                scope["path"] = "/socket.io" + rest
             return await self.sio_app(scope, receive, send)
         return await self.app(scope, receive, send)
 
