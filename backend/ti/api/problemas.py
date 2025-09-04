@@ -48,7 +48,10 @@ def listar_problemas(db: Session = Depends(get_db)):
                 break
             except Exception:
                 continue
-        existing_names = {r[0] for r in db.query(Chamado.problema).distinct().all() if r[0]}
+        try:
+            existing_names = {r[0] for r in db.query(Chamado.problema).distinct().all() if r[0]}
+        except Exception:
+            existing_names = set()
         names_in_table = {r["nome"].lower() for r in result}
         for nome in sorted(n for n in (x.lower() for x in existing_names) if n not in names_in_table):
             result.append(
