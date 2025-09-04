@@ -18,12 +18,23 @@ export function AdicionarUnidade() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: id ? Number(id) : undefined, nome }),
       });
-      if (!res.ok) throw new Error("Falha ao criar unidade");
+      if (!res.ok) {
+        let detail = "Não foi possível criar a unidade.";
+        try {
+          const data = await res.json();
+          if (data && typeof data.detail === "string") detail = data.detail;
+        } catch {}
+        if (res.status === 409) {
+          setMsg(detail);
+          return;
+        }
+        throw new Error(detail);
+      }
       setId("");
       setNome("");
       setMsg("Unidade criada com sucesso.");
-    } catch {
-      setMsg("N��o foi possível criar a unidade.");
+    } catch (e: any) {
+      setMsg(e?.message || "Não foi possível criar a unidade.");
     } finally {
       setSaving(false);
     }
