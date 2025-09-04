@@ -10,16 +10,26 @@ def criar_unidade(db: Session, payload: UnidadeCreate) -> Dict[str, Any]:
     if not nome:
         raise ValueError("Nome da unidade é obrigatório")
 
-    # Checa duplicidade por nome e, se fornecido, por id
+    # Checa duplicidade específica por id
+    if payload.id is not None:
+        try:
+            row_id = db.execute(
+                text("SELECT 1 FROM unidade WHERE id = :pid LIMIT 1"),
+                {"pid": payload.id},
+            ).first()
+            if row_id is not None:
+                raise ValueError("Já existe unidade com este id")
+        except Exception:
+            pass
+
+    # Checa duplicidade por nome (case-insensitive)
     try:
-        row = db.execute(
-            text(
-                "SELECT id FROM unidade WHERE LOWER(nome) = LOWER(:nome) OR (:pid IS NOT NULL AND id = :pid) LIMIT 1"
-            ),
-            {"nome": nome, "pid": payload.id},
+        row_nome = db.execute(
+            text("SELECT 1 FROM unidade WHERE LOWER(nome) = LOWER(:nome) LIMIT 1"),
+            {"nome": nome},
         ).first()
-        if row is not None:
-            raise ValueError("Unidade já cadastrada")
+        if row_nome is not None:
+            raise ValueError("Já existe unidade com este nome")
     except Exception:
         # Se a tabela não existir, deixaremos o INSERT falhar e reportar
         pass
