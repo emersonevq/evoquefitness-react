@@ -11,86 +11,44 @@ from ti.schemas.chamado import ChamadoCreate
 
 def _next_codigo(db: Session) -> str:
     """Gera código sequencial no formato EVQ-XXXX (4 dígitos), iniciando em EVQ-0081.
-    Considera também tabela legada 'chamados'.
+    Apenas considera a tabela atual 'chamado'.
     """
     from ti.models import Chamado
-    max_n = 0
+    max_n = 80  # garante mínimo EVQ-0081
     try:
         rows = db.query(Chamado.codigo).filter(Chamado.codigo.like("EVQ-%")).all()
         for (cod,) in rows:
             try:
-                if isinstance(cod, str) and cod.upper().startswith("EVQ-"):
-                    suf = cod.split("-", 1)[1]
-                    num = int("".join(ch for ch in suf if ch.isdigit()))
-                    if num > max_n:
-                        max_n = num
+                suf = str(cod).split("-", 1)[1]
+                n = int("".join(ch for ch in suf if ch.isdigit()))
+                if n > max_n:
+                    max_n = n
             except Exception:
                 continue
     except Exception:
         pass
-    # Legacy table
-    try:
-        from sqlalchemy import text
-        with engine.connect() as conn:
-            res = conn.execute(text("SELECT codigo FROM chamados WHERE codigo LIKE 'EVQ-%'"))
-            for row in res.fetchall():
-                cod = row[0]
-                try:
-                    if isinstance(cod, str) and cod.upper().startswith("EVQ-"):
-                        suf = cod.split("-", 1)[1]
-                        num = int("".join(ch for ch in suf if ch.isdigit()))
-                        if num > max_n:
-                            max_n = num
-                except Exception:
-                    continue
-    except Exception:
-        pass
-    # Inicia em 81 se base estiver vazia ou abaixo disso
-    base_min = 81
-    nxt = max(max_n + 1, base_min)
-    return f"EVQ-{nxt:04d}"
+    return f"EVQ-{max_n + 1:04d}"
 
 
 def _next_protocolo(db: Session) -> str:
-    """Protocolo no formato XXXXXXXX-X (8 dígitos + hífen + 1 dígito).
-    Percorre também a tabela legada 'chamados' para evitar colisões.
+    """Protocolo no formato XXXXXXXX-X (8 dígitos + hífen + 1 dígito),
+    considerando somente a tabela atual 'chamado'.
     """
     from ti.models import Chamado
     max_base = 0
-    # Escanear tabela atual
     try:
         rows = db.query(Chamado.protocolo).all()
         for (p,) in rows:
             try:
-                s = str(p)
-                if "-" in s:
-                    base, _ = s.split("-", 1)
-                    num = int("".join(ch for ch in base if ch.isdigit()))
-                    if num > max_base:
-                        max_base = num
+                base, _ = str(p).split("-", 1)
+                num = int("".join(ch for ch in base if ch.isdigit()))
+                if num > max_base:
+                    max_base = num
             except Exception:
                 continue
     except Exception:
         pass
-    # Escanear tabela legada
-    try:
-        from sqlalchemy import text
-        with engine.connect() as conn:
-            res = conn.execute(text("SELECT protocolo FROM chamados"))
-            for row in res.fetchall():
-                try:
-                    s = str(row[0])
-                    if "-" in s:
-                        base, _ = s.split("-", 1)
-                        num = int("".join(ch for ch in base if ch.isdigit()))
-                        if num > max_base:
-                            max_base = num
-                except Exception:
-                    continue
-    except Exception:
-        pass
     nxt = max_base + 1
-    # dígito verificador simples (1-9) para manter padrão solicitado
     dv = random.randint(1, 9)
     return f"{nxt:08d}-{dv}"
 
