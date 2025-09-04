@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-type TicketStatus = "ABERTO" | "AGUARDANDO" | "CONCLUIDO" | "CANCELADO";
+type TicketStatus = "ABERTO" | "EM_ANDAMENTO" | "EM_ANALISE" | "CONCLUIDO" | "CANCELADO";
 
 interface UiTicket {
   id: string;
