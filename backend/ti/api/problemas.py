@@ -1,6 +1,7 @@
 from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from core.db import get_db, engine
 from ti.schemas.problema import ProblemaCreate, ProblemaOut
 
@@ -27,9 +28,24 @@ def listar_problemas(db: Session = Depends(get_db)):
             }
             for r in rows
         ]
+        # Fallback: tabela legada problema_reportado
+        try:
+            res = db.execute(text("SELECT nome, prioridade_padrao, requer_item_internet FROM problema_reportado WHERE ativo = 1"))
+            for nome, prioridade, requer in res.fetchall():
+                if not any(x["nome"].lower() == str(nome).lower() for x in result):
+                    result.append(
+                        {
+                            "id": 0,
+                            "nome": str(nome),
+                            "prioridade": str(prioridade or "Normal"),
+                            "requer_internet": bool(requer),
+                        }
+                    )
+        except Exception:
+            pass
         existing_names = {r[0] for r in db.query(Chamado.problema).distinct().all() if r[0]}
-        names_in_table = {r["nome"] for r in result}
-        for nome in sorted(existing_names - names_in_table):
+        names_in_table = {r["nome"].lower() for r in result}
+        for nome in sorted(n for n in (x.lower() for x in existing_names) if n not in names_in_table):
             result.append(
                 {
                     "id": 0,
