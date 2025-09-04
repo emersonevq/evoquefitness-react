@@ -20,3 +20,5 @@ def ping():
 
 app.include_router(chamados_router, prefix="/api")
 app.include_router(usuarios_router, prefix="/api")
+app.include_router(unidades_router, prefix="/api")
+app.include_router(problemas_router, prefix="/api")
