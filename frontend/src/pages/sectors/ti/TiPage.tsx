@@ -312,20 +312,11 @@ function TicketForm(
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
-              {listaUnidades.length === 0 ? (
-                <>
-                  <SelectItem value="Centro">Centro</SelectItem>
-                  <SelectItem value="Zona Sul">Zona Sul</SelectItem>
-                  <SelectItem value="Zona Norte">Zona Norte</SelectItem>
-                  <SelectItem value="Zona Leste">Zona Leste</SelectItem>
-                </>
-              ) : (
-                listaUnidades.map((u) => (
-                  <SelectItem key={u.id} value={u.nome}>
-                    {u.nome}
-                  </SelectItem>
-                ))
-              )}
+              {listaUnidades.map((u) => (
+                <SelectItem key={u.id} value={u.nome}>
+                  {u.nome}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
