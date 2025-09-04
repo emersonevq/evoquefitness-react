@@ -43,6 +43,7 @@ import { Save, Trash2, Ticket as TicketIcon, UserPlus } from "lucide-react";
 import { ticketsMock } from "../mock";
 import { apiFetch, API_BASE } from "@/lib/api";
 import { useAuthContext } from "@/lib/auth-context";
+import { toast } from "@/hooks/use-toast";
 
 const statusMap = [
   { key: "todos", label: "Todos" },
