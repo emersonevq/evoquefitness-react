@@ -213,6 +213,38 @@ export default function TiPage() {
           </table>
         </div>
       </section>
+
+      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Chamado criado com sucesso</DialogTitle>
+          </DialogHeader>
+          {lastCreated && (
+            <div className="space-y-3">
+              <div className="text-sm">Guarde as informações abaixo:</div>
+              <div className="grid grid-cols-3 items-center gap-2">
+                <div className="text-sm text-muted-foreground col-span-1">Código</div>
+                <div className="font-semibold col-span-2 break-all">{lastCreated.codigo}</div>
+              </div>
+              <div className="grid grid-cols-3 items-center gap-2">
+                <div className="text-sm text-muted-foreground col-span-1">Protocolo</div>
+                <div className="font-semibold col-span-2 break-all">{lastCreated.protocolo}</div>
+              </div>
+              <div className="pt-2 flex justify-end">
+                <Button
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(`Código: ${lastCreated.codigo} | Protocolo: ${lastCreated.protocolo}`);
+                    } catch {}
+                  }}
+                >
+                  Copiar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
