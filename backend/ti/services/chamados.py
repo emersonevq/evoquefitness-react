@@ -52,40 +52,47 @@ def _next_codigo(db: Session) -> str:
 
 
 def _next_protocolo(db: Session) -> str:
-    """Protocolo no formato YYYYMMDD-N, onde N é sequencial por dia; considera tabela legada 'chamados'."""
+    """Protocolo no formato XXXXXXXX-X (8 dígitos + hífen + 1 dígito).
+    Percorre também a tabela legada 'chamados' para evitar colisões.
+    """
     from ti.models import Chamado
-    d = now_brazil_naive().date()
-    ymd = f"{d.year}{d.month:02d}{d.day:02d}"
-    max_n = 0
+    max_base = 0
+    # Escanear tabela atual
     try:
-        rows = db.query(Chamado.protocolo).filter(Chamado.protocolo.like(f"{ymd}-%")).all()
+        rows = db.query(Chamado.protocolo).all()
         for (p,) in rows:
             try:
-                suf = str(p).split("-", 1)[1]
-                num = int("".join(ch for ch in suf if ch.isdigit()))
-                if num > max_n:
-                    max_n = num
+                s = str(p)
+                if "-" in s:
+                    base, _ = s.split("-", 1)
+                    num = int("".join(ch for ch in base if ch.isdigit()))
+                    if num > max_base:
+                        max_base = num
             except Exception:
                 continue
     except Exception:
         pass
+    # Escanear tabela legada
     try:
         from sqlalchemy import text
         with engine.connect() as conn:
-            res = conn.execute(text("SELECT protocolo FROM chamados WHERE protocolo LIKE :pfx"), {"pfx": f"{ymd}-%"})
+            res = conn.execute(text("SELECT protocolo FROM chamados"))
             for row in res.fetchall():
-                p = row[0]
                 try:
-                    suf = str(p).split("-", 1)[1]
-                    num = int("".join(ch for ch in suf if ch.isdigit()))
-                    if num > max_n:
-                        max_n = num
+                    s = str(row[0])
+                    if "-" in s:
+                        base, _ = s.split("-", 1)
+                        num = int("".join(ch for ch in base if ch.isdigit()))
+                        if num > max_base:
+                            max_base = num
                 except Exception:
                     continue
     except Exception:
         pass
-    nxt = max_n + 1
-    return f"{ymd}-{nxt}"
+    nxt = max_base + 1
+    # dígito verificador simples (1-9) para manter padrão solicitado
+    dv = random.randint(1, 9)
+    return f"{nxt:08d}-{dv}"
 
 
 def criar_chamado(db: Session, payload: ChamadoCreate) -> Chamado:
