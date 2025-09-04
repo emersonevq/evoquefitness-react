@@ -444,7 +444,9 @@ export function Permissoes() {
             className="rounded-xl border border-border/60 bg-card overflow-hidden"
           >
             <div className="px-4 py-3 border-b border-border/60 bg-muted/30 flex items-center justify-between">
-              <div className="font-semibold">{u.nome} {u.sobrenome}</div>
+              <div className="font-semibold">
+                {u.nome} {u.sobrenome}
+              </div>
               <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">
                 {u.nivel_acesso}
               </span>

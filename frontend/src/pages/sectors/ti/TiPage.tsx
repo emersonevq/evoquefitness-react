@@ -33,8 +33,12 @@ interface Ticket {
 export default function TiPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [open, setOpen] = useState(false);
-  const [unidades, setUnidades] = useState<{ id: number; nome: string; cidade: string }[]>([]);
-  const [problemas, setProblemas] = useState<{ id: number; nome: string; prioridade: string; requer_internet: boolean }[]>([]);
+  const [unidades, setUnidades] = useState<
+    { id: number; nome: string; cidade: string }[]
+  >([]);
+  const [problemas, setProblemas] = useState<
+    { id: number; nome: string; prioridade: string; requer_internet: boolean }[]
+  >([]);
 
   useEffect(() => {
     fetch("/api/unidades")
@@ -123,7 +127,9 @@ export default function TiPage() {
                       {
                         id: String(created.id),
                         protocolo: created.protocolo,
-                        data: created.data_abertura?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+                        data:
+                          created.data_abertura?.slice(0, 10) ||
+                          new Date().toISOString().slice(0, 10),
                         problema: problemaFmt,
                         status: created.status,
                       },
@@ -330,7 +336,9 @@ function TicketForm({
                   <SelectItem value="Catraca">Catraca</SelectItem>
                   <SelectItem value="CFTV">CFTV</SelectItem>
                   <SelectItem value="Internet">Internet</SelectItem>
-                  <SelectItem value="Notebook/Desktop">Notebook/Desktop</SelectItem>
+                  <SelectItem value="Notebook/Desktop">
+                    Notebook/Desktop
+                  </SelectItem>
                   <SelectItem value="Sistema EVO">Sistema EVO</SelectItem>
                   <SelectItem value="Som">Som</SelectItem>
                   <SelectItem value="Totalpass/Gympass">
