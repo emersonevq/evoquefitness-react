@@ -318,7 +318,7 @@ function TicketForm(
                   <SelectItem value="Zona Leste">Zona Leste</SelectItem>
                 </>
               ) : (
-                unidades.map((u) => (
+                listaUnidades.map((u) => (
                   <SelectItem key={u.id} value={u.nome}>
                     {u.nome}
                   </SelectItem>
