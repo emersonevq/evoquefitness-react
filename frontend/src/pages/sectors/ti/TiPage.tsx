@@ -37,6 +37,7 @@ export default function TiPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [lastCreated, setLastCreated] = useState<{ codigo: string; protocolo: string } | null>(null);
   const [open, setOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
   const [unidades, setUnidades] = useState<
     { id: number; nome: string; cidade: string }[]
   >([]);
