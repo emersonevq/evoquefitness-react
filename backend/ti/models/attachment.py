@@ -1,6 +1,6 @@
 from __future__ import annotations
 from datetime import datetime
-from sqlalchemy import Integer, String, DateTime, ForeignKey
+from sqlalchemy import Integer, String, DateTime, ForeignKey, LargeBinary
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.db import Base
 
@@ -14,6 +14,7 @@ class AnexoArquivo(Base):
     caminho_arquivo: Mapped[str] = mapped_column(String(500), nullable=False)
     mime_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
     tamanho_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    conteudo: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
     data_upload: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     usuario_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("user.id"), nullable=True)
 
