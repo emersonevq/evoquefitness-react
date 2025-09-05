@@ -388,15 +388,18 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
                         ))
         except Exception:
             pass
-        # histórico (historico_tickets via ORM)
-        hs = db.query(HistoricoTicket).filter(HistoricoTicket.chamado_id == chamado_id).order_by(HistoricoTicket.data_envio.asc()).all()
+        # histórico (historico_tickets via ORM) - ignora se tabela não existir
+        try:
+            hs = db.query(HistoricoTicket).filter(HistoricoTicket.chamado_id == chamado_id).order_by(HistoricoTicket.data_envio.asc()).all()
+        except Exception:
+            hs = []
         for h in hs:
             anexos_ticket = []
             try:
                 from datetime import timedelta
                 start = (h.data_envio or now_brazil_naive()) - timedelta(minutes=3)
                 end = (h.data_envio or now_brazil_naive()) + timedelta(minutes=3)
-                tas = db.execute(text("SELECT id, nome_original, caminho_arquivo, tipo_mime, tamanho_bytes, data_upload FROM ticket_anexos WHERE chamado_id=:i"), {"i": chamado_id}).fetchall()
+                tas = db.execute(text("SELECT id, COALESCE(nome_original, arquivo_nome) AS nome_original, COALESCE(caminho_arquivo, arquivo_caminho) AS caminho_arquivo, COALESCE(tipo_mime, mime_type) AS tipo_mime, tamanho_bytes, COALESCE(data_upload, criado_em) AS data_upload FROM ticket_anexos WHERE chamado_id=:i"), {"i": chamado_id}).fetchall()
                 for ta in tas:
                     dt = ta[5]
                     if dt and start <= dt <= end:
