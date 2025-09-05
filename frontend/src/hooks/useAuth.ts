@@ -6,6 +6,7 @@ interface AuthUser {
   name: string;
   nivel_acesso?: string;
   setores?: string[];
+  alterar_senha_primeiro_acesso?: boolean;
   loginTime: number;
 }
 
