@@ -72,13 +72,13 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
-          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-          <Route path="/auth/change-password" element={<ChangePassword />} />
-          <Route path="/access-denied" element={<AccessDenied />} />
-          <Route
-            path="/auth/reset-password-success"
-            element={<ResetPasswordSuccess />}
-          />
+            <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+            <Route path="/auth/change-password" element={<ChangePassword />} />
+            <Route path="/access-denied" element={<AccessDenied />} />
+            <Route
+              path="/auth/reset-password-success"
+              element={<ResetPasswordSuccess />}
+            />
             <Route
               path="/setor/ti"
               element={

@@ -86,7 +86,9 @@ export default function SectorPage() {
           <section className="container py-8">
             <div className="rounded-xl border border-border/60 bg-card p-6 sm:p-8 text-center">
               <h2 className="text-lg font-semibold mb-2">Acesso negado</h2>
-              <p className="text-muted-foreground mb-4">Você não tem permissão para acessar este setor.</p>
+              <p className="text-muted-foreground mb-4">
+                Você não tem permissão para acessar este setor.
+              </p>
               <div className="mt-6 flex items-center gap-3 justify-center">
                 <Button asChild>
                   <Link to="/">Voltar ao início</Link>

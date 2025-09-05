@@ -86,7 +86,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 {sectors.map((s) => (
-                  <Link key={s.slug} to={user ? `/setor/${s.slug}` : `/login?redirect=/setor/${s.slug}`}>
+                  <Link
+                    key={s.slug}
+                    to={
+                      user
+                        ? `/setor/${s.slug}`
+                        : `/login?redirect=/setor/${s.slug}`
+                    }
+                  >
                     <DropdownMenuItem>{s.title}</DropdownMenuItem>
                   </Link>
                 ))}
@@ -183,7 +190,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         {sectors.map((s) => (
                           <SheetClose asChild key={s.slug}>
                             <Link
-                              to={user ? `/setor/${s.slug}` : `/login?redirect=/setor/${s.slug}`}
+                              to={
+                                user
+                                  ? `/setor/${s.slug}`
+                                  : `/login?redirect=/setor/${s.slug}`
+                              }
                               className="block rounded-md px-3 py-2 hover:bg-secondary"
                             >
                               {s.title}

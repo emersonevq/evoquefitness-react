@@ -29,13 +29,47 @@ function readFromStorage(): AuthUser | null {
       const data = JSON.parse(sessionRaw) as Partial<AuthRecord & AuthUser>;
       if (typeof (data as AuthRecord).expiresAt === "number") {
         if (now < (data as AuthRecord).expiresAt) {
-          const { email, name, loginTime, nivel_acesso, setores, alterar_senha_primeiro_acesso, id } = data as AuthRecord & Partial<AuthUser>;
-          if (email && name && loginTime) return { id, email, name, loginTime, nivel_acesso, setores, alterar_senha_primeiro_acesso } as AuthUser;
+          const {
+            email,
+            name,
+            loginTime,
+            nivel_acesso,
+            setores,
+            alterar_senha_primeiro_acesso,
+            id,
+          } = data as AuthRecord & Partial<AuthUser>;
+          if (email && name && loginTime)
+            return {
+              id,
+              email,
+              name,
+              loginTime,
+              nivel_acesso,
+              setores,
+              alterar_senha_primeiro_acesso,
+            } as AuthUser;
         }
       } else if (typeof data.loginTime === "number") {
         if (now - data.loginTime < LEGACY_EXPIRY) {
-          const { email, name, loginTime, nivel_acesso, setores, alterar_senha_primeiro_acesso, id } = data as AuthUser & Partial<AuthRecord>;
-          if (email && name && loginTime) return { id, email, name, loginTime, nivel_acesso, setores, alterar_senha_primeiro_acesso } as AuthUser;
+          const {
+            email,
+            name,
+            loginTime,
+            nivel_acesso,
+            setores,
+            alterar_senha_primeiro_acesso,
+            id,
+          } = data as AuthUser & Partial<AuthRecord>;
+          if (email && name && loginTime)
+            return {
+              id,
+              email,
+              name,
+              loginTime,
+              nivel_acesso,
+              setores,
+              alterar_senha_primeiro_acesso,
+            } as AuthUser;
         }
       }
       sessionStorage.removeItem(AUTH_KEY);
@@ -51,13 +85,47 @@ function readFromStorage(): AuthUser | null {
       const data = JSON.parse(localRaw) as Partial<AuthRecord & AuthUser>;
       if (typeof (data as AuthRecord).expiresAt === "number") {
         if (now < (data as AuthRecord).expiresAt) {
-          const { email, name, loginTime, nivel_acesso, setores, alterar_senha_primeiro_acesso, id } = data as AuthRecord & Partial<AuthUser>;
-          if (email && name && loginTime) return { id, email, name, loginTime, nivel_acesso, setores, alterar_senha_primeiro_acesso } as AuthUser;
+          const {
+            email,
+            name,
+            loginTime,
+            nivel_acesso,
+            setores,
+            alterar_senha_primeiro_acesso,
+            id,
+          } = data as AuthRecord & Partial<AuthUser>;
+          if (email && name && loginTime)
+            return {
+              id,
+              email,
+              name,
+              loginTime,
+              nivel_acesso,
+              setores,
+              alterar_senha_primeiro_acesso,
+            } as AuthUser;
         }
       } else if (typeof data.loginTime === "number") {
         if (now - data.loginTime < LEGACY_EXPIRY) {
-          const { email, name, loginTime, nivel_acesso, setores, alterar_senha_primeiro_acesso, id } = data as AuthUser & Partial<AuthRecord>;
-          if (email && name && loginTime) return { id, email, name, loginTime, nivel_acesso, setores, alterar_senha_primeiro_acesso } as AuthUser;
+          const {
+            email,
+            name,
+            loginTime,
+            nivel_acesso,
+            setores,
+            alterar_senha_primeiro_acesso,
+            id,
+          } = data as AuthUser & Partial<AuthRecord>;
+          if (email && name && loginTime)
+            return {
+              id,
+              email,
+              name,
+              loginTime,
+              nivel_acesso,
+              setores,
+              alterar_senha_primeiro_acesso,
+            } as AuthUser;
         }
       }
       localStorage.removeItem(AUTH_KEY);
@@ -79,16 +147,22 @@ export function useAuth() {
     setIsLoading(false);
   }, []);
 
-  const login = async (identifier: string, password: string, remember = true) => {
+  const login = async (
+    identifier: string,
+    password: string,
+    remember = true,
+  ) => {
     try {
-      const res = await fetch('/api/usuarios/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/usuarios/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier, senha: password }),
       });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({} as any));
-        throw new Error((err && (err.detail || err.message)) || 'Falha ao autenticar');
+        const err = await res.json().catch(() => ({}) as any);
+        throw new Error(
+          (err && (err.detail || err.message)) || "Falha ao autenticar",
+        );
       }
       const data = await res.json();
       const now = Date.now();

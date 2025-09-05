@@ -150,7 +150,7 @@ export function CriarUsuario() {
       });
       setShowSuccess(true);
       // Notify other parts of the UI that users changed
-      window.dispatchEvent(new CustomEvent('users:changed'));
+      window.dispatchEvent(new CustomEvent("users:changed"));
 
       setFirst("");
       setLast("");
@@ -406,14 +406,15 @@ export function Bloqueios() {
     load();
     const onChanged = () => load();
     window.addEventListener("users:changed", onChanged as EventListener);
-    return () => window.removeEventListener("users:changed", onChanged as EventListener);
+    return () =>
+      window.removeEventListener("users:changed", onChanged as EventListener);
   }, []);
 
   const unblock = async (id: number) => {
     const res = await fetch(`/api/usuarios/${id}/unblock`, { method: "POST" });
     if (res.ok) {
       // notify other parts of the UI
-      window.dispatchEvent(new CustomEvent('users:changed'));
+      window.dispatchEvent(new CustomEvent("users:changed"));
       load();
     }
   };
@@ -422,7 +423,9 @@ export function Bloqueios() {
     <div className="space-y-3">
       <div className="card-surface rounded-xl p-4">
         <div className="font-semibold mb-2">Usuários bloqueados</div>
-        {loading && <div className="text-sm text-muted-foreground">Carregando...</div>}
+        {loading && (
+          <div className="text-sm text-muted-foreground">Carregando...</div>
+        )}
         {!loading && blocked.length === 0 && (
           <div className="text-sm text-muted-foreground">Nenhum bloqueio.</div>
         )}
@@ -430,10 +433,17 @@ export function Bloqueios() {
 
       <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {blocked.map((u) => (
-          <div key={u.id} className="rounded-xl border border-border/60 bg-card overflow-hidden">
+          <div
+            key={u.id}
+            className="rounded-xl border border-border/60 bg-card overflow-hidden"
+          >
             <div className="px-4 py-3 border-b border-border/60 bg-muted/30 flex items-center justify-between">
-              <div className="font-semibold">{u.nome} {u.sobrenome}</div>
-              <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">{u.nivel_acesso}</span>
+              <div className="font-semibold">
+                {u.nome} {u.sobrenome}
+              </div>
+              <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">
+                {u.nivel_acesso}
+              </span>
             </div>
             <div className="p-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
               <div className="text-muted-foreground">Usuário</div>
@@ -442,7 +452,9 @@ export function Bloqueios() {
               <div className="text-right">{u.email}</div>
             </div>
             <div className="px-4 pb-4 flex gap-2 justify-end">
-              <Button type="button" onClick={() => unblock(u.id)}>Desbloquear</Button>
+              <Button type="button" onClick={() => unblock(u.id)}>
+                Desbloquear
+              </Button>
             </div>
           </div>
         ))}
@@ -466,7 +478,10 @@ export function Permissoes() {
   const [loading, setLoading] = useState(true);
 
   const [editing, setEditing] = useState<ApiUser | null>(null);
-  const [pwdDialog, setPwdDialog] = useState<{ user: ApiUser | null; pwd: string | null }>({ user: null, pwd: null });
+  const [pwdDialog, setPwdDialog] = useState<{
+    user: ApiUser | null;
+    pwd: string | null;
+  }>({ user: null, pwd: null });
 
   const [editNome, setEditNome] = useState("");
   const [editSobrenome, setEditSobrenome] = useState("");
@@ -478,7 +493,9 @@ export function Permissoes() {
 
   const allSectors = useMemo(() => sectors.map((s) => s.title), []);
   const toggleEditSector = (name: string) => {
-    setEditSetores((prev) => (prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]));
+    setEditSetores((prev) =>
+      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name],
+    );
   };
 
   const load = () => {
@@ -496,7 +513,8 @@ export function Permissoes() {
     load();
     const onChanged = () => load();
     window.addEventListener("users:changed", onChanged as EventListener);
-    return () => window.removeEventListener("users:changed", onChanged as EventListener);
+    return () =>
+      window.removeEventListener("users:changed", onChanged as EventListener);
   }, []);
 
   const openEdit = (u: ApiUser) => {
@@ -528,15 +546,17 @@ export function Permissoes() {
     if (res.ok) {
       setEditing(null);
       load();
-      window.dispatchEvent(new CustomEvent('users:changed'));
+      window.dispatchEvent(new CustomEvent("users:changed"));
     } else {
-      const t = await res.json().catch(() => ({} as any));
+      const t = await res.json().catch(() => ({}) as any);
       alert((t && (t.detail || t.message)) || "Falha ao salvar");
     }
   };
 
   const regeneratePwd = async (u: ApiUser) => {
-    const res = await fetch(`/api/usuarios/${u.id}/generate-password`, { method: "POST" });
+    const res = await fetch(`/api/usuarios/${u.id}/generate-password`, {
+      method: "POST",
+    });
     if (!res.ok) {
       alert("Falha ao gerar senha");
       return;
@@ -544,7 +564,7 @@ export function Permissoes() {
     const data = await res.json();
     setPwdDialog({ user: u, pwd: data.senha });
     // Notify user list that user was updated (alterar_senha_primeiro_acesso set on server)
-    window.dispatchEvent(new CustomEvent('users:changed'));
+    window.dispatchEvent(new CustomEvent("users:changed"));
   };
 
   const blockUser = async (u: ApiUser) => {
@@ -552,7 +572,7 @@ export function Permissoes() {
     if (res.ok) {
       // remove locally and notify blocked list
       setUsers((prev) => prev.filter((x) => x.id !== u.id));
-      window.dispatchEvent(new CustomEvent('users:changed'));
+      window.dispatchEvent(new CustomEvent("users:changed"));
     }
   };
 
@@ -561,7 +581,7 @@ export function Permissoes() {
     const res = await fetch(`/api/usuarios/${u.id}`, { method: "DELETE" });
     if (res.ok) {
       setUsers((prev) => prev.filter((x) => x.id !== u.id));
-      window.dispatchEvent(new CustomEvent('users:changed'));
+      window.dispatchEvent(new CustomEvent("users:changed"));
     }
   };
 
@@ -586,8 +606,12 @@ export function Permissoes() {
         {users.map((u) => (
           <div key={u.id} className="card-surface rounded-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-border/60 bg-muted/30 flex items-center justify-between">
-              <div className="font-semibold">{u.nome} {u.sobrenome}</div>
-              <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">{u.nivel_acesso}</span>
+              <div className="font-semibold">
+                {u.nome} {u.sobrenome}
+              </div>
+              <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">
+                {u.nivel_acesso}
+              </span>
             </div>
 
             <div className="p-4 text-sm space-y-2">
@@ -606,10 +630,34 @@ export function Permissoes() {
             </div>
 
             <div className="px-4 pb-4 flex flex-wrap gap-2 justify-end">
-              <Button type="button" variant="secondary" onClick={() => openEdit(u)}>Editar</Button>
-              <Button type="button" variant="secondary" onClick={() => regeneratePwd(u)}>Nova senha</Button>
-              <Button type="button" variant="secondary" onClick={() => blockUser(u)}>Bloquear</Button>
-              <Button type="button" variant="destructive" onClick={() => deleteUser(u)}>Excluir</Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => openEdit(u)}
+              >
+                Editar
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => regeneratePwd(u)}
+              >
+                Nova senha
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => blockUser(u)}
+              >
+                Bloquear
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => deleteUser(u)}
+              >
+                Excluir
+              </Button>
             </div>
           </div>
         ))}
@@ -625,21 +673,34 @@ export function Permissoes() {
             <div className="grid sm:grid-cols-2 gap-3">
               <div className="grid gap-2">
                 <Label>Nome</Label>
-                <Input value={editNome} onChange={(e) => setEditNome(e.target.value)} />
+                <Input
+                  value={editNome}
+                  onChange={(e) => setEditNome(e.target.value)}
+                />
               </div>
               <div className="grid gap-2">
                 <Label>Sobrenome</Label>
-                <Input value={editSobrenome} onChange={(e) => setEditSobrenome(e.target.value)} />
+                <Input
+                  value={editSobrenome}
+                  onChange={(e) => setEditSobrenome(e.target.value)}
+                />
               </div>
             </div>
             <div className="grid sm:grid-cols-2 gap-3">
               <div className="grid gap-2">
                 <Label>E-mail</Label>
-                <Input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+                <Input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                />
               </div>
               <div className="grid gap-2">
                 <Label>Usuário</Label>
-                <Input value={editUsuario} onChange={(e) => setEditUsuario(e.target.value)} />
+                <Input
+                  value={editUsuario}
+                  onChange={(e) => setEditUsuario(e.target.value)}
+                />
               </div>
             </div>
             <div className="grid sm:grid-cols-2 gap-3">
@@ -654,8 +715,12 @@ export function Permissoes() {
                     <SelectItem value="Gestor">Gestor</SelectItem>
                     <SelectItem value="Funcionário">Funcionário</SelectItem>
                     <SelectItem value="Gerente">Gerente</SelectItem>
-                    <SelectItem value="Gerente regional">Gerente regional</SelectItem>
-                    <SelectItem value="Agente de suporte">Agente de suporte</SelectItem>
+                    <SelectItem value="Gerente regional">
+                      Gerente regional
+                    </SelectItem>
+                    <SelectItem value="Agente de suporte">
+                      Agente de suporte
+                    </SelectItem>
                     <SelectItem value="Administrador">Administrador</SelectItem>
                   </SelectContent>
                 </Select>
@@ -687,14 +752,25 @@ export function Permissoes() {
               Solicitar alteração de senha no próximo acesso
             </label>
             <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="secondary" onClick={() => setEditing(null)}>Cancelar</Button>
-              <Button type="button" onClick={saveEdit}>Salvar</Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setEditing(null)}
+              >
+                Cancelar
+              </Button>
+              <Button type="button" onClick={saveEdit}>
+                Salvar
+              </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!pwdDialog.user} onOpenChange={(o) => !o && setPwdDialog({ user: null, pwd: null })}>
+      <Dialog
+        open={!!pwdDialog.user}
+        onOpenChange={(o) => !o && setPwdDialog({ user: null, pwd: null })}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Nova senha gerada</DialogTitle>
@@ -710,7 +786,9 @@ export function Permissoes() {
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => navigator.clipboard?.writeText(pwdDialog.pwd || "")}
+                onClick={() =>
+                  navigator.clipboard?.writeText(pwdDialog.pwd || "")
+                }
                 className="inline-flex items-center gap-2"
               >
                 <Copy className="h-4 w-4" /> Copiar

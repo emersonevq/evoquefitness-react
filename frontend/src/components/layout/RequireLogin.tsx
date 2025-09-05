@@ -30,7 +30,10 @@ export default function RequireLogin({
     const pathname = location.pathname || "";
 
     // Admin routes: only Administrador
-    if (pathname.startsWith("/setor/ti/admin") && user?.nivel_acesso !== "Administrador") {
+    if (
+      pathname.startsWith("/setor/ti/admin") &&
+      user?.nivel_acesso !== "Administrador"
+    ) {
       return <Navigate to="/access-denied" replace />;
     }
 
@@ -50,16 +53,30 @@ export default function RequireLogin({
         marketing: "Marketing",
         produtos: "Produtos",
         comercial: "Comercial",
-        'outros-servicos': "Outros",
+        "outros-servicos": "Outros",
         servicos: "Outros",
       };
       const required = mapa[slug || ""];
-      const normalize = (s: any) => typeof s === 'string' ? s.normalize('NFKD').replace(/\p{Diacritic}/gu, '').toLowerCase() : s;
-      const userSectors = Array.isArray(user?.setores) ? user!.setores.map(normalize) : [];
+      const normalize = (s: any) =>
+        typeof s === "string"
+          ? s
+              .normalize("NFKD")
+              .replace(/\p{Diacritic}/gu, "")
+              .toLowerCase()
+          : s;
+      const userSectors = Array.isArray(user?.setores)
+        ? user!.setores.map(normalize)
+        : [];
       const reqNorm = normalize(required);
       const has = userSectors.some((s) => {
         if (!s || !reqNorm) return false;
-        return s === reqNorm || s.includes(reqNorm) || reqNorm.includes(s) || s.split(" ").some(tok => reqNorm.includes(tok)) || reqNorm.split(" ").some(tok => s.includes(tok));
+        return (
+          s === reqNorm ||
+          s.includes(reqNorm) ||
+          reqNorm.includes(s) ||
+          s.split(" ").some((tok) => reqNorm.includes(tok)) ||
+          reqNorm.split(" ").some((tok) => s.includes(tok))
+        );
       });
       if (required && !has) {
         return <Navigate to="/access-denied" replace />;

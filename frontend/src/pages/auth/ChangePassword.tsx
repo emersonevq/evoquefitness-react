@@ -27,8 +27,10 @@ export default function ChangePassword() {
         body: JSON.stringify({ senha }),
       });
       if (!res.ok) {
-        const t = await res.json().catch(() => ({} as any));
-        throw new Error((t && (t.detail || t.message)) || "Falha ao alterar senha");
+        const t = await res.json().catch(() => ({}) as any);
+        throw new Error(
+          (t && (t.detail || t.message)) || "Falha ao alterar senha",
+        );
       }
       alert("Senha alterada com sucesso. Faça login novamente.");
       logout();
@@ -75,10 +77,19 @@ export default function ChangePassword() {
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="secondary" onClick={() => { logout(); navigate('/login'); }}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  logout();
+                  navigate("/login");
+                }}
+              >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={loading}>{loading ? 'Salvando...' : 'Salvar'}</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Salvando..." : "Salvar"}
+              </Button>
             </div>
           </form>
         </div>

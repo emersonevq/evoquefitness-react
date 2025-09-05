@@ -23,7 +23,7 @@ export default function Login() {
       const redirect = params.get("redirect") || "/";
       // If server indicates password change required, go to change-password
       if (result && result.alterar_senha_primeiro_acesso) {
-        navigate('/auth/change-password', { replace: true });
+        navigate("/auth/change-password", { replace: true });
       } else {
         navigate(redirect, { replace: true });
       }
