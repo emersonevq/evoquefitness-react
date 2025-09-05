@@ -3,7 +3,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from core.db import get_db, engine
 from ti.schemas.user import UserCreate, UserCreatedOut, UserAvailability, UserOut
-from ti.services.users import criar_usuario as service_criar, check_user_availability, generate_password
+from ti.services.users import (
+    criar_usuario as service_criar,
+    check_user_availability,
+    generate_password,
+    update_user,
+    regenerate_password,
+    set_block_status,
+    delete_user,
+    list_blocked_users,
+)
 
 router = APIRouter(prefix="/usuarios", tags=["TI - Usuarios"])
 
