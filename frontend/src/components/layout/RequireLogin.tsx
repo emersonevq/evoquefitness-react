@@ -30,9 +30,12 @@ export default function RequireLogin({
   const pathname = location.pathname || "";
   const sectorMatch = pathname.match(/^\/setor\/(?<slug>[^\/]+)(?:\/.*)?$/);
 
+  const inflightRef = useRef(false);
+
   useEffect(() => {
     let mounted = true;
     async function refreshPermissions() {
+      if (inflightRef.current) return;
       if (!isAuthenticated || !sectorMatch || !user) {
         setAllowed(null);
         setChecking(false);
