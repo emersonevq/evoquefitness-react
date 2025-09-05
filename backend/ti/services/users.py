@@ -391,6 +391,50 @@ def ensure_admins_have_all_sectors(db: Session) -> int:
     return updated
 
 
+def has_user_sector(db: Session, user_id: int, required: str) -> bool:
+    """Return True if user has the required sector (string), matching normalized sectors."""
+    try:
+        User.__table__.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return False
+
+    setores_list: list[str] = []
+    try:
+        if user._setores:
+            raw = json.loads(user._setores)
+            setores_list = [ _normalize_str(str(s)) for s in raw if s is not None ]
+        elif user.setor:
+            setores_list = [ _normalize_str(str(user.setor)) ]
+    except Exception:
+        setores_list = [ _normalize_str(str(user.setor)) ] if user.setor else []
+
+    req = _normalize_str(required)
+    if not req:
+        return False
+
+    def clean_token(s: str) -> str:
+        # remove common prefixes and keep lower ascii form
+        s2 = s.replace('\u00a0', ' ').strip().lower()
+        s2 = s2.replace('setor de ', '').replace('setor da ', '').replace('setor do ', '').replace('setor ', '').strip()
+        return s2
+
+    user_clean = [clean_token(s) for s in setores_list]
+    req_clean = clean_token(req)
+
+    if req_clean in user_clean:
+        return True
+
+    req_tokens = req_clean.split()
+    for s in user_clean:
+        s_tokens = s.split()
+        if any(tok in s_tokens for tok in req_tokens):
+            return True
+    return False
+
+
 def change_user_password(db: Session, user_id: int, new_password: str, require_change: bool = False) -> None:
     try:
         User.__table__.create(bind=engine, checkfirst=True)
