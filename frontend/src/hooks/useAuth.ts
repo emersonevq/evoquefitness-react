@@ -78,36 +78,46 @@ export function useAuth() {
     setIsLoading(false);
   }, []);
 
-  const login = (email: string, _password: string, remember = true) => {
-    const now = Date.now();
-    const base: AuthUser = {
-      email,
-      name: email.split("@")[0] || "Usuário",
-      loginTime: now,
-    };
-
-    const record: AuthRecord = {
-      ...base,
-      expiresAt: now + (remember ? REMEMBER_EXPIRY : SESSION_EXPIRY),
-    };
-
-    setUser(base);
-
-    // Persistir conforme "Lembrar-me"
+  const login = async (identifier: string, password: string, remember = true) => {
     try {
-      const payload = JSON.stringify(record);
-      if (remember) {
-        sessionStorage.removeItem(AUTH_KEY);
-        localStorage.setItem(AUTH_KEY, payload);
-      } else {
-        localStorage.removeItem(AUTH_KEY);
-        sessionStorage.setItem(AUTH_KEY, payload);
+      const res = await fetch('/api/usuarios/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, senha: password }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({} as any));
+        throw new Error((err && (err.detail || err.message)) || 'Falha ao autenticar');
       }
-    } catch {
-      // Em caso de quota/storage cheia, não quebrar o fluxo
+      const data = await res.json();
+      const now = Date.now();
+      const base: AuthUser = {
+        id: data.id,
+        email: data.email,
+        name: `${data.nome} ${data.sobrenome}`,
+        nivel_acesso: data.nivel_acesso,
+        setores: Array.isArray(data.setores) ? data.setores : [],
+        loginTime: now,
+      };
+      const record: AuthRecord = {
+        ...base,
+        expiresAt: now + (remember ? REMEMBER_EXPIRY : SESSION_EXPIRY),
+      };
+      setUser(base);
+      try {
+        const payload = JSON.stringify(record);
+        if (remember) {
+          sessionStorage.removeItem(AUTH_KEY);
+          localStorage.setItem(AUTH_KEY, payload);
+        } else {
+          localStorage.removeItem(AUTH_KEY);
+          sessionStorage.setItem(AUTH_KEY, payload);
+        }
+      } catch {}
+      return true;
+    } catch (err) {
+      throw err;
     }
-
-    return true;
   };
 
   const logout = () => {
