@@ -141,7 +141,6 @@ def criar_chamado_com_anexos(
             descricao=descricao,
         )
         ch = service_criar(db, payload)
-        saved: list[AnexoArquivo] = []
         if files:
             base_dir = pathlib.Path(__file__).resolve().parents[2]  # backend/
             upload_root = base_dir / "uploads" / "chamados" / str(ch.id)
@@ -153,6 +152,7 @@ def criar_chamado_com_anexos(
                     user_id = user.id if user else None
                 except Exception:
                     user_id = None
+            import hashlib
             for f in files:
                 try:
                     safe_name = pathlib.Path(f.filename or "arquivo").name
@@ -162,18 +162,23 @@ def criar_chamado_com_anexos(
                     content = f.file.read()
                     with open(dest_path, "wb") as out:
                         out.write(content)
-                    an = AnexoArquivo(
+                    ext = pathlib.Path(safe_name).suffix.lower().lstrip(".")
+                    sha = hashlib.sha256(content).hexdigest()
+                    ca = ChamadoAnexo(
                         chamado_id=ch.id,
-                        historico_ticket_id=None,
                         nome_original=safe_name,
+                        nome_arquivo=dest_name,
                         caminho_arquivo=str(dest_path.relative_to(base_dir).as_posix()),
-                        mime_type=f.content_type or None,
                         tamanho_bytes=len(content),
+                        tipo_mime=f.content_type or None,
+                        extensao=ext or None,
+                        hash_arquivo=sha,
                         data_upload=now_brazil_naive(),
-                        usuario_id=user_id,
+                        usuario_upload_id=user_id,
+                        descricao=None,
+                        ativo=True,
                     )
-                    db.add(an)
-                    saved.append(an)
+                    db.add(ca)
                 except Exception:
                     continue
             db.commit()
