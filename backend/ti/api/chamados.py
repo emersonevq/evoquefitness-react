@@ -259,6 +259,7 @@ def enviar_ticket(
                         "chamado_id": chamado_id,
                         "nome_original": safe_name,
                         "nome_arquivo": safe_name,
+                        "caminho_arquivo": "pending",
                         "tamanho_bytes": len(content),
                         "tipo_mime": f.content_type or None,
                         "extensao": ext or None,
