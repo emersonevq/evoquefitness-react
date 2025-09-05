@@ -49,57 +49,22 @@ export default function RequireLogin({
 
       // Only check when we have a sector to validate
       setChecking(true);
-      // Use AbortController to timeout the fetch if backend is unreachable
+      // Call fast boolean endpoint to check permission
       const controller = new AbortController();
-      const timeoutMs = 5000;
+      const timeoutMs = 3000;
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
-        const res = await fetch(`/api/usuarios/${user.id}`, { signal: controller.signal });
-        if (!res.ok) throw new Error("failed");
-        const data = await res.json();
-        const remoteSectors = Array.isArray(data.setores) ? data.setores : [];
-        // reuse same normalization as before
-        const normalizeStr = (s: any) =>
-          typeof s === "string"
-            ? s
-                .normalize("NFKD")
-                .replace(/\p{Diacritic}/gu, "")
-                .toLowerCase()
-                .replace(/[^a-z0-9\s-]/g, "")
-                .replace(/\s+/g, " ")
-                .trim()
-            : "";
-        const cleanSector = (s: any) =>
-          normalizeStr(s)
-            .replace(/^(setor\s*(de|da|do)\s*)/, "")
-            .trim();
-        const userSectors = remoteSectors.map(cleanSector);
-        const mapa: Record<string, string> = {
-          ti: "TI",
-          compras: "Compras",
-          manutencao: "Manutencao",
-          financeiro: "Financeiro",
-          marketing: "Marketing",
-          produtos: "Produtos",
-          comercial: "Comercial",
-          "outros-servicos": "Outros",
-          servicos: "Outros",
-        };
-        const required = mapa[sectorMatch!.groups!.slug || ""];
-        const reqNorm = cleanSector(required);
-        const has = userSectors.some((s) => {
-          if (!s || !reqNorm) return false;
-          if (s === reqNorm) return true;
-          const sTokens = s.split(/\s+/).filter(Boolean);
-          const reqTokens = reqNorm.split(/\s+/).filter(Boolean);
-          if (sTokens.some((tok) => reqTokens.includes(tok))) return true;
-          if (reqTokens.some((tok) => sTokens.includes(tok))) return true;
-          return false;
-        });
-        if (mounted) setAllowed(Boolean(has));
+        const slug = sectorMatch!.groups!.slug || "";
+        const res = await fetch(`/api/usuarios/${user.id}/has-setor?sector=${encodeURIComponent(slug)}`, { signal: controller.signal });
+        if (!res.ok) {
+          // if server errored, fallback to client-side cached sectors
+          if (mounted) setAllowed(null);
+        } else {
+          const data = await res.json();
+          if (mounted) setAllowed(Boolean(data && data.ok));
+        }
       } catch (e) {
-        // On timeout or network error, fallback to client-side cached sectors (do not block)
-        console.warn("Permission check failed or timed out:", e);
+        console.warn("has-setor check failed:", e);
         if (mounted) setAllowed(null);
       } finally {
         clearTimeout(timer);
