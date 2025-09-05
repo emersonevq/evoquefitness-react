@@ -44,6 +44,7 @@ def listar_usuarios(db: Session = Depends(get_db)):
                     "email": r[4],
                     "nivel_acesso": r[5],
                     "setor": r[6],
+                    "bloqueado": False,
                 })
             return rows
         except Exception:
