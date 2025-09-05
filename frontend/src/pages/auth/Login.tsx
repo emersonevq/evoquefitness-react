@@ -17,18 +17,16 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simular delay de autenticação
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // Fazer login com persistência conforme "Lembrar-me"
-    login(email, password, remember);
-
-    // Navegar para a página de destino
-    const params = new URLSearchParams(window.location.search);
-    const redirect = params.get("redirect") || "/";
-    navigate(redirect, { replace: true });
-
-    setIsLoading(false);
+    try {
+      await login(email, password, remember);
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get("redirect") || "/";
+      navigate(redirect, { replace: true });
+    } catch (err: any) {
+      alert(err?.message || "Falha ao autenticar");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
