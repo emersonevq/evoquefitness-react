@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMemo, useState } from "react";
+import { useAuthContext } from "@/lib/auth-context";
 
 interface Ticket {
   id: string;
