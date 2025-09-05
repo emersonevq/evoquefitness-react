@@ -373,20 +373,16 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
                 dados=dados,
             )
             db.add(n)
-            # registrar status em historico_tickets (SQL)
-            db.execute(text(
-                """
-                INSERT INTO historico_tickets (chamado_id, usuario_id, assunto, mensagem, destinatarios, data_envio)
-                VALUES (:chamado_id, :usuario_id, :assunto, :mensagem, :destinatarios, :data_envio)
-                """
-            ), {
-                "chamado_id": ch.id,
-                "usuario_id": None,
-                "assunto": f"Status: {prev} → {ch.status}",
-                "mensagem": f"{prev} → {ch.status}",
-                "destinatarios": "",
-                "data_envio": now_brazil_naive(),
-            })
+            # registrar status via ORM
+            h = HistoricoTicket(
+                chamado_id=ch.id,
+                usuario_id=None,
+                assunto=f"Status: {prev} → {ch.status}",
+                mensagem=f"{prev} → {ch.status}",
+                destinatarios="",
+                data_envio=now_brazil_naive(),
+            )
+            db.add(h)
             db.commit()
             db.refresh(n)
             import anyio
