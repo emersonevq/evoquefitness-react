@@ -418,7 +418,7 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
                 dados=dados,
             )
             db.add(n)
-            # registrar em historico_status (principal)
+            # registrar em historico_status (única fonte de verdade)
             hs = HistoricoStatus(
                 chamado_id=ch.id,
                 usuario_id=None,
@@ -427,22 +427,6 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
                 criado_em=now_brazil_naive(),
             )
             db.add(hs)
-            # opcional: historico_tickets somente se usuario_id aceitar NULL
-            try:
-                cols = inspect(engine).get_columns("historicos_tickets")
-                colmap = {c.get("name"): c for c in cols}
-                if colmap.get("usuario_id", {}).get("nullable", True):
-                    h = HistoricoTicket(
-                        chamado_id=ch.id,
-                        usuario_id=None,
-                        assunto=f"Status: {prev} → {ch.status}",
-                        mensagem=f"{prev} → {ch.status}",
-                        destinatarios="",
-                        data_envio=now_brazil_naive(),
-                    )
-                    db.add(h)
-            except Exception:
-                pass
             db.commit()
             db.refresh(n)
             import anyio
