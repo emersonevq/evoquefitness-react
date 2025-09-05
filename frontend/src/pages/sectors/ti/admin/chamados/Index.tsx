@@ -224,7 +224,10 @@ export default function ChamadosPage() {
 
   useEffect(() => {
     function toUiStatus(s: string): TicketStatus {
-      const n = (s || "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toUpperCase();
+      const n = (s || "")
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .toUpperCase();
       const nn = n.replace(/\s+/g, "_");
       if (nn === "EM_ANDAMENTO" || nn === "AGUARDANDO") return "EM_ANDAMENTO";
       if (nn === "EM_ANALISE") return "EM_ANALISE";
