@@ -404,7 +404,7 @@ export default function ChamadosPage() {
           label: it.label,
           attachments: it.anexos ? it.anexos.map((a) => a.nome_original) : undefined,
           files: it.anexos
-            ? it.anexos.map((a) => ({ name: a.nome_original, url: `/${a.caminho_arquivo}`, mime: a.mime_type || undefined }))
+            ? it.anexos.map((a) => ({ name: a.nome_original, url: `${API_BASE.replace(/\/api$/, '')}/${a.caminho_arquivo}`, mime: a.mime_type || undefined }))
             : undefined,
         }));
         setHistory(arr);
