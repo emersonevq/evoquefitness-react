@@ -55,7 +55,48 @@ export default function SectorPage() {
     </section>
   );
 
+  const { user } = useAuthContext();
+
+  const hasAccess = () => {
+    if (!user) return false;
+    if (user.nivel_acesso === "Administrador") return true;
+    const mapa: Record<string, string> = {
+      ti: "TI",
+      compras: "Compras",
+      manutencao: "Manutencao",
+      financeiro: "Financeiro",
+      marketing: "Marketing",
+      produtos: "Produtos",
+      comercial: "Comercial",
+      "outros-servicos": "Outros",
+      servicos: "Outros",
+    };
+    const required = mapa[slug || ""];
+    if (!required) return false;
+    return Array.isArray(user.setores) && user.setores.includes(required);
+  };
+
   if (!isTI) {
+    // Non-TI sectors: still check access
+    if (!hasAccess()) {
+      return (
+        <Layout>
+          {header}
+          <section className="container py-8">
+            <div className="rounded-xl border border-border/60 bg-card p-6 sm:p-8 text-center">
+              <h2 className="text-lg font-semibold mb-2">Acesso negado</h2>
+              <p className="text-muted-foreground mb-4">Você não tem permissão para acessar este setor.</p>
+              <div className="mt-6 flex items-center gap-3 justify-center">
+                <Button asChild>
+                  <Link to="/">Voltar ao início</Link>
+                </Button>
+              </div>
+            </div>
+          </section>
+        </Layout>
+      );
+    }
+
     return (
       <Layout>
         {header}
