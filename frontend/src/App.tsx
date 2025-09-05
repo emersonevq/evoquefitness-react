@@ -12,6 +12,7 @@ import Login from "./pages/auth/Login";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPasswordSuccess from "./pages/auth/ResetPasswordSuccess";
 import ChangePassword from "./pages/auth/ChangePassword";
+import AccessDenied from "./pages/AccessDenied";
 import SectorPage from "./pages/Sector";
 import TiPage from "./pages/sectors/ti/TiPage";
 import {
