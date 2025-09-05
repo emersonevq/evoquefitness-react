@@ -178,9 +178,9 @@ def change_password(user_id: int, payload: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Erro ao alterar senha: {e}")
 
 
-@router.get("/{user_id}", response_model=UserOut)
+@router.get("/{user_id}")
 def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
-    """Return user by id (used by frontend to refresh permissions)."""
+    """Return user by id (used by frontend to refresh permissions). Returns setores as list."""
     try:
         from ..models import User
         try:
@@ -190,7 +190,29 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             raise HTTPException(status_code=404, detail="Usuário não encontrado")
-        return user
+
+        # prepare setores list similar to authenticate_user
+        setores_list: list[str] = []
+        try:
+            if user._setores:
+                raw = json.loads(user._setores)
+                setores_list = [str(s) for s in raw if s is not None]
+            elif user.setor:
+                setores_list = [str(user.setor)]
+        except Exception:
+            setores_list = [str(user.setor)] if user.setor else []
+
+        return {
+            "id": user.id,
+            "nome": user.nome,
+            "sobrenome": user.sobrenome,
+            "usuario": user.usuario,
+            "email": user.email,
+            "nivel_acesso": user.nivel_acesso,
+            "setor": user.setor,
+            "setores": setores_list,
+            "bloqueado": user.bloqueado,
+        }
     except HTTPException:
         raise
     except Exception as e:
