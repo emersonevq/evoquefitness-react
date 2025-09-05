@@ -6,6 +6,7 @@ from .notification import Notification
 from .ticket_anexo import TicketAnexo
 from .chamado_anexo import ChamadoAnexo
 from .historico_ticket import HistoricoTicket
+from .historico_status import HistoricoStatus
 __all__ = [
     "Chamado",
     "User",
@@ -15,4 +16,5 @@ __all__ = [
     "TicketAnexo",
     "ChamadoAnexo",
     "HistoricoTicket",
+    "HistoricoStatus",
 ]
