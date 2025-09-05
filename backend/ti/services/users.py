@@ -192,3 +192,58 @@ def list_blocked_users(db: Session) -> list[User]:
     except Exception:
         pass
     return db.query(User).filter(User.bloqueado == True).order_by(User.id.desc()).all()
+
+
+def authenticate_user(db: Session, identifier: str, senha: str) -> dict:
+    """Authenticate by email or usuario. Returns dict with user info on success."""
+    try:
+        User.__table__.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
+    user = db.query(User).filter((User.email == identifier) | (User.usuario == identifier)).first()
+    from werkzeug.security import check_password_hash
+    if not user:
+        raise ValueError("Usuário não encontrado")
+    if user.bloqueado:
+        raise PermissionError("Usuário bloqueado")
+
+    if not check_password_hash(user.senha_hash, senha):
+        # increment attempts
+        try:
+            user.tentativas_login = (user.tentativas_login or 0) + 1
+            max_attempts = int(os.getenv("MAX_LOGIN_ATTEMPTS", "5"))
+            if user.tentativas_login >= max_attempts:
+                user.bloqueado = True
+            db.commit()
+        except Exception:
+            db.rollback()
+        raise ValueError("Senha inválida")
+
+    # Successful login: reset attempts and update ultimo_acesso
+    try:
+        user.tentativas_login = 0
+        user.bloqueado = False
+        user.ultimo_acesso = now_brazil_naive()
+        db.commit()
+    except Exception:
+        db.rollback()
+
+    # prepare setores list
+    setores_list = []
+    try:
+        if user._setores:
+            setores_list = json.loads(user._setores)
+        elif user.setor:
+            setores_list = [user.setor]
+    except Exception:
+        setores_list = [user.setor] if user.setor else []
+
+    return {
+        "id": user.id,
+        "nome": user.nome,
+        "sobrenome": user.sobrenome,
+        "usuario": user.usuario,
+        "email": user.email,
+        "nivel_acesso": user.nivel_acesso,
+        "setores": setores_list,
+    }
