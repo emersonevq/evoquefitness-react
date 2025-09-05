@@ -21,6 +21,7 @@ class UserOut(BaseModel):
     email: EmailStr
     nivel_acesso: str
     setor: str | None
+    bloqueado: bool = False
 
     class Config:
         from_attributes = True
