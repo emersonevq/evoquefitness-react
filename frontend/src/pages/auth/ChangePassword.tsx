@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import React, { useState } from "react";
+import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@/lib/auth-context";
 import { Input } from "@/components/ui/input";
