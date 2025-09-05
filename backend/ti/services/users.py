@@ -245,15 +245,16 @@ def authenticate_user(db: Session, identifier: str, senha: str) -> dict:
     except Exception:
         db.rollback()
 
-    # prepare setores list
-    setores_list = []
+    # prepare setores list and normalize strings (remove accents)
+    setores_list: list[str] = []
     try:
         if user._setores:
-            setores_list = json.loads(user._setores)
+            raw = json.loads(user._setores)
+            setores_list = [ _normalize_str(str(s)) for s in raw if s is not None ]
         elif user.setor:
-            setores_list = [user.setor]
+            setores_list = [ _normalize_str(str(user.setor)) ]
     except Exception:
-        setores_list = [user.setor] if user.setor else []
+        setores_list = [ _normalize_str(str(user.setor))] if user.setor else []
 
     return {
         "id": user.id,
@@ -265,6 +266,49 @@ def authenticate_user(db: Session, identifier: str, senha: str) -> dict:
         "setores": setores_list,
         "alterar_senha_primeiro_acesso": bool(user.alterar_senha_primeiro_acesso),
     }
+
+# Migration script to normalize setores in DB
+def normalize_user_setores(db: Session) -> int:
+    """Normalize setor and _setores for all users. Returns number of updated users."""
+    updated = 0
+    try:
+        users = db.query(User).all()
+        for u in users:
+            changed = False
+            # normalize single setor
+            if u.setor:
+                norm = _normalize_str(u.setor)
+                if norm != (u.setor or ""):
+                    u.setor = norm
+                    changed = True
+            # normalize _setores JSON
+            if u._setores:
+                try:
+                    arr = json.loads(u._setores)
+                    norm_arr = [ _normalize_str(str(s)) for s in arr ]
+                    if json.dumps(norm_arr, ensure_ascii=False) != u._setores:
+                        u._setores = json.dumps(norm_arr, ensure_ascii=False)
+                        changed = True
+                except Exception:
+                    # try to coerce single string
+                    try:
+                        norm = _normalize_str(str(u._setores))
+                        u._setores = json.dumps([norm], ensure_ascii=False)
+                        changed = True
+                    except Exception:
+                        pass
+            if changed:
+                db.add(u)
+                updated += 1
+        if updated:
+            db.commit()
+    except Exception as e:
+        try:
+            db.rollback()
+        except:
+            pass
+        raise
+    return updated
 
 
 def change_user_password(db: Session, user_id: int, new_password: str, require_change: bool = False) -> None:
