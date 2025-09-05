@@ -2,10 +2,10 @@ import { createContext, useContext, ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
 interface AuthContextType {
-  user: { email: string; name: string; loginTime: number } | null;
+  user: { id?: number; email: string; name: string; nivel_acesso?: string; setores?: string[]; loginTime: number } | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string, remember?: boolean) => boolean;
+  login: (email: string, password: string, remember?: boolean) => Promise<boolean>;
   logout: () => void;
 }
 
