@@ -185,3 +185,14 @@ def excluir_usuario(user_id: int, db: Session = Depends(get_db)):
         return {"ok": True}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao excluir: {e}")
+
+
+@router.post("/normalize-setores")
+def normalize_setores(db: Session = Depends(get_db)):
+    """Normalize setor/_setores for all users. Use with caution (admin only)."""
+    try:
+        from ti.services.users import normalize_user_setores
+        updated = normalize_user_setores(db)
+        return {"updated": updated}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao normalizar setores: {e}")
