@@ -580,26 +580,27 @@ export function Permissoes() {
           </div>
         )}
         {users.map((u) => (
-          <div
-            key={u.id}
-            className="rounded-xl border border-border/60 bg-card overflow-hidden"
-          >
+          <div key={u.id} className="card-surface rounded-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-border/60 bg-muted/30 flex items-center justify-between">
-              <div className="font-semibold">
-                {u.nome} {u.sobrenome}
+              <div className="font-semibold">{u.nome} {u.sobrenome}</div>
+              <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">{u.nivel_acesso}</span>
+            </div>
+
+            <div className="p-4 text-sm space-y-2">
+              <div className="grid grid-cols-2 gap-x-6">
+                <div className="text-muted-foreground">Usuário</div>
+                <div className="text-right font-medium">{u.usuario}</div>
               </div>
-              <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">
-                {u.nivel_acesso}
-              </span>
+              <div className="grid grid-cols-2 gap-x-6">
+                <div className="text-muted-foreground">E-mail</div>
+                <div className="text-right">{u.email}</div>
+              </div>
+              <div className="grid grid-cols-2 gap-x-6">
+                <div className="text-muted-foreground">Setor</div>
+                <div className="text-right">{u.setor || "—"}</div>
+              </div>
             </div>
-            <div className="p-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-              <div className="text-muted-foreground">Usuário</div>
-              <div className="text-right">{u.usuario}</div>
-              <div className="text-muted-foreground">E-mail</div>
-              <div className="text-right">{u.email}</div>
-              <div className="text-muted-foreground">Setor</div>
-              <div className="text-right">{u.setor || "—"}</div>
-            </div>
+
             <div className="px-4 pb-4 flex flex-wrap gap-2 justify-end">
               <Button type="button" variant="secondary" onClick={() => openEdit(u)}>Editar</Button>
               <Button type="button" variant="secondary" onClick={() => regeneratePwd(u)}>Nova senha</Button>
