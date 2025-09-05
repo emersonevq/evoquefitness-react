@@ -345,12 +345,21 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
                 def __init__(self, r):
                     self.id, self.nome_original, self.caminho_arquivo, self.mime_type, self.tamanho_bytes, self.data_upload = r
             anexos_abertura = [AnexoOut.model_validate(_CA(r)) for r in rows]
+        # Item 1: Aberto em
         items.append(HistoricoItem(
             t=first_dt,
             tipo="abertura",
-            label=(ch.descricao or "Chamado aberto"),
+            label="Aberto em",
             anexos=anexos_abertura,
         ))
+        # Item 2: Descrição (se houver)
+        if ch.descricao:
+            items.append(HistoricoItem(
+                t=first_dt,
+                tipo="abertura",
+                label=f"Descrição: \n{ch.descricao}",
+                anexos=None,
+            ))
         try:
             Notification.__table__.create(bind=engine, checkfirst=True)
             HistoricoStatus.__table__.create(bind=engine, checkfirst=True)
