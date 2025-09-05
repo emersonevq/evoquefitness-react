@@ -543,6 +543,8 @@ export function Permissoes() {
     }
     const data = await res.json();
     setPwdDialog({ user: u, pwd: data.senha });
+    // Notify user list that user was updated (alterar_senha_primeiro_acesso set on server)
+    window.dispatchEvent(new CustomEvent('users:changed'));
   };
 
   const blockUser = async (u: ApiUser) => {
