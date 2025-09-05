@@ -7,6 +7,7 @@ from .attachment import AnexoArquivo
 from .historico_ticket import HistoricoTicket
 from .ticket_anexo import TicketAnexo
 from .historico_anexo import HistoricoAnexo
+from .chamado_anexo import ChamadoAnexo
 __all__ = [
     "Chamado",
     "User",
@@ -17,4 +18,5 @@ __all__ = [
     "HistoricoTicket",
     "TicketAnexo",
     "HistoricoAnexo",
+    "ChamadoAnexo",
 ]
