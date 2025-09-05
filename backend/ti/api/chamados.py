@@ -206,26 +206,19 @@ def enviar_ticket(
                 user_id = user.id if user else None
             except Exception:
                 user_id = None
-        # registrar histórico (raw SQL em historico_tickets)
-        h_params = {
-            "chamado_id": chamado_id,
-            "usuario_id": user_id,
-            "assunto": assunto,
-            "mensagem": mensagem,
-            "destinatarios": destinatarios,
-            "data_envio": now_brazil_naive(),
-        }
-        res = db.execute(text(
-            """
-            INSERT INTO historico_tickets (chamado_id, usuario_id, assunto, mensagem, destinatarios, data_envio)
-            VALUES (:chamado_id, :usuario_id, :assunto, :mensagem, :destinatarios, :data_envio)
-            """
-        ), h_params)
+        # registrar histórico via ORM
+        h = HistoricoTicket(
+            chamado_id=chamado_id,
+            usuario_id=user_id or None,
+            assunto=assunto,
+            mensagem=mensagem,
+            destinatarios=destinatarios,
+            data_envio=now_brazil_naive(),
+        )
+        db.add(h)
         db.commit()
-        try:
-            h_id = res.lastrowid  # type: ignore[attr-defined]
-        except Exception:
-            h_id = None
+        db.refresh(h)
+        h_id = h.id
         # salvar anexos em tickets_anexos com metadados e caminho
         if files:
             base_dir = pathlib.Path(__file__).resolve().parents[2]  # backend/
