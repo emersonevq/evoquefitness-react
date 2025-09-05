@@ -150,6 +150,25 @@ def _update_path(db: Session, table: str, rid: int, path: str) -> None:
     if "arquivo_caminho" in cols:
         db.execute(text(f"UPDATE {table} SET arquivo_caminho=:p WHERE id=:i"), {"p": path, "i": rid})
 
+
+def _select_anexo_query(table: str) -> str:
+    cols = _cols(table)
+    name_expr = ("nome_original" if "nome_original" in cols else ("arquivo_nome" if "arquivo_nome" in cols else "NULL")) + " AS nome_original"
+    path_expr = ("caminho_arquivo" if "caminho_arquivo" in cols else ("arquivo_caminho" if "arquivo_caminho" in cols else "NULL")) + " AS caminho_arquivo"
+    mime_expr = ("tipo_mime" if "tipo_mime" in cols else ("mime_type" if "mime_type" in cols else "NULL")) + " AS tipo_mime"
+    size_expr = ("tamanho_bytes" if "tamanho_bytes" in cols else "NULL") + " AS tamanho_bytes"
+    date_expr = ("data_upload" if "data_upload" in cols else ("criado_em" if "criado_em" in cols else "NULL")) + " AS data_upload"
+    return f"SELECT id, {name_expr}, {path_expr}, {mime_expr}, {size_expr}, {date_expr} FROM {table}"
+
+
+def _select_download_query(table: str) -> str:
+    cols = _cols(table)
+    nome_arq = ("nome_arquivo" if "nome_arquivo" in cols else ("arquivo_nome" if "arquivo_nome" in cols else "NULL")) + " AS nome_arquivo"
+    nome_orig = ("nome_original" if "nome_original" in cols else ("arquivo_nome" if "arquivo_nome" in cols else "NULL")) + " AS nome_original"
+    mime_expr = ("tipo_mime" if "tipo_mime" in cols else ("mime_type" if "mime_type" in cols else "NULL")) + " AS tipo_mime"
+    conteudo = ("conteudo" if "conteudo" in cols else "NULL") + " AS conteudo"
+    return f"SELECT id, {nome_arq}, {nome_orig}, {mime_expr}, {conteudo} FROM {table} WHERE id=:i"
+
 @router.post("/with-attachments", response_model=ChamadoOut)
 def criar_chamado_com_anexos(
     solicitante: str = Form(...),
@@ -309,8 +328,8 @@ def enviar_ticket(
 
 @router.get("/anexos/chamado/{anexo_id}")
 def baixar_anexo_chamado(anexo_id: int, db: Session = Depends(get_db)):
-    cols = _cols("chamado_anexo")
-    res = db.execute(text("SELECT id, COALESCE(nome_arquivo, arquivo_nome) AS nome_arquivo, COALESCE(nome_original, arquivo_nome) AS nome_original, COALESCE(tipo_mime, mime_type) AS tipo_mime, conteudo FROM chamado_anexo WHERE id=:i"), {"i": anexo_id}).fetchone()
+    sql = _select_download_query("chamado_anexo")
+    res = db.execute(text(sql), {"i": anexo_id}).fetchone()
     if not res or not res[4]:
         raise HTTPException(status_code=404, detail="Anexo não encontrado")
     nome = res[1] or res[2] or f"anexo_{anexo_id}"
@@ -320,7 +339,8 @@ def baixar_anexo_chamado(anexo_id: int, db: Session = Depends(get_db)):
 
 @router.get("/anexos/ticket/{anexo_id}")
 def baixar_anexo_ticket(anexo_id: int, db: Session = Depends(get_db)):
-    res = db.execute(text("SELECT id, COALESCE(nome_arquivo, arquivo_nome) AS nome_arquivo, COALESCE(nome_original, arquivo_nome) AS nome_original, COALESCE(tipo_mime, mime_type) AS tipo_mime, conteudo FROM ticket_anexos WHERE id=:i"), {"i": anexo_id}).fetchone()
+    sql = _select_download_query("ticket_anexos")
+    res = db.execute(text(sql), {"i": anexo_id}).fetchone()
     if not res or not res[4]:
         raise HTTPException(status_code=404, detail="Anexo não encontrado")
     nome = res[1] or res[2] or f"anexo_{anexo_id}"
@@ -336,7 +356,8 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
         if not ch:
             raise HTTPException(status_code=404, detail="Chamado não encontrado")
         # anexos enviados na abertura (chamado_anexo) e descrição do chamado
-        rows = db.execute(text("SELECT id, COALESCE(nome_original, arquivo_nome) AS nome_original, COALESCE(caminho_arquivo, arquivo_caminho) AS caminho_arquivo, COALESCE(tipo_mime, mime_type) AS tipo_mime, tamanho_bytes, COALESCE(data_upload, criado_em) AS data_upload FROM chamado_anexo WHERE chamado_id=:i ORDER BY COALESCE(data_upload, criado_em) ASC"), {"i": chamado_id}).fetchall()
+        sql_an = _select_anexo_query("chamado_anexo") + " WHERE chamado_id=:i ORDER BY data_upload ASC"
+        rows = db.execute(text(sql_an), {"i": chamado_id}).fetchall()
         anexos_abertura = None
         first_dt = ch.data_abertura or now_brazil_naive()
         if rows:
@@ -399,7 +420,8 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
                 from datetime import timedelta
                 start = (h.data_envio or now_brazil_naive()) - timedelta(minutes=3)
                 end = (h.data_envio or now_brazil_naive()) + timedelta(minutes=3)
-                tas = db.execute(text("SELECT id, COALESCE(nome_original, arquivo_nome) AS nome_original, COALESCE(caminho_arquivo, arquivo_caminho) AS caminho_arquivo, COALESCE(tipo_mime, mime_type) AS tipo_mime, tamanho_bytes, COALESCE(data_upload, criado_em) AS data_upload FROM ticket_anexos WHERE chamado_id=:i"), {"i": chamado_id}).fetchall()
+                sql_ta = _select_anexo_query("ticket_anexos") + " WHERE chamado_id=:i"
+                tas = db.execute(text(sql_ta), {"i": chamado_id}).fetchall()
                 for ta in tas:
                     dt = ta[5]
                     if dt and start <= dt <= end:
