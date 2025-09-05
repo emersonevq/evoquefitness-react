@@ -18,7 +18,7 @@ from core.utils import now_brazil_naive
 from ..models import Chamado, User, TicketAnexo, ChamadoAnexo, HistoricoTicket
 from ti.schemas.attachment import AnexoOut
 from ti.schemas.ticket import HistoricoItem, HistoricoResponse
-from sqlalchemy import inspect
+from sqlalchemy import inspect, text
 
 from fastapi.responses import Response
 
@@ -109,15 +109,36 @@ def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao criar chamado: {e}")
 
-def _ensure_column(table: str, column: str, ddl: str) -> None:
+def _cols(table: str) -> set[str]:
     try:
         insp = inspect(engine)
-        cols = [c.get("name") for c in insp.get_columns(table)]
-        if column not in cols:
+        return {c.get("name") for c in insp.get_columns(table)}
+    except Exception:
+        return set()
+
+def _ensure_column(table: str, column: str, ddl: str) -> None:
+    try:
+        if column not in _cols(table):
             with engine.connect() as conn:
                 conn.exec_driver_sql(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}")
     except Exception:
         pass
+
+def _insert_attachment(db: Session, table: str, values: dict) -> int:
+    cols = _cols(table)
+    data = {k: v for k, v in values.items() if k in cols}
+    if not data:
+        raise HTTPException(status_code=500, detail="Estrutura da tabela de anexo inválida")
+    cols_sql = ", ".join(data.keys())
+    params_sql = ", ".join(f":{k}" for k in data.keys())
+    res = db.execute(text(f"INSERT INTO {table} ({cols_sql}) VALUES ({params_sql})"), data)
+    rid = res.lastrowid  # type: ignore[attr-defined]
+    db.flush()
+    return int(rid or 0)
+
+def _update_path(db: Session, table: str, rid: int, path: str) -> None:
+    if "caminho_arquivo" in _cols(table):
+        db.execute(text(f"UPDATE {table} SET caminho_arquivo=:p WHERE id=:i"), {"p": path, "i": rid})
 
 @router.post("/with-attachments", response_model=ChamadoOut)
 def criar_chamado_com_anexos(
@@ -168,24 +189,21 @@ def criar_chamado_com_anexos(
                     content = f.file.read()
                     ext = safe_name.rsplit(".", 1)[-1].lower() if "." in safe_name else None
                     sha = hashlib.sha256(content).hexdigest()
-                    ca = ChamadoAnexo(
-                        chamado_id=ch.id,
-                        nome_original=safe_name,
-                        nome_arquivo=safe_name,
-                        caminho_arquivo="",
-                        tamanho_bytes=len(content),
-                        tipo_mime=f.content_type or None,
-                        extensao=ext or None,
-                        hash_arquivo=sha,
-                        data_upload=now_brazil_naive(),
-                        usuario_upload_id=user_id,
-                        descricao=None,
-                        ativo=True,
-                        conteudo=content,
-                    )
-                    db.add(ca)
-                    db.flush()
-                    ca.caminho_arquivo = f"api/chamados/anexos/chamado/{ca.id}"
+                    rid = _insert_attachment(db, "chamado_anexo", {
+                        "chamado_id": ch.id,
+                        "nome_original": safe_name,
+                        "nome_arquivo": safe_name,
+                        "tamanho_bytes": len(content),
+                        "tipo_mime": f.content_type or None,
+                        "extensao": ext or None,
+                        "hash_arquivo": sha,
+                        "data_upload": now_brazil_naive(),
+                        "usuario_upload_id": user_id,
+                        "descricao": None,
+                        "ativo": True,
+                        "conteudo": content,
+                    })
+                    _update_path(db, "chamado_anexo", rid, f"api/chamados/anexos/chamado/{rid}")
                 except Exception:
                     continue
             db.commit()
@@ -236,25 +254,22 @@ def enviar_ticket(
                     content = f.file.read()
                     ext = safe_name.rsplit(".", 1)[-1].lower() if "." in safe_name else None
                     sha = hashlib.sha256(content).hexdigest()
-                    ta = TicketAnexo(
-                        chamado_id=chamado_id,
-                        nome_original=safe_name,
-                        nome_arquivo=safe_name,
-                        caminho_arquivo="",
-                        tamanho_bytes=len(content),
-                        tipo_mime=f.content_type or None,
-                        extensao=ext or None,
-                        hash_arquivo=sha,
-                        data_upload=now_brazil_naive(),
-                        usuario_upload_id=user_id,
-                        descricao=None,
-                        ativo=True,
-                        origem="ticket",
-                        conteudo=content,
-                    )
-                    db.add(ta)
-                    db.flush()
-                    ta.caminho_arquivo = f"api/chamados/anexos/ticket/{ta.id}"
+                    rid = _insert_attachment(db, "ticket_anexos", {
+                        "chamado_id": chamado_id,
+                        "nome_original": safe_name,
+                        "nome_arquivo": safe_name,
+                        "tamanho_bytes": len(content),
+                        "tipo_mime": f.content_type or None,
+                        "extensao": ext or None,
+                        "hash_arquivo": sha,
+                        "data_upload": now_brazil_naive(),
+                        "usuario_upload_id": user_id,
+                        "descricao": None,
+                        "ativo": True,
+                        "origem": "ticket",
+                        "conteudo": content,
+                    })
+                    _update_path(db, "ticket_anexos", rid, f"api/chamados/anexos/ticket/{rid}")
                 except Exception:
                     continue
             db.commit()
@@ -264,19 +279,24 @@ def enviar_ticket(
 
 @router.get("/anexos/chamado/{anexo_id}")
 def baixar_anexo_chamado(anexo_id: int, db: Session = Depends(get_db)):
-    a = db.query(ChamadoAnexo).filter(ChamadoAnexo.id == anexo_id).first()
-    if not a or not a.conteudo:
+    cols = _cols("chamado_anexo")
+    res = db.execute(text("SELECT id, nome_arquivo, nome_original, tipo_mime, conteudo FROM chamado_anexo WHERE id=:i"), {"i": anexo_id}).fetchone()
+    if not res or not res[4]:
         raise HTTPException(status_code=404, detail="Anexo não encontrado")
-    headers = {"Content-Disposition": f"inline; filename={a.nome_arquivo}"}
-    return Response(content=a.conteudo, media_type=a.tipo_mime or "application/octet-stream", headers=headers)
+    nome = res[1] or res[2] or f"anexo_{anexo_id}"
+    mime = res[3] or "application/octet-stream"
+    headers = {"Content-Disposition": f"inline; filename={nome}"}
+    return Response(content=res[4], media_type=mime, headers=headers)
 
 @router.get("/anexos/ticket/{anexo_id}")
 def baixar_anexo_ticket(anexo_id: int, db: Session = Depends(get_db)):
-    a = db.query(TicketAnexo).filter(TicketAnexo.id == anexo_id).first()
-    if not a or not a.conteudo:
+    res = db.execute(text("SELECT id, nome_arquivo, nome_original, tipo_mime, conteudo FROM ticket_anexos WHERE id=:i"), {"i": anexo_id}).fetchone()
+    if not res or not res[4]:
         raise HTTPException(status_code=404, detail="Anexo não encontrado")
-    headers = {"Content-Disposition": f"inline; filename={a.nome_arquivo}"}
-    return Response(content=a.conteudo, media_type=a.tipo_mime or "application/octet-stream", headers=headers)
+    nome = res[1] or res[2] or f"anexo_{anexo_id}"
+    mime = res[3] or "application/octet-stream"
+    headers = {"Content-Disposition": f"inline; filename={nome}"}
+    return Response(content=res[4], media_type=mime, headers=headers)
 
 @router.get("/{chamado_id}/historico", response_model=HistoricoResponse)
 def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
@@ -287,22 +307,18 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail="Chamado não encontrado")
         if ch.data_abertura:
             items.append(HistoricoItem(t=ch.data_abertura, tipo="abertura", label="Chamado aberto", anexos=None))
-        # anexos enviados na abertura (chamado_anexos)
-        cas = db.query(ChamadoAnexo).filter(ChamadoAnexo.chamado_id == chamado_id).order_by(ChamadoAnexo.data_upload.asc()).all()
-        if cas:
+        # anexos enviados na abertura (chamado_anexo)
+        rows = db.execute(text("SELECT id, nome_original, caminho_arquivo, tipo_mime, tamanho_bytes, data_upload FROM chamado_anexo WHERE chamado_id=:i ORDER BY data_upload ASC"), {"i": chamado_id}).fetchall()
+        if rows:
+            first_dt = rows[0][5] or now_brazil_naive()
             class _CA:
-                def __init__(self, x):
-                    self.id = x.id
-                    self.nome_original = x.nome_original
-                    self.caminho_arquivo = x.caminho_arquivo
-                    self.mime_type = x.tipo_mime
-                    self.tamanho_bytes = x.tamanho_bytes
-                    self.data_upload = x.data_upload
+                def __init__(self, r):
+                    self.id, self.nome_original, self.caminho_arquivo, self.mime_type, self.tamanho_bytes, self.data_upload = r
             items.append(HistoricoItem(
-                t=(cas[0].data_upload or now_brazil_naive()),
+                t=first_dt,
                 tipo="anexos_iniciais",
                 label="Anexos enviados na abertura",
-                anexos=[AnexoOut.model_validate(_CA(a)) for a in cas],
+                anexos=[AnexoOut.model_validate(_CA(r)) for r in rows],
             ))
         try:
             Notification.__table__.create(bind=engine, checkfirst=True)
@@ -328,16 +344,12 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
                 from datetime import timedelta
                 start = (h.data_envio or now_brazil_naive()) - timedelta(minutes=3)
                 end = (h.data_envio or now_brazil_naive()) + timedelta(minutes=3)
-                tas = db.query(TicketAnexo).filter(TicketAnexo.chamado_id == chamado_id).all()
+                tas = db.execute(text("SELECT id, nome_original, caminho_arquivo, tipo_mime, tamanho_bytes, data_upload FROM ticket_anexos WHERE chamado_id=:i"), {"i": chamado_id}).fetchall()
                 for ta in tas:
-                    if ta.data_upload and start <= ta.data_upload <= end:
+                    dt = ta[5]
+                    if dt and start <= dt <= end:
                         class _A:
-                            id = ta.id
-                            nome_original = ta.nome_original
-                            caminho_arquivo = ta.caminho_arquivo
-                            mime_type = ta.tipo_mime
-                            tamanho_bytes = ta.tamanho_bytes
-                            data_upload = ta.data_upload
+                            id, nome_original, caminho_arquivo, mime_type, tamanho_bytes, data_upload = ta
                         anexos_ticket.append(_A())
             except Exception:
                 pass
