@@ -247,6 +247,22 @@ def enviar_ticket(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao enviar ticket: {e}")
 
+@router.get("/anexos/chamado/{anexo_id}")
+def baixar_anexo_chamado(anexo_id: int, db: Session = Depends(get_db)):
+    a = db.query(ChamadoAnexo).filter(ChamadoAnexo.id == anexo_id).first()
+    if not a or not a.conteudo:
+        raise HTTPException(status_code=404, detail="Anexo não encontrado")
+    headers = {"Content-Disposition": f"inline; filename={a.nome_arquivo}"}
+    return Response(content=a.conteudo, media_type=a.tipo_mime or "application/octet-stream", headers=headers)
+
+@router.get("/anexos/ticket/{anexo_id}")
+def baixar_anexo_ticket(anexo_id: int, db: Session = Depends(get_db)):
+    a = db.query(TicketAnexo).filter(TicketAnexo.id == anexo_id).first()
+    if not a or not a.conteudo:
+        raise HTTPException(status_code=404, detail="Anexo não encontrado")
+    headers = {"Content-Disposition": f"inline; filename={a.nome_arquivo}"}
+    return Response(content=a.conteudo, media_type=a.tipo_mime or "application/octet-stream", headers=headers)
+
 @router.get("/{chamado_id}/historico", response_model=HistoricoResponse)
 def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
     try:
