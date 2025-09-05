@@ -15,7 +15,7 @@ class AnexoArquivo(Base):
     caminho_arquivo: Mapped[str] = mapped_column(String(500), nullable=False)
     mime_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
     tamanho_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    conteudo: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    conteudo: Mapped[bytes] = mapped_column(MEDIUMBLOB, nullable=False)
     data_upload: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     usuario_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("user.id"), nullable=True)
 
