@@ -29,19 +29,7 @@ export default function RequireLogin({
     // Additional authorization: block access to admin pages for non-admins
     const pathname = location.pathname || "";
     if (pathname.startsWith("/setor/ti/admin") && user?.nivel_acesso !== "Administrador") {
-      return (
-        <div className="min-h-screen flex items-center justify-center p-6">
-          <div className="max-w-md rounded-xl border border-border/60 bg-card p-6 text-center">
-            <h2 className="text-xl font-semibold mb-2">Acesso negado</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Você não tem permissão para acessar esta área administrativa.
-            </p>
-            <a href="/" className="inline-block">
-              <button className="rounded-md px-4 py-2 bg-secondary text-secondary-foreground">Voltar ao início</button>
-            </a>
-          </div>
-        </div>
-      );
+      return <Navigate to="/access-denied" replace />;
     }
 
     return <>{children}</>;
