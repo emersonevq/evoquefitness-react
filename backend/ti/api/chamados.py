@@ -282,13 +282,22 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail="Chamado não encontrado")
         if ch.data_abertura:
             items.append(HistoricoItem(t=ch.data_abertura, tipo="abertura", label="Chamado aberto", anexos=None))
-        anexos_iniciais = db.query(AnexoArquivo).filter(AnexoArquivo.chamado_id == chamado_id, AnexoArquivo.historico_ticket_id == None).all()  # noqa: E711
-        if anexos_iniciais:
+        # anexos enviados na abertura (chamado_anexos)
+        cas = db.query(ChamadoAnexo).filter(ChamadoAnexo.chamado_id == chamado_id).order_by(ChamadoAnexo.data_upload.asc()).all()
+        if cas:
+            class _CA:
+                def __init__(self, x):
+                    self.id = x.id
+                    self.nome_original = x.nome_original
+                    self.caminho_arquivo = x.caminho_arquivo
+                    self.mime_type = x.tipo_mime
+                    self.tamanho_bytes = x.tamanho_bytes
+                    self.data_upload = x.data_upload
             items.append(HistoricoItem(
-                t=min(a.data_upload or now_brazil_naive() for a in anexos_iniciais),
+                t=(cas[0].data_upload or now_brazil_naive()),
                 tipo="anexos_iniciais",
                 label="Anexos enviados na abertura",
-                anexos=[AnexoOut.model_validate(a) for a in anexos_iniciais],
+                anexos=[AnexoOut.model_validate(_CA(a)) for a in cas],
             ))
         try:
             Notification.__table__.create(bind=engine, checkfirst=True)
