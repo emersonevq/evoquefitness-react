@@ -301,15 +301,14 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
                     ))
         except Exception:
             pass
-        # histórico (historico_tickets via SQL)
-        hs = db.execute(text("SELECT id, chamado_id, usuario_id, assunto, mensagem, destinatarios, data_envio FROM historico_tickets WHERE chamado_id = :cid ORDER BY data_envio ASC"), {"cid": chamado_id}).mappings().all()
+        # histórico (historico_tickets via ORM)
+        hs = db.query(HistoricoTicket).filter(HistoricoTicket.chamado_id == chamado_id).order_by(HistoricoTicket.data_envio.asc()).all()
         for h in hs:
-            # anexos de tickets_anexos próximos ao horário
             anexos_ticket = []
             try:
                 from datetime import timedelta
-                start = (h["data_envio"] or now_brazil_naive()) - timedelta(minutes=3)
-                end = (h["data_envio"] or now_brazil_naive()) + timedelta(minutes=3)
+                start = (h.data_envio or now_brazil_naive()) - timedelta(minutes=3)
+                end = (h.data_envio or now_brazil_naive()) + timedelta(minutes=3)
                 tas = db.query(TicketAnexo).filter(TicketAnexo.chamado_id == chamado_id).all()
                 for ta in tas:
                     if ta.data_upload and start <= ta.data_upload <= end:
@@ -324,9 +323,9 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
             except Exception:
                 pass
             items.append(HistoricoItem(
-                t=h["data_envio"] or now_brazil_naive(),
+                t=h.data_envio or now_brazil_naive(),
                 tipo="ticket",
-                label=f"{h['assunto']}",
+                label=f"{h.assunto}",
                 anexos=[AnexoOut.model_validate(a) for a in anexos_ticket] if anexos_ticket else None,
             ))
         items_sorted = sorted(items, key=lambda x: x.t)
