@@ -98,6 +98,8 @@ export function useAuth() {
         nivel_acesso: data.nivel_acesso,
         setores: Array.isArray(data.setores) ? data.setores : [],
         loginTime: now,
+        // include flag
+        alterar_senha_primeiro_acesso: !!data.alterar_senha_primeiro_acesso,
       };
       const record: AuthRecord = {
         ...base,
