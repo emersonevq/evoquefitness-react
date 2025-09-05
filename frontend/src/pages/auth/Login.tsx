@@ -7,7 +7,7 @@ import { useAuthContext } from "@/lib/auth-context";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuthContext();
+  const { login, user } = useAuthContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
@@ -17,18 +17,21 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simular delay de autenticação
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // Fazer login com persistência conforme "Lembrar-me"
-    login(email, password, remember);
-
-    // Navegar para a página de destino
-    const params = new URLSearchParams(window.location.search);
-    const redirect = params.get("redirect") || "/";
-    navigate(redirect, { replace: true });
-
-    setIsLoading(false);
+    try {
+      const result: any = await login(email, password, remember);
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get("redirect") || "/";
+      // If server indicates password change required, go to change-password
+      if (result && result.alterar_senha_primeiro_acesso) {
+        navigate("/auth/change-password", { replace: true });
+      } else {
+        navigate(redirect, { replace: true });
+      }
+    } catch (err: any) {
+      alert(err?.message || "Falha ao autenticar");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -72,10 +75,11 @@ export default function Login() {
             </p>
             <form onSubmit={submit} className="mt-6 grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="email">E-mail</Label>
+                <Label htmlFor="identifier">E-mail ou usuário</Label>
                 <Input
-                  id="email"
-                  type="email"
+                  id="identifier"
+                  type="text"
+                  placeholder="E-mail ou nome de usuário"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required

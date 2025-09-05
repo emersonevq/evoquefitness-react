@@ -7,7 +7,7 @@ export default function RequireLogin({
   children: React.ReactNode;
 }) {
   const location = useLocation();
-  const { isAuthenticated, isLoading } = useAuthContext();
+  const { isAuthenticated, isLoading, user } = useAuthContext();
 
   // Mostrar loading enquanto verifica autenticação
   if (isLoading) {
@@ -26,6 +26,63 @@ export default function RequireLogin({
 
   // Se está autenticado ou tem bypass, permitir acesso
   if (isAuthenticated || bypassGate) {
+    // Additional authorization: block access to admin pages for non-admins and sectors
+    const pathname = location.pathname || "";
+
+    // Admin routes: only Administrador
+    if (
+      pathname.startsWith("/setor/ti/admin") &&
+      user?.nivel_acesso !== "Administrador"
+    ) {
+      return <Navigate to="/access-denied" replace />;
+    }
+
+    // Sector-level access: /setor/:slug
+    const sectorMatch = pathname.match(/^\/setor\/(?<slug>[^\/]+)(?:\/.*)?$/);
+    if (sectorMatch && sectorMatch.groups) {
+      const slug = sectorMatch.groups.slug;
+      // Administrators have full access
+      if (user?.nivel_acesso === "Administrador") return <>{children}</>;
+
+      // Map slug to normalized sector name (same mapping used in backend)
+      const mapa: Record<string, string> = {
+        ti: "TI",
+        compras: "Compras",
+        manutencao: "Manutencao",
+        financeiro: "Financeiro",
+        marketing: "Marketing",
+        produtos: "Produtos",
+        comercial: "Comercial",
+        "outros-servicos": "Outros",
+        servicos: "Outros",
+      };
+      const required = mapa[slug || ""];
+      const normalize = (s: any) =>
+        typeof s === "string"
+          ? s
+              .normalize("NFKD")
+              .replace(/\p{Diacritic}/gu, "")
+              .toLowerCase()
+          : s;
+      const userSectors = Array.isArray(user?.setores)
+        ? user!.setores.map(normalize)
+        : [];
+      const reqNorm = normalize(required);
+      const has = userSectors.some((s) => {
+        if (!s || !reqNorm) return false;
+        return (
+          s === reqNorm ||
+          s.includes(reqNorm) ||
+          reqNorm.includes(s) ||
+          s.split(" ").some((tok) => reqNorm.includes(tok)) ||
+          reqNorm.split(" ").some((tok) => s.includes(tok))
+        );
+      });
+      if (required && !has) {
+        return <Navigate to="/access-denied" replace />;
+      }
+    }
+
     return <>{children}</>;
   }
 

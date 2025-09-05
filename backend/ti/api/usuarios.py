@@ -3,7 +3,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from core.db import get_db, engine
 from ti.schemas.user import UserCreate, UserCreatedOut, UserAvailability, UserOut
-from ti.services.users import criar_usuario as service_criar, check_user_availability, generate_password
+from ti.services.users import (
+    criar_usuario as service_criar,
+    check_user_availability,
+    generate_password,
+    update_user,
+    regenerate_password,
+    set_block_status,
+    delete_user,
+    list_blocked_users,
+)
 
 router = APIRouter(prefix="/usuarios", tags=["TI - Usuarios"])
 
@@ -11,15 +20,24 @@ router = APIRouter(prefix="/usuarios", tags=["TI - Usuarios"])
 def listar_usuarios(db: Session = Depends(get_db)):
     try:
         from ..models import User
+        # cria tabela se não existir
         try:
             User.__table__.create(bind=engine, checkfirst=True)
         except Exception:
             pass
+
+        # pega todos os usuários
         try:
-            return db.query(User).order_by(User.id.desc()).all()
+            users = db.query(User).order_by(User.id.desc()).all()
+            # garante que 'bloqueado' nunca seja None
+            for u in users:
+                if u.bloqueado is None:
+                    u.bloqueado = False
+            return users
         except Exception:
             pass
-        # Fallback: tabela legada "usuarios"
+
+        # fallback tabela legada "usuarios"
         from sqlalchemy import text
         try:
             res = db.execute(text(
@@ -35,10 +53,12 @@ def listar_usuarios(db: Session = Depends(get_db)):
                     "email": r[4],
                     "nivel_acesso": r[5],
                     "setor": r[6],
+                    "bloqueado": False,  # já tá ok
                 })
             return rows
         except Exception:
             return []
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar usuários: {e}")
 
@@ -69,3 +89,110 @@ def generate_password_endpoint(length: int = 6):
     if length > 64:
         length = 64
     return {"senha": generate_password(length)}
+
+
+@router.get("/blocked", response_model=list[UserOut])
+def listar_bloqueados(db: Session = Depends(get_db)):
+    try:
+        return list_blocked_users(db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao listar bloqueados: {e}")
+
+
+@router.put("/{user_id}", response_model=UserOut)
+def atualizar_usuario(user_id: int, payload: dict, db: Session = Depends(get_db)):
+    try:
+        updated = update_user(db, user_id, payload)
+        return updated
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao atualizar: {e}")
+
+
+@router.post("/{user_id}/generate-password")
+def gerar_nova_senha(user_id: int, length: int = 6, db: Session = Depends(get_db)):
+    try:
+        pwd = regenerate_password(db, user_id, length)
+        return {"senha": pwd}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar senha: {e}")
+
+
+@router.post("/login")
+def login(payload: dict, db: Session = Depends(get_db)):
+    try:
+        identifier = payload.get("identifier") or payload.get("email") or payload.get("usuario")
+        senha = payload.get("senha") or payload.get("password")
+        if not identifier or not senha:
+            raise HTTPException(status_code=400, detail="Informe identifier e senha")
+        from ti.services.users import authenticate_user
+        user = authenticate_user(db, identifier, senha)
+        return user
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao autenticar: {e}")
+
+
+@router.post("/{user_id}/block", response_model=UserOut)
+def bloquear_usuario(user_id: int, db: Session = Depends(get_db)):
+    try:
+        return set_block_status(db, user_id, True)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao bloquear: {e}")
+
+
+@router.post("/{user_id}/unblock", response_model=UserOut)
+def desbloquear_usuario(user_id: int, db: Session = Depends(get_db)):
+    try:
+        return set_block_status(db, user_id, False)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao desbloquear: {e}")
+
+
+@router.post("/{user_id}/change-password")
+def change_password(user_id: int, payload: dict, db: Session = Depends(get_db)):
+    try:
+        senha = payload.get('senha') or payload.get('password')
+        if not senha:
+            raise HTTPException(status_code=400, detail='Informe a nova senha')
+        from ti.services.users import change_user_password
+        change_user_password(db, user_id, senha, require_change=False)
+        return {"ok": True}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao alterar senha: {e}")
+
+
+@router.delete("/{user_id}")
+def excluir_usuario(user_id: int, db: Session = Depends(get_db)):
+    try:
+        delete_user(db, user_id)
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao excluir: {e}")
+
+
+@router.post("/normalize-setores")
+def normalize_setores(db: Session = Depends(get_db)):
+    """Normalize setor/_setores for all users. Use with caution (admin only)."""
+    try:
+        from ti.services.users import normalize_user_setores
+        updated = normalize_user_setores(db)
+        return {"updated": updated}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao normalizar setores: {e}")

@@ -9,8 +9,11 @@ import {
 import { sectors } from "@/data/sectors";
 import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuthContext } from "@/lib/auth-context";
 
 export default function Index() {
+  const { user } = useAuthContext();
+
   return (
     <Layout>
       {/* Hero */}
@@ -37,7 +40,14 @@ export default function Index() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="center">
                     {sectors.map((s) => (
-                      <Link key={s.slug} to={`/setor/${s.slug}`}>
+                      <Link
+                        key={s.slug}
+                        to={
+                          user
+                            ? `/setor/${s.slug}`
+                            : `/login?redirect=/setor/${s.slug}`
+                        }
+                      >
                         <DropdownMenuItem>{s.title}</DropdownMenuItem>
                       </Link>
                     ))}
@@ -56,7 +66,9 @@ export default function Index() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {sectors.map((s) => (
               <Link
-                to={`/login?redirect=/setor/${s.slug}`}
+                to={
+                  user ? `/setor/${s.slug}` : `/login?redirect=/setor/${s.slug}`
+                }
                 key={s.slug}
                 className="card-surface group rounded-xl p-5 transition hover:shadow-lg hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring"
               >
