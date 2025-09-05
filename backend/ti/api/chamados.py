@@ -143,9 +143,6 @@ def criar_chamado_com_anexos(
         ch = service_criar(db, payload)
         saved: list[AnexoArquivo] = []
         if files:
-            base_dir = pathlib.Path(__file__).resolve().parents[2]  # backend/
-            upload_root = base_dir / "uploads" / "chamados" / str(ch.id)
-            upload_root.mkdir(parents=True, exist_ok=True)
             user_id = None
             if autor_email:
                 try:
@@ -156,22 +153,21 @@ def criar_chamado_com_anexos(
             for f in files:
                 try:
                     safe_name = pathlib.Path(f.filename or "arquivo").name
-                    dest_name = f"{int(datetime.timestamp(datetime.now()))}_{safe_name}"
-                    dest_path = upload_root / dest_name
                     content = f.file.read()
-                    with open(dest_path, "wb") as out:
-                        out.write(content)
                     an = AnexoArquivo(
                         chamado_id=ch.id,
                         historico_ticket_id=None,
                         nome_original=safe_name,
-                        caminho_arquivo=str(dest_path.relative_to(base_dir).as_posix()),
+                        caminho_arquivo="",
                         mime_type=f.content_type or None,
                         tamanho_bytes=len(content),
+                        conteudo=content,
                         data_upload=now_brazil_naive(),
                         usuario_id=user_id,
                     )
                     db.add(an)
+                    db.flush()
+                    an.caminho_arquivo = f"api/chamados/anexos/{an.id}"
                     saved.append(an)
                 except Exception:
                     continue
@@ -212,34 +208,44 @@ def enviar_ticket(
         db.commit()
         db.refresh(ht)
         if files:
-            base_dir = pathlib.Path(__file__).resolve().parents[2]
-            upload_root = base_dir / "uploads" / "chamados" / str(chamado_id)
-            upload_root.mkdir(parents=True, exist_ok=True)
             for f in files:
                 try:
                     safe_name = pathlib.Path(f.filename or "arquivo").name
-                    dest_name = f"{int(datetime.timestamp(datetime.now()))}_{safe_name}"
-                    dest_path = upload_root / dest_name
                     content = f.file.read()
-                    with open(dest_path, "wb") as out:
-                        out.write(content)
                     an = AnexoArquivo(
                         chamado_id=chamado_id,
                         historico_ticket_id=ht.id,
                         nome_original=safe_name,
-                        caminho_arquivo=str(dest_path.relative_to(base_dir).as_posix()),
+                        caminho_arquivo="",
                         mime_type=f.content_type or None,
                         tamanho_bytes=len(content),
+                        conteudo=content,
                         data_upload=now_brazil_naive(),
                         usuario_id=user_id,
                     )
                     db.add(an)
+                    db.flush()
+                    an.caminho_arquivo = f"api/chamados/anexos/{an.id}"
                 except Exception:
                     continue
             db.commit()
         return {"ok": True, "ticket_id": ht.id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao enviar ticket: {e}")
+
+@router.get("/anexos/{anexo_id}")
+def baixar_anexo(anexo_id: int, db: Session = Depends(get_db)):
+    try:
+        an = db.query(AnexoArquivo).filter(AnexoArquivo.id == anexo_id).first()
+        if not an:
+            raise HTTPException(status_code=404, detail="Anexo não encontrado")
+        from fastapi import Response
+        headers = {"Content-Disposition": f"inline; filename=\"{an.nome_original}\""}
+        return Response(content=an.conteudo, media_type=an.mime_type or "application/octet-stream", headers=headers)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao baixar anexo: {e}")
 
 @router.get("/{chamado_id}/historico", response_model=HistoricoResponse)
 def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
