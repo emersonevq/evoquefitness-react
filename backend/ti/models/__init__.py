@@ -3,4 +3,16 @@ from .user import User
 from .unidade import Unidade
 from .problema import Problema
 from .notification import Notification
-__all__ = ["Chamado", "User", "Unidade", "Problema", "Notification"]
+from .ticket_anexo import TicketAnexo
+from .chamado_anexo import ChamadoAnexo
+from .historico_ticket import HistoricoTicket
+__all__ = [
+    "Chamado",
+    "User",
+    "Unidade",
+    "Problema",
+    "Notification",
+    "TicketAnexo",
+    "ChamadoAnexo",
+    "HistoricoTicket",
+]

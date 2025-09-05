@@ -123,19 +123,23 @@ export default function TiPage() {
                 unidades={unidades}
                 onSubmit={async (payload) => {
                   try {
-                    const res = await apiFetch("/chamados", {
+                    const fd = new FormData();
+                    fd.set("solicitante", payload.nome);
+                    fd.set("cargo", payload.cargo);
+                    fd.set("email", payload.email);
+                    fd.set("telefone", payload.telefone);
+                    fd.set("unidade", payload.unidade);
+                    fd.set("problema", payload.problema);
+                    if (payload.internetItem)
+                      fd.set("internetItem", payload.internetItem);
+                    if (payload.descricao)
+                      fd.set("descricao", payload.descricao);
+                    if (payload.files && payload.files.length > 0) {
+                      for (const f of payload.files) fd.append("files", f);
+                    }
+                    const res = await apiFetch("/chamados/with-attachments", {
                       method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        solicitante: payload.nome,
-                        cargo: payload.cargo,
-                        email: payload.email,
-                        telefone: payload.telefone,
-                        unidade: payload.unidade,
-                        problema: payload.problema,
-                        internetItem: payload.internetItem || null,
-                        descricao: payload.descricao || null,
-                      }),
+                      body: fd,
                     });
                     if (!res.ok) throw new Error("Falha ao criar chamado");
                     const created: {
@@ -339,6 +343,7 @@ function TicketForm(props: {
     problema: string;
     internetItem?: string;
     descricao?: string;
+    files?: File[];
   }) => void;
 }) {
   const { onSubmit } = props;
@@ -354,6 +359,7 @@ function TicketForm(props: {
     internetItem: "",
     descricao: "",
   });
+  const [files, setFiles] = useState<File[]>([]);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const must = [
@@ -373,7 +379,7 @@ function TicketForm(props: {
       alert("Selecione o item de Internet.");
       return;
     }
-    onSubmit(form);
+    onSubmit({ ...form, files });
   };
 
   const selectedProblem = useMemo(
@@ -507,6 +513,14 @@ function TicketForm(props: {
           value={form.descricao}
           onChange={(e) => setForm({ ...form, descricao: e.target.value })}
           required
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label>Arquivos (opcional)</Label>
+        <input
+          type="file"
+          multiple
+          onChange={(e) => setFiles(Array.from(e.target.files || []))}
         />
       </div>
       <div className="flex items-center justify-end gap-3 pt-2">

@@ -1,5 +1,7 @@
 from __future__ import annotations
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 from ti.api import chamados_router, unidades_router, problemas_router, notifications_router
 from ti.api.usuarios import router as usuarios_router
@@ -7,6 +9,11 @@ from core.realtime import mount_socketio
 
 # Create the FastAPI application (HTTP)
 _http = FastAPI(title="Evoque API - TI", version="1.0.0")
+# Static uploads mount
+_base_dir = Path(__file__).resolve().parent
+_uploads = _base_dir / "uploads"
+_uploads.mkdir(parents=True, exist_ok=True)
+_http.mount("/uploads", StaticFiles(directory=str(_uploads), html=False), name="uploads")
 
 _http.add_middleware(
     CORSMiddleware,

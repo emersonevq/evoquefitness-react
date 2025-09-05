@@ -1,5 +1,5 @@
 from __future__ import annotations
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from core.db import get_db, engine
 from ti.schemas.chamado import (
@@ -14,6 +14,12 @@ from core.realtime import sio
 from werkzeug.security import check_password_hash
 from ..models.notification import Notification
 import json
+import pathlib
+from datetime import datetime
+from core.utils import now_brazil_naive
+from ..models import Chamado, User, TicketAnexo, ChamadoAnexo, HistoricoTicket
+from ti.schemas.attachment import AnexoOut
+from ti.schemas.ticket import HistoricoItem, HistoricoResponse
 
 router = APIRouter(prefix="/chamados", tags=["TI - Chamados"])
 
@@ -40,7 +46,6 @@ def _normalize_status(s: str) -> str:
 
 @router.get("", response_model=list[ChamadoOut])
 def listar_chamados(db: Session = Depends(get_db)):
-    from ..models import Chamado
     try:
         try:
             Chamado.__table__.create(bind=engine, checkfirst=True)
@@ -56,16 +61,13 @@ def listar_chamados(db: Session = Depends(get_db)):
 @router.post("", response_model=ChamadoOut)
 def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
     try:
-        from ..models import Chamado
         try:
             Chamado.__table__.create(bind=engine, checkfirst=True)
         except Exception:
             pass
         ch = service_criar(db, payload)
         try:
-            # Garantir tabela de notificações
             Notification.__table__.create(bind=engine, checkfirst=True)
-            # Persistir notificação de criação
             dados = json.dumps({
                 "id": ch.id,
                 "codigo": ch.codigo,
@@ -84,8 +86,7 @@ def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
             db.add(n)
             db.commit()
             db.refresh(n)
-            # Notificar via socket
-            import anyio  # ensure async context exists when possible
+            import anyio
             anyio.from_thread.run(sio.emit, "chamado:created", {"id": ch.id})
             anyio.from_thread.run(sio.emit, "notification:new", {
                 "id": n.id,
@@ -107,9 +108,235 @@ def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao criar chamado: {e}")
 
+@router.post("/with-attachments", response_model=ChamadoOut)
+def criar_chamado_com_anexos(
+    solicitante: str = Form(...),
+    cargo: str = Form(...),
+    email: str = Form(...),
+    telefone: str = Form(...),
+    unidade: str = Form(...),
+    problema: str = Form(...),
+    internetItem: str | None = Form(None),
+    visita: str | None = Form(None),
+    descricao: str | None = Form(None),
+    files: list[UploadFile] = File(default=[]),
+    autor_email: str | None = Form(None),
+    db: Session = Depends(get_db),
+):
+    try:
+        try:
+            Chamado.__table__.create(bind=engine, checkfirst=True)
+            ChamadoAnexo.__table__.create(bind=engine, checkfirst=True)
+        except Exception:
+            pass
+        payload = ChamadoCreate(
+            solicitante=solicitante,
+            cargo=cargo,
+            email=email,
+            telefone=telefone,
+            unidade=unidade,
+            problema=problema,
+            internetItem=internetItem,
+            visita=visita,
+            descricao=descricao,
+        )
+        ch = service_criar(db, payload)
+        if files:
+            base_dir = pathlib.Path(__file__).resolve().parents[2]  # backend/
+            upload_root = base_dir / "uploads" / "chamados" / str(ch.id)
+            upload_root.mkdir(parents=True, exist_ok=True)
+            user_id = None
+            if autor_email:
+                try:
+                    user = db.query(User).filter(User.email == autor_email).first()
+                    user_id = user.id if user else None
+                except Exception:
+                    user_id = None
+            import hashlib
+            for f in files:
+                try:
+                    safe_name = pathlib.Path(f.filename or "arquivo").name
+                    ts = int(datetime.timestamp(datetime.now()))
+                    dest_name = f"{ts}_{safe_name}"
+                    dest_path = upload_root / dest_name
+                    content = f.file.read()
+                    with open(dest_path, "wb") as out:
+                        out.write(content)
+                    ext = pathlib.Path(safe_name).suffix.lower().lstrip(".")
+                    sha = hashlib.sha256(content).hexdigest()
+                    ca = ChamadoAnexo(
+                        chamado_id=ch.id,
+                        nome_original=safe_name,
+                        nome_arquivo=dest_name,
+                        caminho_arquivo=str(dest_path.relative_to(base_dir).as_posix()),
+                        tamanho_bytes=len(content),
+                        tipo_mime=f.content_type or None,
+                        extensao=ext or None,
+                        hash_arquivo=sha,
+                        data_upload=now_brazil_naive(),
+                        usuario_upload_id=user_id,
+                        descricao=None,
+                        ativo=True,
+                    )
+                    db.add(ca)
+                except Exception:
+                    continue
+            db.commit()
+        return ch
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao criar chamado com anexos: {e}")
+
+@router.post("/{chamado_id}/ticket")
+def enviar_ticket(
+    chamado_id: int,
+    assunto: str = Form(...),
+    mensagem: str = Form(...),
+    destinatarios: str = Form(...),
+    autor_email: str | None = Form(None),
+    files: list[UploadFile] = File(default=[]),
+    db: Session = Depends(get_db),
+):
+    try:
+        # garantir tabelas necessárias para anexos de ticket
+        TicketAnexo.__table__.create(bind=engine, checkfirst=True)
+        user_id = None
+        if autor_email:
+            try:
+                user = db.query(User).filter(User.email == autor_email).first()
+                user_id = user.id if user else None
+            except Exception:
+                user_id = None
+        # registrar histórico via ORM
+        h = HistoricoTicket(
+            chamado_id=chamado_id,
+            usuario_id=user_id or None,
+            assunto=assunto,
+            mensagem=mensagem,
+            destinatarios=destinatarios,
+            data_envio=now_brazil_naive(),
+        )
+        db.add(h)
+        db.commit()
+        db.refresh(h)
+        h_id = h.id
+        # salvar anexos em tickets_anexos com metadados e caminho
+        if files:
+            base_dir = pathlib.Path(__file__).resolve().parents[2]  # backend/
+            upload_root = base_dir / "uploads" / "chamados" / str(chamado_id)
+            upload_root.mkdir(parents=True, exist_ok=True)
+            for f in files:
+                try:
+                    safe_name = pathlib.Path(f.filename or "arquivo").name
+                    ext = pathlib.Path(safe_name).suffix.lower().lstrip(".")
+                    ts = int(datetime.timestamp(datetime.now()))
+                    dest_name = f"{ts}_{safe_name}"
+                    dest_path = upload_root / dest_name
+                    content = f.file.read()
+                    with open(dest_path, "wb") as out:
+                        out.write(content)
+                    import hashlib
+                    sha = hashlib.sha256(content).hexdigest()
+                    ta = TicketAnexo(
+                        chamado_id=chamado_id,
+                        nome_original=safe_name,
+                        nome_arquivo=dest_name,
+                        caminho_arquivo=str(dest_path.relative_to(base_dir).as_posix()),
+                        tamanho_bytes=len(content),
+                        tipo_mime=f.content_type or None,
+                        extensao=ext or None,
+                        hash_arquivo=sha,
+                        data_upload=now_brazil_naive(),
+                        usuario_upload_id=user_id,
+                        descricao=None,
+                        ativo=True,
+                        origem="ticket",
+                    )
+                    db.add(ta)
+                except Exception:
+                    continue
+            db.commit()
+        return {"ok": True, "historico_id": h_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao enviar ticket: {e}")
+
+@router.get("/{chamado_id}/historico", response_model=HistoricoResponse)
+def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
+    try:
+        items: list[HistoricoItem] = []
+        ch = db.query(Chamado).filter(Chamado.id == chamado_id).first()
+        if not ch:
+            raise HTTPException(status_code=404, detail="Chamado não encontrado")
+        if ch.data_abertura:
+            items.append(HistoricoItem(t=ch.data_abertura, tipo="abertura", label="Chamado aberto", anexos=None))
+        # anexos enviados na abertura (chamado_anexos)
+        cas = db.query(ChamadoAnexo).filter(ChamadoAnexo.chamado_id == chamado_id).order_by(ChamadoAnexo.data_upload.asc()).all()
+        if cas:
+            class _CA:
+                def __init__(self, x):
+                    self.id = x.id
+                    self.nome_original = x.nome_original
+                    self.caminho_arquivo = x.caminho_arquivo
+                    self.mime_type = x.tipo_mime
+                    self.tamanho_bytes = x.tamanho_bytes
+                    self.data_upload = x.data_upload
+            items.append(HistoricoItem(
+                t=(cas[0].data_upload or now_brazil_naive()),
+                tipo="anexos_iniciais",
+                label="Anexos enviados na abertura",
+                anexos=[AnexoOut.model_validate(_CA(a)) for a in cas],
+            ))
+        try:
+            Notification.__table__.create(bind=engine, checkfirst=True)
+            notas = db.query(Notification).filter(
+                Notification.recurso == "chamado",
+                Notification.recurso_id == chamado_id,
+            ).order_by(Notification.criado_em.asc()).all()
+            for n in notas:
+                if n.acao == "status":
+                    items.append(HistoricoItem(
+                        t=n.criado_em or now_brazil_naive(),
+                        tipo="status",
+                        label=n.mensagem or "Status atualizado",
+                        anexos=None,
+                    ))
+        except Exception:
+            pass
+        # histórico (historico_tickets via ORM)
+        hs = db.query(HistoricoTicket).filter(HistoricoTicket.chamado_id == chamado_id).order_by(HistoricoTicket.data_envio.asc()).all()
+        for h in hs:
+            anexos_ticket = []
+            try:
+                from datetime import timedelta
+                start = (h.data_envio or now_brazil_naive()) - timedelta(minutes=3)
+                end = (h.data_envio or now_brazil_naive()) + timedelta(minutes=3)
+                tas = db.query(TicketAnexo).filter(TicketAnexo.chamado_id == chamado_id).all()
+                for ta in tas:
+                    if ta.data_upload and start <= ta.data_upload <= end:
+                        class _A:
+                            id = ta.id
+                            nome_original = ta.nome_original
+                            caminho_arquivo = ta.caminho_arquivo
+                            mime_type = ta.tipo_mime
+                            tamanho_bytes = ta.tamanho_bytes
+                            data_upload = ta.data_upload
+                        anexos_ticket.append(_A())
+            except Exception:
+                pass
+            items.append(HistoricoItem(
+                t=h.data_envio or now_brazil_naive(),
+                tipo="ticket",
+                label=f"{h.assunto}",
+                anexos=[AnexoOut.model_validate(a) for a in anexos_ticket] if anexos_ticket else None,
+            ))
+        items_sorted = sorted(items, key=lambda x: x.t)
+        return HistoricoResponse(items=items_sorted)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao obter histórico: {e}")
+
 @router.patch("/{chamado_id}/status", response_model=ChamadoOut)
 def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session = Depends(get_db)):
-    from ..models import Chamado
     try:
         novo = _normalize_status(payload.status)
         if novo not in ALLOWED_STATUSES:
@@ -119,8 +346,6 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
             raise HTTPException(status_code=404, detail="Chamado não encontrado")
         prev = ch.status or "Aberto"
         ch.status = novo
-        # timestamps
-        from core.utils import now_brazil_naive
         if prev == "Aberto" and novo != "Aberto" and ch.data_primeira_resposta is None:
             ch.data_primeira_resposta = now_brazil_naive()
         if novo == "Concluído":
@@ -129,8 +354,8 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
         db.commit()
         db.refresh(ch)
         try:
-            # Persistir notificação de mudança de status
             Notification.__table__.create(bind=engine, checkfirst=True)
+            HistoricoTicket.__table__.create(bind=engine, checkfirst=True)
             dados = json.dumps({
                 "id": ch.id,
                 "codigo": ch.codigo,
@@ -148,6 +373,16 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
                 dados=dados,
             )
             db.add(n)
+            # registrar status via ORM
+            h = HistoricoTicket(
+                chamado_id=ch.id,
+                usuario_id=None,
+                assunto=f"Status: {prev} → {ch.status}",
+                mensagem=f"{prev} → {ch.status}",
+                destinatarios="",
+                data_envio=now_brazil_naive(),
+            )
+            db.add(h)
             db.commit()
             db.refresh(n)
             import anyio
@@ -174,12 +409,12 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
 
 @router.delete("/{chamado_id}")
 def deletar_chamado(chamado_id: int, payload: ChamadoDeleteRequest, db: Session = Depends(get_db)):
-    from ..models import Chamado, User
     try:
         user = db.query(User).filter(User.email == payload.email).first()
         if not user:
             raise HTTPException(status_code=401, detail="Usuário não encontrado")
-        if not check_password_hash(user.senha_hash, payload.senha):
+        from werkzeug.security import check_password_hash as _chk
+        if not _chk(user.senha_hash, payload.senha):
             raise HTTPException(status_code=401, detail="Senha inválida")
         ch = db.query(Chamado).filter(Chamado.id == chamado_id).first()
         if not ch:
@@ -187,7 +422,6 @@ def deletar_chamado(chamado_id: int, payload: ChamadoDeleteRequest, db: Session 
         db.delete(ch)
         db.commit()
         try:
-            # Persistir notificação de exclusão
             Notification.__table__.create(bind=engine, checkfirst=True)
             dados = json.dumps({
                 "id": chamado_id,
