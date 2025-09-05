@@ -7,3 +7,4 @@ pydantic==2.9.2
 pytz==2024.2
 Werkzeug==3.0.3
 python-socketio==5.11.4
+azure-storage-blob==12.23.1
