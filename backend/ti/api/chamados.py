@@ -355,6 +355,7 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
         db.refresh(ch)
         try:
             Notification.__table__.create(bind=engine, checkfirst=True)
+            HistoricoTicket.__table__.create(bind=engine, checkfirst=True)
             dados = json.dumps({
                 "id": ch.id,
                 "codigo": ch.codigo,
