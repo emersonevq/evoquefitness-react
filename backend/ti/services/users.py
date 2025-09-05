@@ -256,6 +256,12 @@ def authenticate_user(db: Session, identifier: str, senha: str) -> dict:
     except Exception:
         setores_list = [ _normalize_str(str(user.setor))] if user.setor else []
 
+    # Debug log to help trace login+alterar_senha flow
+    try:
+        print(f"[AUTH] user={user.usuario} id={user.id} alterar_senha={bool(user.alterar_senha_primeiro_acesso)} setores={setores_list}")
+    except Exception:
+        pass
+
     return {
         "id": user.id,
         "nome": user.nome,
