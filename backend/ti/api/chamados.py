@@ -143,6 +143,9 @@ def criar_chamado_com_anexos(
         ch = service_criar(db, payload)
         saved: list[AnexoArquivo] = []
         if files:
+            base_dir = pathlib.Path(__file__).resolve().parents[2]  # backend/
+            upload_root = base_dir / "uploads" / "chamados" / str(ch.id)
+            upload_root.mkdir(parents=True, exist_ok=True)
             user_id = None
             if autor_email:
                 try:
@@ -153,21 +156,23 @@ def criar_chamado_com_anexos(
             for f in files:
                 try:
                     safe_name = pathlib.Path(f.filename or "arquivo").name
+                    ts = int(datetime.timestamp(datetime.now()))
+                    dest_name = f"{ts}_{safe_name}"
+                    dest_path = upload_root / dest_name
                     content = f.file.read()
+                    with open(dest_path, "wb") as out:
+                        out.write(content)
                     an = AnexoArquivo(
                         chamado_id=ch.id,
                         historico_ticket_id=None,
                         nome_original=safe_name,
-                        caminho_arquivo="",
+                        caminho_arquivo=str(dest_path.relative_to(base_dir).as_posix()),
                         mime_type=f.content_type or None,
                         tamanho_bytes=len(content),
-                        conteudo=content,
                         data_upload=now_brazil_naive(),
                         usuario_id=user_id,
                     )
                     db.add(an)
-                    db.flush()
-                    an.caminho_arquivo = f"api/chamados/anexos/{an.id}"
                     saved.append(an)
                 except Exception:
                     continue
