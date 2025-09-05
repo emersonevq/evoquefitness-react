@@ -458,6 +458,7 @@ export function Permissoes() {
     email: string;
     nivel_acesso: string;
     setor: string | null;
+    bloqueado?: boolean;
   };
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -483,7 +484,7 @@ export function Permissoes() {
     fetch("/api/usuarios")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
       .then((data: ApiUser[]) => {
-        if (Array.isArray(data)) setUsers(data);
+        if (Array.isArray(data)) setUsers(data.filter((u) => !u.bloqueado));
       })
       .catch(() => setUsers([]))
       .finally(() => setLoading(false));
@@ -491,6 +492,9 @@ export function Permissoes() {
 
   useEffect(() => {
     load();
+    const onChanged = () => load();
+    window.addEventListener("users:changed", onChanged as EventListener);
+    return () => window.removeEventListener("users:changed", onChanged as EventListener);
   }, []);
 
   const openEdit = (u: ApiUser) => {
@@ -522,6 +526,7 @@ export function Permissoes() {
     if (res.ok) {
       setEditing(null);
       load();
+      window.dispatchEvent(new CustomEvent('users:changed'));
     } else {
       const t = await res.json().catch(() => ({} as any));
       alert((t && (t.detail || t.message)) || "Falha ao salvar");
@@ -540,13 +545,20 @@ export function Permissoes() {
 
   const blockUser = async (u: ApiUser) => {
     const res = await fetch(`/api/usuarios/${u.id}/block`, { method: "POST" });
-    if (res.ok) load();
+    if (res.ok) {
+      // remove locally and notify blocked list
+      setUsers((prev) => prev.filter((x) => x.id !== u.id));
+      window.dispatchEvent(new CustomEvent('users:changed'));
+    }
   };
 
   const deleteUser = async (u: ApiUser) => {
     if (!confirm(`Excluir o usuário ${u.nome}?`)) return;
     const res = await fetch(`/api/usuarios/${u.id}`, { method: "DELETE" });
-    if (res.ok) setUsers((prev) => prev.filter((x) => x.id !== u.id));
+    if (res.ok) {
+      setUsers((prev) => prev.filter((x) => x.id !== u.id));
+      window.dispatchEvent(new CustomEvent('users:changed'));
+    }
   };
 
   return (
