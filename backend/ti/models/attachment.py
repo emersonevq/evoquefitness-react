@@ -1,6 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
-from sqlalchemy import Integer, String, DateTime, ForeignKey, LargeBinary
+from sqlalchemy import Integer, String, DateTime, ForeignKey
+from sqlalchemy.dialects.mysql import MEDIUMBLOB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.db import Base
 
