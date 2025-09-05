@@ -193,6 +193,7 @@ def criar_chamado_com_anexos(
                         "chamado_id": ch.id,
                         "nome_original": safe_name,
                         "nome_arquivo": safe_name,
+                        "caminho_arquivo": "pending",
                         "tamanho_bytes": len(content),
                         "tipo_mime": f.content_type or None,
                         "extensao": ext or None,
