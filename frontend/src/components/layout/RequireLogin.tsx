@@ -38,6 +38,15 @@ export default function RequireLogin({
         setChecking(false);
         return;
       }
+      // Administrators: skip remote check and allow immediately (prevents hang when backend is down)
+      if (user.nivel_acesso === "Administrador") {
+        if (mounted) {
+          setAllowed(true);
+          setChecking(false);
+        }
+        return;
+      }
+
       // Only check when we have a sector to validate
       setChecking(true);
       try {
