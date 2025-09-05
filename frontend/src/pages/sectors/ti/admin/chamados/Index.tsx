@@ -394,6 +394,26 @@ export default function ChamadosPage() {
   const [priority, setPriority] = useState(false);
   const [ccMe, setCcMe] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
+  const [visibleCount, setVisibleCount] = useState(6);
+  const listRef = useRef(null as any);
+  function updateHistory(
+    arr: {
+      t: number;
+      label: string;
+      attachments?: string[];
+      files?: { name: string; url: string; mime?: string }[];
+    }[],
+  ) {
+    setHistory(arr);
+    setVisibleCount(Math.min(6, arr.length));
+  }
+  function handleHistoryScroll(e: any) {
+    const el = e.currentTarget as HTMLElement;
+    if (!el) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 16) {
+      setVisibleCount((c) => Math.min(c + 6, history.length));
+    }
+  }
 
   function initFromSelected(s: UiTicket) {
     setTab("resumo");
@@ -434,12 +454,12 @@ export default function ChamadosPage() {
                 }))
               : undefined,
           }));
-          setHistory(arr);
+          updateHistory(arr);
         },
       )
       .catch(() => {
         const base = new Date(s.criadoEm).getTime();
-        setHistory([{ t: base, label: "Chamado aberto" }]);
+        updateHistory([{ t: base, label: "Chamado aberto" }]);
       });
   }
 
@@ -478,7 +498,7 @@ export default function ChamadosPage() {
             }))
           : undefined,
       }));
-      setHistory(arr);
+      updateHistory(arr);
       setTab("historico");
       setFiles([]);
       setSubject("");
@@ -593,7 +613,7 @@ export default function ChamadosPage() {
                           }))
                         : undefined,
                     }));
-                    setHistory(arr);
+                    updateHistory(arr);
                     setTab("historico");
                   }
                 } catch (e) {
@@ -844,7 +864,7 @@ export default function ChamadosPage() {
                                     }))
                                   : undefined,
                               }));
-                              setHistory(arr);
+                              updateHistory(arr);
                               setTab("historico");
                             } catch (e) {
                               // noop
@@ -869,8 +889,12 @@ export default function ChamadosPage() {
                     <div className="text-sm font-medium mb-3">
                       Linha do tempo
                     </div>
-                    <div className="relative border-s">
-                      {history.map((ev, idx) => (
+                    <div
+                      ref={listRef}
+                      onScroll={handleHistoryScroll}
+                      className="relative border-s max-h-80 overflow-y-auto pr-2"
+                    >
+                      {history.slice(0, visibleCount).map((ev, idx) => (
                         <div key={idx} className="relative pl-6 mb-5 last:mb-0">
                           <div className="absolute left-0 top-1.5 h-3 w-3 rounded-full bg-primary ring-4 ring-primary/20" />
                           <div className="text-sm">{ev.label}</div>
