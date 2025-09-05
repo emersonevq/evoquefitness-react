@@ -432,7 +432,7 @@ export default function ChamadosPage() {
         t: new Date(it.t).getTime(),
         label: it.label,
         attachments: it.anexos ? it.anexos.map((a: any) => a.nome_original) : undefined,
-        files: it.anexos ? it.anexos.map((a: any) => ({ name: a.nome_original, url: `/${a.caminho_arquivo}`, mime: a.mime_type || undefined })) : undefined,
+        files: it.anexos ? it.anexos.map((a: any) => ({ name: a.nome_original, url: `${API_BASE.replace(/\/api$/, '')}/${a.caminho_arquivo}`, mime: a.mime_type || undefined })) : undefined,
       }));
       setHistory(arr);
       setTab("historico");
