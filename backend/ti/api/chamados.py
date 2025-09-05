@@ -307,21 +307,22 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
         ch = db.query(Chamado).filter(Chamado.id == chamado_id).first()
         if not ch:
             raise HTTPException(status_code=404, detail="Chamado não encontrado")
-        if ch.data_abertura:
-            items.append(HistoricoItem(t=ch.data_abertura, tipo="abertura", label="Chamado aberto", anexos=None))
-        # anexos enviados na abertura (chamado_anexo)
+        # anexos enviados na abertura (chamado_anexo) e descrição do chamado
         rows = db.execute(text("SELECT id, nome_original, caminho_arquivo, tipo_mime, tamanho_bytes, data_upload FROM chamado_anexo WHERE chamado_id=:i ORDER BY data_upload ASC"), {"i": chamado_id}).fetchall()
+        anexos_abertura = None
+        first_dt = ch.data_abertura or now_brazil_naive()
         if rows:
-            first_dt = rows[0][5] or now_brazil_naive()
+            first_dt = rows[0][5] or first_dt
             class _CA:
                 def __init__(self, r):
                     self.id, self.nome_original, self.caminho_arquivo, self.mime_type, self.tamanho_bytes, self.data_upload = r
-            items.append(HistoricoItem(
-                t=first_dt,
-                tipo="anexos_iniciais",
-                label="Anexos enviados na abertura",
-                anexos=[AnexoOut.model_validate(_CA(r)) for r in rows],
-            ))
+            anexos_abertura = [AnexoOut.model_validate(_CA(r)) for r in rows]
+        items.append(HistoricoItem(
+            t=first_dt,
+            tipo="abertura",
+            label=(ch.descricao or "Chamado aberto"),
+            anexos=anexos_abertura,
+        ))
         try:
             Notification.__table__.create(bind=engine, checkfirst=True)
             HistoricoStatus.__table__.create(bind=engine, checkfirst=True)
@@ -412,7 +413,7 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
             n = Notification(
                 tipo="chamado",
                 titulo=f"Status atualizado: {ch.codigo}",
-                mensagem=f"{prev} ��� {ch.status}",
+                mensagem=f"{prev} → {ch.status}",
                 recurso="chamado",
                 recurso_id=ch.id,
                 acao="status",
