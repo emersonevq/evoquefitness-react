@@ -356,6 +356,7 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
         db.refresh(ch)
         try:
             Notification.__table__.create(bind=engine, checkfirst=True)
+            HistoricoAnexo.__table__.create(bind=engine, checkfirst=True)
             dados = json.dumps({
                 "id": ch.id,
                 "codigo": ch.codigo,
@@ -373,6 +374,16 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
                 dados=dados,
             )
             db.add(n)
+            # registrar em historico_anexos
+            h = HistoricoAnexo(
+                chamado_id=ch.id,
+                usuario_id=None,
+                assunto=f"Status: {prev} → {ch.status}",
+                mensagem=f"{prev} → {ch.status}",
+                destinatarios="",
+                data_envio=now_brazil_naive(),
+            )
+            db.add(h)
             db.commit()
             db.refresh(n)
             import anyio
