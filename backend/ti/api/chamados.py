@@ -334,19 +334,20 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
                     label=f"{r.status_anterior or 'Aberto'} → {r.status_novo}",
                     anexos=None,
                 ))
-            # Fallback: also include legacy notifications marked as status
-            notas = db.query(Notification).filter(
-                Notification.recurso == "chamado",
-                Notification.recurso_id == chamado_id,
-            ).order_by(Notification.criado_em.asc()).all()
-            for n in notas:
-                if n.acao == "status":
-                    items.append(HistoricoItem(
-                        t=n.criado_em or now_brazil_naive(),
-                        tipo="status",
-                        label=n.mensagem or "Status atualizado",
-                        anexos=None,
-                    ))
+            # Fallback somente se não houver historico_status
+            if not hs_rows:
+                notas = db.query(Notification).filter(
+                    Notification.recurso == "chamado",
+                    Notification.recurso_id == chamado_id,
+                ).order_by(Notification.criado_em.asc()).all()
+                for n in notas:
+                    if n.acao == "status":
+                        items.append(HistoricoItem(
+                            t=n.criado_em or now_brazil_naive(),
+                            tipo="status",
+                            label=n.mensagem or "Status atualizado",
+                            anexos=None,
+                        ))
         except Exception:
             pass
         # histórico (historico_tickets via ORM)
@@ -411,7 +412,7 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
             n = Notification(
                 tipo="chamado",
                 titulo=f"Status atualizado: {ch.codigo}",
-                mensagem=f"{prev} → {ch.status}",
+                mensagem=f"{prev} ��� {ch.status}",
                 recurso="chamado",
                 recurso_id=ch.id,
                 acao="status",
