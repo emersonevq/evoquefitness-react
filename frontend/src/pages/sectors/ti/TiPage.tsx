@@ -341,6 +341,7 @@ function TicketForm(props: {
     problema: string;
     internetItem?: string;
     descricao?: string;
+    files?: File[];
   }) => void;
 }) {
   const { onSubmit } = props;
