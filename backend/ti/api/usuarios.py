@@ -78,3 +78,62 @@ def generate_password_endpoint(length: int = 6):
     if length > 64:
         length = 64
     return {"senha": generate_password(length)}
+
+
+@router.get("/blocked", response_model=list[UserOut])
+def listar_bloqueados(db: Session = Depends(get_db)):
+    try:
+        return list_blocked_users(db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao listar bloqueados: {e}")
+
+
+@router.put("/{user_id}", response_model=UserOut)
+def atualizar_usuario(user_id: int, payload: dict, db: Session = Depends(get_db)):
+    try:
+        updated = update_user(db, user_id, payload)
+        return updated
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao atualizar: {e}")
+
+
+@router.post("/{user_id}/generate-password")
+def gerar_nova_senha(user_id: int, length: int = 6, db: Session = Depends(get_db)):
+    try:
+        pwd = regenerate_password(db, user_id, length)
+        return {"senha": pwd}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar senha: {e}")
+
+
+@router.post("/{user_id}/block", response_model=UserOut)
+def bloquear_usuario(user_id: int, db: Session = Depends(get_db)):
+    try:
+        return set_block_status(db, user_id, True)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao bloquear: {e}")
+
+
+@router.post("/{user_id}/unblock", response_model=UserOut)
+def desbloquear_usuario(user_id: int, db: Session = Depends(get_db)):
+    try:
+        return set_block_status(db, user_id, False)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao desbloquear: {e}")
+
+
+@router.delete("/{user_id}")
+def excluir_usuario(user_id: int, db: Session = Depends(get_db)):
+    try:
+        delete_user(db, user_id)
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao excluir: {e}")
