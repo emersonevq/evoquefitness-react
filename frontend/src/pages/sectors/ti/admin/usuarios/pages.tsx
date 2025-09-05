@@ -149,6 +149,8 @@ export function CriarUsuario() {
         nome: `${created.nome} ${created.sobrenome}`,
       });
       setShowSuccess(true);
+      // Notify other parts of the UI that users changed
+      window.dispatchEvent(new CustomEvent('users:changed'));
 
       setFirst("");
       setLast("");
