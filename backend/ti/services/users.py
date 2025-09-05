@@ -262,4 +262,18 @@ def authenticate_user(db: Session, identifier: str, senha: str) -> dict:
         "email": user.email,
         "nivel_acesso": user.nivel_acesso,
         "setores": setores_list,
+        "alterar_senha_primeiro_acesso": bool(user.alterar_senha_primeiro_acesso),
     }
+
+
+def change_user_password(db: Session, user_id: int, new_password: str, require_change: bool = False) -> None:
+    try:
+        User.__table__.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise ValueError("Usuário não encontrado")
+    user.senha_hash = generate_password_hash(new_password)
+    user.alterar_senha_primeiro_acesso = bool(require_change)
+    db.commit()
