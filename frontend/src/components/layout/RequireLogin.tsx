@@ -59,7 +59,10 @@ export default function RequireLogin({
       inflightRef.current = true;
       try {
         const slug = sectorMatch!.groups!.slug || "";
-        const res = await fetch(`/api/usuarios/${user.id}/has-setor?sector=${encodeURIComponent(slug)}`, { signal: controller.signal });
+        const res = await fetch(
+          `/api/usuarios/${user.id}/has-setor?sector=${encodeURIComponent(slug)}`,
+          { signal: controller.signal },
+        );
         if (!res.ok) {
           // if server errored, fallback to client-side cached sectors
           if (mounted) setAllowed(null);
