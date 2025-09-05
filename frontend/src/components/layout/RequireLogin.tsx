@@ -57,17 +57,29 @@ export default function RequireLogin({
         servicos: "Outros",
       };
       const required = mapa[slug || ""];
-      const normalize = (s: any) =>
+
+      const normalizeStr = (s: any) =>
         typeof s === "string"
           ? s
               .normalize("NFKD")
               .replace(/\p{Diacritic}/gu, "")
               .toLowerCase()
-          : s;
+              .replace(/[^a-z0-9\s-]/g, "")
+              .replace(/\s+/g, " ")
+              .trim()
+          : "";
+
+      const cleanSector = (s: any) => {
+        const n = normalizeStr(s);
+        // remove common prefixes like 'setor', 'setor de', etc.
+        return n.replace(/^(setor\s*(de|da|do)\s*)/, "").trim();
+      };
+
       const userSectors = Array.isArray(user?.setores)
-        ? user!.setores.map(normalize)
+        ? user!.setores.map(cleanSector)
         : [];
-      const reqNorm = normalize(required);
+      const reqNorm = cleanSector(required);
+
       // Prefer strict matching: exact match or shared whole-word tokens
       const has = userSectors.some((s) => {
         if (!s || !reqNorm) return false;
@@ -79,6 +91,7 @@ export default function RequireLogin({
         if (reqTokens.some((tok) => sTokens.includes(tok))) return true;
         return false;
       });
+
       if (required && !has) {
         return <Navigate to="/access-denied" replace />;
       }
