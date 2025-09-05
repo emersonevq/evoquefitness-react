@@ -187,8 +187,9 @@ def enviar_ticket(
     db: Session = Depends(get_db),
 ):
     try:
-        HistoricoTicket.__table__.create(bind=engine, checkfirst=True)
-        AnexoArquivo.__table__.create(bind=engine, checkfirst=True)
+        # garantir tabelas
+        HistoricoAnexo.__table__.create(bind=engine, checkfirst=True)
+        TicketAnexo.__table__.create(bind=engine, checkfirst=True)
         user_id = None
         if autor_email:
             try:
@@ -196,40 +197,55 @@ def enviar_ticket(
                 user_id = user.id if user else None
             except Exception:
                 user_id = None
-        ht = HistoricoTicket(
+        # registrar histórico
+        h = HistoricoAnexo(
             chamado_id=chamado_id,
-            usuario_id=user_id or 0,
+            usuario_id=user_id or None,
             assunto=assunto,
             mensagem=mensagem,
             destinatarios=destinatarios,
             data_envio=now_brazil_naive(),
         )
-        db.add(ht)
+        db.add(h)
         db.commit()
-        db.refresh(ht)
+        db.refresh(h)
+        # salvar anexos em tickets_anexos com metadados e caminho
         if files:
+            base_dir = pathlib.Path(__file__).resolve().parents[2]  # backend/
+            upload_root = base_dir / "uploads" / "chamados" / str(chamado_id)
+            upload_root.mkdir(parents=True, exist_ok=True)
             for f in files:
                 try:
                     safe_name = pathlib.Path(f.filename or "arquivo").name
+                    ext = pathlib.Path(safe_name).suffix.lower().lstrip(".")
+                    ts = int(datetime.timestamp(datetime.now()))
+                    dest_name = f"{ts}_{safe_name}"
+                    dest_path = upload_root / dest_name
                     content = f.file.read()
-                    an = AnexoArquivo(
+                    with open(dest_path, "wb") as out:
+                        out.write(content)
+                    import hashlib
+                    sha = hashlib.sha256(content).hexdigest()
+                    ta = TicketAnexo(
                         chamado_id=chamado_id,
-                        historico_ticket_id=ht.id,
                         nome_original=safe_name,
-                        caminho_arquivo="",
-                        mime_type=f.content_type or None,
+                        nome_arquivo=dest_name,
+                        caminho_arquivo=str(dest_path.relative_to(base_dir).as_posix()),
                         tamanho_bytes=len(content),
-                        conteudo=content,
+                        tipo_mime=f.content_type or None,
+                        extensao=ext or None,
+                        hash_arquivo=sha,
                         data_upload=now_brazil_naive(),
-                        usuario_id=user_id,
+                        usuario_upload_id=user_id,
+                        descricao=None,
+                        ativo=True,
+                        origem="ticket",
                     )
-                    db.add(an)
-                    db.flush()
-                    an.caminho_arquivo = f"api/chamados/anexos/{an.id}"
+                    db.add(ta)
                 except Exception:
                     continue
             db.commit()
-        return {"ok": True, "ticket_id": ht.id}
+        return {"ok": True, "historico_id": h.id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao enviar ticket: {e}")
 
