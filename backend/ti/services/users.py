@@ -347,6 +347,50 @@ def normalize_user_setores(db: Session) -> int:
     return updated
 
 
+def ensure_admins_have_all_sectors(db: Session) -> int:
+    """Ensure every user with nivel_acesso 'Administrador' has all sectors assigned."""
+    ALL_SECTORES = [
+        "Setor de Marketing",
+        "Setor de Produtos",
+        "Setor Financeiro",
+        "Setor de Compras",
+        "Setor de TI",
+        "Setor de Manutencao",
+        "Setor Comercial",
+        "Outros Servicos",
+    ]
+    updated = 0
+    try:
+        admins = db.query(User).filter(User.nivel_acesso == 'Administrador').all()
+        for u in admins:
+            try:
+                current = []
+                if u._setores:
+                    try:
+                        current = json.loads(u._setores)
+                    except Exception:
+                        current = [str(u._setores)]
+                # normalize both lists and compare
+                norm_current = [_normalize_str(str(s)) for s in current]
+                norm_all = [_normalize_str(s) for s in ALL_SECTORES]
+                if set(norm_current) != set(norm_all):
+                    u._setores = json.dumps(norm_all, ensure_ascii=False)
+                    u.setor = norm_all[0] if norm_all else None
+                    db.add(u)
+                    updated += 1
+            except Exception:
+                continue
+        if updated:
+            db.commit()
+    except Exception:
+        try:
+            db.rollback()
+        except:
+            pass
+        raise
+    return updated
+
+
 def change_user_password(db: Session, user_id: int, new_password: str, require_change: bool = False) -> None:
     try:
         User.__table__.create(bind=engine, checkfirst=True)
