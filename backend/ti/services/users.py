@@ -62,8 +62,9 @@ def criar_usuario(db: Session, payload: UserCreate) -> UserCreatedOut:
     setores_json = None
     setor = None
     if payload.setores and len(payload.setores) > 0:
-        setores_json = json.dumps(payload.setores)
-        setor = payload.setores[0]
+        normalized = [_normalize_str(str(s)) for s in payload.setores]
+        setores_json = json.dumps(normalized)
+        setor = normalized[0]
 
     novo = User(
         nome=payload.nome,
