@@ -160,6 +160,19 @@ def update_user(db: Session, user_id: int, data: dict) -> User:
         user.sobrenome = data["sobrenome"]  # type: ignore
     if "nivel_acesso" in data and data["nivel_acesso"] is not None:
         user.nivel_acesso = data["nivel_acesso"]  # type: ignore
+        # If promoting to Administrator, grant all sectors automatically
+        if str(data["nivel_acesso"]).strip() == "Administrador":
+            ALL_SECTORES = [
+                "Setor de Marketing",
+                "Setor de Produtos",
+                "Setor Financeiro",
+                "Setor de Compras",
+                "Setor de TI",
+                "Setor de Manutencao",
+                "Setor Comercial",
+                "Outros Servicos",
+            ]
+            _set_setores(user, ALL_SECTORES)
     if "alterar_senha_primeiro_acesso" in data and data["alterar_senha_primeiro_acesso"] is not None:
         user.alterar_senha_primeiro_acesso = bool(data["alterar_senha_primeiro_acesso"])  # type: ignore
     if "bloqueado" in data and data["bloqueado"] is not None:
