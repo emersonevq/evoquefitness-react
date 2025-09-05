@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 
 interface AuthUser {
+  id?: number;
   email: string;
   name: string;
+  nivel_acesso?: string;
+  setores?: string[];
   loginTime: number;
 }
 
