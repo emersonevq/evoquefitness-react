@@ -51,7 +51,7 @@ export default function RequireLogin({
       setChecking(true);
       try {
         const res = await fetch(`/api/usuarios/${user.id}`);
-        if (!res.ok) throw new Error('failed');
+        if (!res.ok) throw new Error("failed");
         const data = await res.json();
         const remoteSectors = Array.isArray(data.setores) ? data.setores : [];
         // reuse same normalization as before
@@ -65,7 +65,10 @@ export default function RequireLogin({
                 .replace(/\s+/g, " ")
                 .trim()
             : "";
-        const cleanSector = (s: any) => normalizeStr(s).replace(/^(setor\s*(de|da|do)\s*)/, "").trim();
+        const cleanSector = (s: any) =>
+          normalizeStr(s)
+            .replace(/^(setor\s*(de|da|do)\s*)/, "")
+            .trim();
         const userSectors = remoteSectors.map(cleanSector);
         const mapa: Record<string, string> = {
           ti: "TI",
