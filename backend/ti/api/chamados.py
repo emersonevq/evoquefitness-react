@@ -418,8 +418,13 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
         return HistoricoResponse(items=items_sorted)
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao obter histórico: {e}")
+    except Exception:
+        # Retorna o que foi possível montar para não quebrar o painel
+        try:
+            items_sorted = sorted(items, key=lambda x: x.t)
+            return HistoricoResponse(items=items_sorted)
+        except Exception:
+            return HistoricoResponse(items=[])
 
 @router.patch("/{chamado_id}/status", response_model=ChamadoOut)
 def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session = Depends(get_db)):
