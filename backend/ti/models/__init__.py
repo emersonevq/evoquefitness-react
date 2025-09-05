@@ -5,7 +5,7 @@ from .problema import Problema
 from .notification import Notification
 from .attachment import AnexoArquivo
 from .ticket_anexo import TicketAnexo
-from .historico_anexo import HistoricoAnexo
+from .historico_ticket import HistoricoTicket
 from .chamado_anexo import ChamadoAnexo
 __all__ = [
     "Chamado",
@@ -15,6 +15,6 @@ __all__ = [
     "Notification",
     "AnexoArquivo",
     "TicketAnexo",
-    "HistoricoAnexo",
+    "HistoricoTicket",
     "ChamadoAnexo",
 ]
