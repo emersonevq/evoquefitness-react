@@ -75,10 +75,11 @@ export default function Login() {
             </p>
             <form onSubmit={submit} className="mt-6 grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="email">E-mail</Label>
+                <Label htmlFor="identifier">E-mail ou usuário</Label>
                 <Input
-                  id="email"
-                  type="email"
+                  id="identifier"
+                  type="text"
+                  placeholder="E-mail ou nome de usuário"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
