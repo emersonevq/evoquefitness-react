@@ -22,9 +22,7 @@ export default function Login() {
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get("redirect") || "/";
       // If user must change password, go to change-password
-      const ctx = useAuthContext();
-      const currentUser = ctx.user;
-      if (currentUser && (currentUser as any).alterar_senha_primeiro_acesso) {
+      if (user && (user as any).alterar_senha_primeiro_acesso) {
         navigate('/auth/change-password', { replace: true });
       } else {
         navigate(redirect, { replace: true });
