@@ -123,19 +123,21 @@ export default function TiPage() {
                 unidades={unidades}
                 onSubmit={async (payload) => {
                   try {
-                    const res = await apiFetch("/chamados", {
+                    const fd = new FormData();
+                    fd.set("solicitante", payload.nome);
+                    fd.set("cargo", payload.cargo);
+                    fd.set("email", payload.email);
+                    fd.set("telefone", payload.telefone);
+                    fd.set("unidade", payload.unidade);
+                    fd.set("problema", payload.problema);
+                    if (payload.internetItem) fd.set("internetItem", payload.internetItem);
+                    if (payload.descricao) fd.set("descricao", payload.descricao);
+                    if (payload.files && payload.files.length > 0) {
+                      for (const f of payload.files) fd.append("files", f);
+                    }
+                    const res = await apiFetch("/chamados/with-attachments", {
                       method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        solicitante: payload.nome,
-                        cargo: payload.cargo,
-                        email: payload.email,
-                        telefone: payload.telefone,
-                        unidade: payload.unidade,
-                        problema: payload.problema,
-                        internetItem: payload.internetItem || null,
-                        descricao: payload.descricao || null,
-                      }),
+                      body: fd,
                     });
                     if (!res.ok) throw new Error("Falha ao criar chamado");
                     const created: {
