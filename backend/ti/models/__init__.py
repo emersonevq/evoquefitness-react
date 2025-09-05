@@ -3,4 +3,14 @@ from .user import User
 from .unidade import Unidade
 from .problema import Problema
 from .notification import Notification
-__all__ = ["Chamado", "User", "Unidade", "Problema", "Notification"]
+from .attachment import AnexoArquivo
+from .historico_ticket import HistoricoTicket
+__all__ = [
+    "Chamado",
+    "User",
+    "Unidade",
+    "Problema",
+    "Notification",
+    "AnexoArquivo",
+    "HistoricoTicket",
+]
