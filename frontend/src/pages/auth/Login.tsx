@@ -18,11 +18,11 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      await login(email, password, remember);
+      const result: any = await login(email, password, remember);
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get("redirect") || "/";
-      // If user must change password, go to change-password
-      if (user && (user as any).alterar_senha_primeiro_acesso) {
+      // If server indicates password change required, go to change-password
+      if (result && result.alterar_senha_primeiro_acesso) {
         navigate('/auth/change-password', { replace: true });
       } else {
         navigate(redirect, { replace: true });
