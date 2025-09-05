@@ -56,6 +56,7 @@ export default function RequireLogin({
       const controller = new AbortController();
       const timeoutMs = 3000;
       const timer = setTimeout(() => controller.abort(), timeoutMs);
+      inflightRef.current = true;
       try {
         const slug = sectorMatch!.groups!.slug || "";
         const res = await fetch(`/api/usuarios/${user.id}/has-setor?sector=${encodeURIComponent(slug)}`, { signal: controller.signal });
@@ -71,6 +72,7 @@ export default function RequireLogin({
         if (mounted) setAllowed(null);
       } finally {
         clearTimeout(timer);
+        inflightRef.current = false;
         if (mounted) setChecking(false);
       }
     }
