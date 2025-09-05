@@ -389,6 +389,7 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
         try:
             Notification.__table__.create(bind=engine, checkfirst=True)
             HistoricoTicket.__table__.create(bind=engine, checkfirst=True)
+            HistoricoStatus.__table__.create(bind=engine, checkfirst=True)
             dados = json.dumps({
                 "id": ch.id,
                 "codigo": ch.codigo,
@@ -416,6 +417,15 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
                 data_envio=now_brazil_naive(),
             )
             db.add(h)
+            # registrar em historico_status
+            hs = HistoricoStatus(
+                chamado_id=ch.id,
+                usuario_id=None,
+                status_anterior=prev,
+                status_novo=ch.status,
+                criado_em=now_brazil_naive(),
+            )
+            db.add(hs)
             db.commit()
             db.refresh(n)
             import anyio
