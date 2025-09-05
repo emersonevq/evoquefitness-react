@@ -4,7 +4,6 @@ from .unidade import Unidade
 from .problema import Problema
 from .notification import Notification
 from .attachment import AnexoArquivo
-from .historico_ticket import HistoricoTicket
 from .ticket_anexo import TicketAnexo
 from .historico_anexo import HistoricoAnexo
 from .chamado_anexo import ChamadoAnexo
@@ -15,7 +14,6 @@ __all__ = [
     "Problema",
     "Notification",
     "AnexoArquivo",
-    "HistoricoTicket",
     "TicketAnexo",
     "HistoricoAnexo",
     "ChamadoAnexo",
