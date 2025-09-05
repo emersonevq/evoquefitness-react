@@ -16,7 +16,7 @@ export default function ChangePassword() {
 
   if (!user) return null;
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (senha.length < 6) return alert("Senha deve ter ao menos 6 caracteres");
     if (senha !== senhaConfirm) return alert("Senhas não conferem");
