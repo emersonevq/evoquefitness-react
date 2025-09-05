@@ -324,6 +324,17 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
             ))
         try:
             Notification.__table__.create(bind=engine, checkfirst=True)
+            HistoricoStatus.__table__.create(bind=engine, checkfirst=True)
+            # Priorize historico_status for status events
+            hs_rows = db.query(HistoricoStatus).filter(HistoricoStatus.chamado_id == chamado_id).order_by(HistoricoStatus.criado_em.asc()).all()
+            for r in hs_rows:
+                items.append(HistoricoItem(
+                    t=r.criado_em or now_brazil_naive(),
+                    tipo="status",
+                    label=f"{r.status_anterior or 'Aberto'} → {r.status_novo}",
+                    anexos=None,
+                ))
+            # Fallback: also include legacy notifications marked as status
             notas = db.query(Notification).filter(
                 Notification.recurso == "chamado",
                 Notification.recurso_id == chamado_id,
