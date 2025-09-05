@@ -566,12 +566,29 @@ export default function ChamadosPage() {
                     body: JSON.stringify({ status: statusText }),
                   });
                   if (!r.ok) throw new Error(await r.text());
-                  const updated = await r.json();
                   setItems((prev) =>
                     prev.map((it) =>
                       it.id === id ? { ...it, status: sel } : it,
                     ),
                   );
+                  // Refresh history if this ticket is selected and modal open
+                  if (selected && selected.id === id) {
+                    const hist = await apiFetch(`/chamados/${id}/historico`).then((x) => x.json());
+                    const arr = hist.items.map((it: any) => ({
+                      t: new Date(it.t).getTime(),
+                      label: it.label,
+                      attachments: it.anexos ? it.anexos.map((a: any) => a.nome_original) : undefined,
+                      files: it.anexos
+                        ? it.anexos.map((a: any) => ({
+                            name: a.nome_original,
+                            url: `${API_BASE.replace(/\/api$/, "")}/${a.caminho_arquivo}`,
+                            mime: a.mime_type || undefined,
+                          }))
+                        : undefined,
+                    }));
+                    setHistory(arr);
+                    setTab("historico");
+                  }
                 } catch (e) {
                   // noop: in real app show toast
                 }
