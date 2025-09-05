@@ -7,7 +7,7 @@ import { useAuthContext } from "@/lib/auth-context";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuthContext();
+  const { login, user } = useAuthContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
