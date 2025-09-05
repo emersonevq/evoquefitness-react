@@ -395,7 +395,8 @@ export default function ChamadosPage() {
   const [ccMe, setCcMe] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [visibleCount, setVisibleCount] = useState(6);
-  const listRef = useRef(null as any);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   function updateHistory(
     arr: {
       t: number;
@@ -405,7 +406,8 @@ export default function ChamadosPage() {
     }[],
   ) {
     setHistory(arr);
-    setVisibleCount(Math.min(6, arr.length));
+    // Preserve current visible count (avoid resetting to 6) and clamp to range
+    setVisibleCount((c) => Math.min(Math.max(c, 6), arr.length));
   }
   function handleHistoryScroll(e: any) {
     const el = e.currentTarget as HTMLElement;
@@ -414,6 +416,22 @@ export default function ChamadosPage() {
       setVisibleCount((c) => Math.min(c + 6, history.length));
     }
   }
+
+  useEffect(() => {
+    const root = listRef.current;
+    const sentinel = loadMoreRef.current;
+    if (!root || !sentinel) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((en) => en.isIntersecting)) {
+          setVisibleCount((c) => Math.min(c + 6, history.length));
+        }
+      },
+      { root, rootMargin: "0px 0px 200px 0px", threshold: 0.1 },
+    );
+    obs.observe(sentinel);
+    return () => obs.disconnect();
+  }, [history.length, tab, open]);
 
   function initFromSelected(s: UiTicket) {
     setTab("resumo");
@@ -950,6 +968,9 @@ export default function ChamadosPage() {
                           )}
                         </div>
                       ))}
+                      {visibleCount < history.length && (
+                        <div ref={loadMoreRef} className="h-4" />
+                      )}
                     </div>
                   </div>
                 )}
