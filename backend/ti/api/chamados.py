@@ -301,14 +301,33 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
                     ))
         except Exception:
             pass
-        hts = db.query(HistoricoTicket).filter(HistoricoTicket.chamado_id == chamado_id).order_by(HistoricoTicket.data_envio.asc()).all()
-        for ht in hts:
-            anexos = db.query(AnexoArquivo).filter(AnexoArquivo.historico_ticket_id == ht.id).all()
+        # histórico (historico_anexos)
+        hs = db.query(HistoricoAnexo).filter(HistoricoAnexo.chamado_id == chamado_id).order_by(HistoricoAnexo.data_envio.asc()).all()
+        for h in hs:
+            # anexos de tickets_anexos próximos ao horário
+            anexos_ticket = []
+            try:
+                from datetime import timedelta
+                start = (h.data_envio or now_brazil_naive()) - timedelta(minutes=3)
+                end = (h.data_envio or now_brazil_naive()) + timedelta(minutes=3)
+                tas = db.query(TicketAnexo).filter(TicketAnexo.chamado_id == chamado_id).all()
+                for ta in tas:
+                    if ta.data_upload and start <= ta.data_upload <= end:
+                        class _A:
+                            id = ta.id
+                            nome_original = ta.nome_original
+                            caminho_arquivo = ta.caminho_arquivo
+                            mime_type = ta.tipo_mime
+                            tamanho_bytes = ta.tamanho_bytes
+                            data_upload = ta.data_upload
+                        anexos_ticket.append(_A())
+            except Exception:
+                pass
             items.append(HistoricoItem(
-                t=ht.data_envio or now_brazil_naive(),
+                t=h.data_envio or now_brazil_naive(),
                 tipo="ticket",
-                label=f"Ticket enviado: {ht.assunto}",
-                anexos=[AnexoOut.model_validate(a) for a in anexos] if anexos else None,
+                label=f"{h.assunto}",
+                anexos=[AnexoOut.model_validate(a) for a in anexos_ticket] if anexos_ticket else None,
             ))
         items_sorted = sorted(items, key=lambda x: x.t)
         return HistoricoResponse(items=items_sorted)
