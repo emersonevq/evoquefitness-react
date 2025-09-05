@@ -357,6 +357,7 @@ function TicketForm(props: {
     internetItem: "",
     descricao: "",
   });
+  const [files, setFiles] = useState<File[]>([]);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const must = [
@@ -376,7 +377,7 @@ function TicketForm(props: {
       alert("Selecione o item de Internet.");
       return;
     }
-    onSubmit(form);
+    onSubmit({ ...form, files });
   };
 
   const selectedProblem = useMemo(
@@ -510,6 +511,14 @@ function TicketForm(props: {
           value={form.descricao}
           onChange={(e) => setForm({ ...form, descricao: e.target.value })}
           required
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label>Arquivos (opcional)</Label>
+        <input
+          type="file"
+          multiple
+          onChange={(e) => setFiles(Array.from(e.target.files || []))}
         />
       </div>
       <div className="flex items-center justify-end gap-3 pt-2">
