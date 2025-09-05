@@ -198,7 +198,7 @@ def enviar_ticket(
 ):
     try:
         # garantir tabelas
-        HistoricoAnexo.__table__.create(bind=engine, checkfirst=True)
+        HistoricoTicket.__table__.create(bind=engine, checkfirst=True)
         TicketAnexo.__table__.create(bind=engine, checkfirst=True)
         user_id = None
         if autor_email:
@@ -208,7 +208,7 @@ def enviar_ticket(
             except Exception:
                 user_id = None
         # registrar histórico
-        h = HistoricoAnexo(
+        h = HistoricoTicket(
             chamado_id=chamado_id,
             usuario_id=user_id or None,
             assunto=assunto,
@@ -315,8 +315,8 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
                     ))
         except Exception:
             pass
-        # histórico (historico_anexos)
-        hs = db.query(HistoricoAnexo).filter(HistoricoAnexo.chamado_id == chamado_id).order_by(HistoricoAnexo.data_envio.asc()).all()
+        # histórico (historico_tickets)
+        hs = db.query(HistoricoTicket).filter(HistoricoTicket.chamado_id == chamado_id).order_by(HistoricoTicket.data_envio.asc()).all()
         for h in hs:
             # anexos de tickets_anexos próximos ao horário
             anexos_ticket = []
@@ -370,7 +370,7 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
         db.refresh(ch)
         try:
             Notification.__table__.create(bind=engine, checkfirst=True)
-            HistoricoAnexo.__table__.create(bind=engine, checkfirst=True)
+            HistoricoTicket.__table__.create(bind=engine, checkfirst=True)
             dados = json.dumps({
                 "id": ch.id,
                 "codigo": ch.codigo,
@@ -388,8 +388,8 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
                 dados=dados,
             )
             db.add(n)
-            # registrar em historico_anexos
-            h = HistoricoAnexo(
+            # registrar em historico_tickets
+            h = HistoricoTicket(
                 chamado_id=ch.id,
                 usuario_id=None,
                 assunto=f"Status: {prev} → {ch.status}",
