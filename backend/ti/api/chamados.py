@@ -127,7 +127,7 @@ def criar_chamado_com_anexos(
     try:
         try:
             Chamado.__table__.create(bind=engine, checkfirst=True)
-            AnexoArquivo.__table__.create(bind=engine, checkfirst=True)
+            ChamadoAnexo.__table__.create(bind=engine, checkfirst=True)
         except Exception:
             pass
         payload = ChamadoCreate(
