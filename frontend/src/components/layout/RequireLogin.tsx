@@ -28,7 +28,6 @@ export default function RequireLogin({
   // Permitir bypass temporário (para navegação após login)
   const bypassGate = location.state?.bypassGate;
   const pathname = location.pathname || "";
-  const sectorMatch = pathname.match(/^\/setor\/(?<slug>[^\/]+)(?:\/.*)?$/);
 
   const inflightRef = useRef(false);
 
@@ -36,6 +35,7 @@ export default function RequireLogin({
     let mounted = true;
     async function refreshPermissions() {
       if (inflightRef.current) return;
+      const sectorMatch = pathname.match(/^\/setor\/(?<slug>[^\/]+)(?:\/.*)?$/);
       if (!isAuthenticated || !sectorMatch || !user) {
         setAllowed(null);
         setChecking(false);
@@ -80,7 +80,7 @@ export default function RequireLogin({
     return () => {
       mounted = false;
     };
-  }, [isAuthenticated, sectorMatch, user?.id, pathname]);
+  }, [isAuthenticated, user?.id, pathname]);
 
   // If a permission check is happening, show loading
   if (checking) {
