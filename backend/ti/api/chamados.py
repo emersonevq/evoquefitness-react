@@ -147,25 +147,18 @@ def criar_chamado_com_anexos(
                     user_id = user.id if user else None
                 except Exception:
                     user_id = None
-            try:
-                storage = get_storage()
-            except StorageError as e:
-                raise HTTPException(status_code=500, detail=str(e))
             import hashlib
             for f in files:
                 try:
                     safe_name = (f.filename or "arquivo")
                     content = f.file.read()
-                    blob_name = build_blob_name("chamados", ch.id, safe_name)
-                    url = storage.upload_bytes(blob_name, content, f.content_type or None)
                     ext = safe_name.rsplit(".", 1)[-1].lower() if "." in safe_name else None
-                    dest_name = blob_name.split("/")[-1]
                     sha = hashlib.sha256(content).hexdigest()
                     ca = ChamadoAnexo(
                         chamado_id=ch.id,
                         nome_original=safe_name,
-                        nome_arquivo=dest_name,
-                        caminho_arquivo=url,
+                        nome_arquivo=safe_name,
+                        caminho_arquivo="",
                         tamanho_bytes=len(content),
                         tipo_mime=f.content_type or None,
                         extensao=ext or None,
@@ -174,8 +167,11 @@ def criar_chamado_com_anexos(
                         usuario_upload_id=user_id,
                         descricao=None,
                         ativo=True,
+                        conteudo=content,
                     )
                     db.add(ca)
+                    db.flush()
+                    ca.caminho_arquivo = f"api/chamados/anexos/chamado/{ca.id}"
                 except Exception:
                     continue
             db.commit()
