@@ -111,6 +111,26 @@ def gerar_nova_senha(user_id: int, length: int = 6, db: Session = Depends(get_db
         raise HTTPException(status_code=500, detail=f"Erro ao gerar senha: {e}")
 
 
+@router.post("/login")
+def login(payload: dict, db: Session = Depends(get_db)):
+    try:
+        identifier = payload.get("identifier") or payload.get("email") or payload.get("usuario")
+        senha = payload.get("senha") or payload.get("password")
+        if not identifier or not senha:
+            raise HTTPException(status_code=400, detail="Informe identifier e senha")
+        from ti.services.users import authenticate_user
+        user = authenticate_user(db, identifier, senha)
+        return user
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao autenticar: {e}")
+
+
 @router.post("/{user_id}/block", response_model=UserOut)
 def bloquear_usuario(user_id: int, db: Session = Depends(get_db)):
     try:
