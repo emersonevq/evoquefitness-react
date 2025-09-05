@@ -105,9 +105,13 @@ export default function RequireLogin({
     );
   }
 
-  // If we performed a check and it's explicitly denied, block
+  // If we performed a check and it's explicitly denied, block (but allow Administrators)
   if (allowed === false) {
-    return <Navigate to="/access-denied" replace />;
+    if (user?.nivel_acesso === "Administrador") {
+      // administrators bypass permission checks
+    } else {
+      return <Navigate to="/access-denied" replace />;
+    }
   }
 
   // Se está autenticado ou tem bypass, permitir acesso
