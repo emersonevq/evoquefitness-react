@@ -116,8 +116,9 @@ export default function RequireLogin({
     }
 
     // If sectorMatch but we didn't run check yet (allowed === null), fallthrough to allow based on cached user
-    if (sectorMatch && sectorMatch.groups) {
-      const slug = sectorMatch.groups.slug;
+    const _sectorMatch = pathname.match(/^\/setor\/(?<slug>[^\/]+)(?:\/.*)?$/);
+    if (_sectorMatch && _sectorMatch.groups) {
+      const slug = _sectorMatch.groups.slug;
       if (user?.nivel_acesso === "Administrador") return <>{children}</>;
 
       // Map slug to normalized sector name (same mapping used in backend)
