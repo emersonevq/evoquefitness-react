@@ -215,3 +215,14 @@ def normalize_setores(db: Session = Depends(get_db)):
         return {"updated": updated}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao normalizar setores: {e}")
+
+
+@router.post("/assign-admin-sectors")
+def assign_admin_sectors(db: Session = Depends(get_db)):
+    """Assign all sectors to users with nivel_acesso 'Administrador'."""
+    try:
+        from ti.services.users import ensure_admins_have_all_sectors
+        updated = ensure_admins_have_all_sectors(db)
+        return {"updated": updated}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao atribuir setores a administradores: {e}")
