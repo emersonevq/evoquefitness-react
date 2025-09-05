@@ -17,7 +17,8 @@ import json
 import pathlib
 from datetime import datetime
 from core.utils import now_brazil_naive
-from ..models import AnexoArquivo, Chamado, User, TicketAnexo, HistoricoTicket, ChamadoAnexo
+from sqlalchemy import text
+from ..models import AnexoArquivo, Chamado, User, TicketAnexo, ChamadoAnexo
 from ti.schemas.attachment import AnexoOut
 from ti.schemas.ticket import HistoricoItem, HistoricoResponse
 
@@ -197,8 +198,7 @@ def enviar_ticket(
     db: Session = Depends(get_db),
 ):
     try:
-        # garantir tabelas
-        HistoricoTicket.__table__.create(bind=engine, checkfirst=True)
+        # garantir tabelas necessárias para anexos de ticket
         TicketAnexo.__table__.create(bind=engine, checkfirst=True)
         user_id = None
         if autor_email:
@@ -207,18 +207,26 @@ def enviar_ticket(
                 user_id = user.id if user else None
             except Exception:
                 user_id = None
-        # registrar histórico
-        h = HistoricoTicket(
-            chamado_id=chamado_id,
-            usuario_id=user_id or None,
-            assunto=assunto,
-            mensagem=mensagem,
-            destinatarios=destinatarios,
-            data_envio=now_brazil_naive(),
-        )
-        db.add(h)
+        # registrar histórico (raw SQL em historico_tickets)
+        h_params = {
+            "chamado_id": chamado_id,
+            "usuario_id": user_id,
+            "assunto": assunto,
+            "mensagem": mensagem,
+            "destinatarios": destinatarios,
+            "data_envio": now_brazil_naive(),
+        }
+        res = db.execute(text(
+            """
+            INSERT INTO historico_tickets (chamado_id, usuario_id, assunto, mensagem, destinatarios, data_envio)
+            VALUES (:chamado_id, :usuario_id, :assunto, :mensagem, :destinatarios, :data_envio)
+            """
+        ), h_params)
         db.commit()
-        db.refresh(h)
+        try:
+            h_id = res.lastrowid  # type: ignore[attr-defined]
+        except Exception:
+            h_id = None
         # salvar anexos em tickets_anexos com metadados e caminho
         if files:
             base_dir = pathlib.Path(__file__).resolve().parents[2]  # backend/
@@ -255,7 +263,7 @@ def enviar_ticket(
                 except Exception:
                     continue
             db.commit()
-        return {"ok": True, "historico_id": h.id}
+        return {"ok": True, "historico_id": h_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao enviar ticket: {e}")
 
@@ -315,15 +323,15 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
                     ))
         except Exception:
             pass
-        # histórico (historico_tickets)
-        hs = db.query(HistoricoTicket).filter(HistoricoTicket.chamado_id == chamado_id).order_by(HistoricoTicket.data_envio.asc()).all()
+        # histórico (historico_tickets via SQL)
+        hs = db.execute(text("SELECT id, chamado_id, usuario_id, assunto, mensagem, destinatarios, data_envio FROM historico_tickets WHERE chamado_id = :cid ORDER BY data_envio ASC"), {"cid": chamado_id}).mappings().all()
         for h in hs:
             # anexos de tickets_anexos próximos ao horário
             anexos_ticket = []
             try:
                 from datetime import timedelta
-                start = (h.data_envio or now_brazil_naive()) - timedelta(minutes=3)
-                end = (h.data_envio or now_brazil_naive()) + timedelta(minutes=3)
+                start = (h["data_envio"] or now_brazil_naive()) - timedelta(minutes=3)
+                end = (h["data_envio"] or now_brazil_naive()) + timedelta(minutes=3)
                 tas = db.query(TicketAnexo).filter(TicketAnexo.chamado_id == chamado_id).all()
                 for ta in tas:
                     if ta.data_upload and start <= ta.data_upload <= end:
@@ -338,9 +346,9 @@ def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
             except Exception:
                 pass
             items.append(HistoricoItem(
-                t=h.data_envio or now_brazil_naive(),
+                t=h["data_envio"] or now_brazil_naive(),
                 tipo="ticket",
-                label=f"{h.assunto}",
+                label=f"{h['assunto']}",
                 anexos=[AnexoOut.model_validate(a) for a in anexos_ticket] if anexos_ticket else None,
             ))
         items_sorted = sorted(items, key=lambda x: x.t)
@@ -370,7 +378,6 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
         db.refresh(ch)
         try:
             Notification.__table__.create(bind=engine, checkfirst=True)
-            HistoricoTicket.__table__.create(bind=engine, checkfirst=True)
             dados = json.dumps({
                 "id": ch.id,
                 "codigo": ch.codigo,
@@ -388,16 +395,20 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
                 dados=dados,
             )
             db.add(n)
-            # registrar em historico_tickets
-            h = HistoricoTicket(
-                chamado_id=ch.id,
-                usuario_id=None,
-                assunto=f"Status: {prev} → {ch.status}",
-                mensagem=f"{prev} → {ch.status}",
-                destinatarios="",
-                data_envio=now_brazil_naive(),
-            )
-            db.add(h)
+            # registrar status em historico_tickets (SQL)
+            db.execute(text(
+                """
+                INSERT INTO historico_tickets (chamado_id, usuario_id, assunto, mensagem, destinatarios, data_envio)
+                VALUES (:chamado_id, :usuario_id, :assunto, :mensagem, :destinatarios, :data_envio)
+                """
+            ), {
+                "chamado_id": ch.id,
+                "usuario_id": None,
+                "assunto": f"Status: {prev} → {ch.status}",
+                "mensagem": f"{prev} → {ch.status}",
+                "destinatarios": "",
+                "data_envio": now_brazil_naive(),
+            })
             db.commit()
             db.refresh(n)
             import anyio
