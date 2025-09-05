@@ -20,15 +20,24 @@ router = APIRouter(prefix="/usuarios", tags=["TI - Usuarios"])
 def listar_usuarios(db: Session = Depends(get_db)):
     try:
         from ..models import User
+        # cria tabela se não existir
         try:
             User.__table__.create(bind=engine, checkfirst=True)
         except Exception:
             pass
+
+        # pega todos os usuários
         try:
-            return db.query(User).order_by(User.id.desc()).all()
+            users = db.query(User).order_by(User.id.desc()).all()
+            # garante que 'bloqueado' nunca seja None
+            for u in users:
+                if u.bloqueado is None:
+                    u.bloqueado = False
+            return users
         except Exception:
             pass
-        # Fallback: tabela legada "usuarios"
+
+        # fallback tabela legada "usuarios"
         from sqlalchemy import text
         try:
             res = db.execute(text(
@@ -44,11 +53,12 @@ def listar_usuarios(db: Session = Depends(get_db)):
                     "email": r[4],
                     "nivel_acesso": r[5],
                     "setor": r[6],
-                    "bloqueado": False,
+                    "bloqueado": False,  # já tá ok
                 })
             return rows
         except Exception:
             return []
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar usuários: {e}")
 
