@@ -1,6 +1,6 @@
 import { useLocation, Navigate } from "react-router-dom";
 import { useAuthContext } from "@/lib/auth-context";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function RequireLogin({
   children,
