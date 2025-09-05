@@ -14,8 +14,7 @@ from core.realtime import sio
 from werkzeug.security import check_password_hash
 from ..models.notification import Notification
 import json
-import pathlib
-from datetime import datetime
+from core.storage import get_storage, build_blob_name, StorageError
 from core.utils import now_brazil_naive
 from ..models import Chamado, User, TicketAnexo, ChamadoAnexo, HistoricoTicket
 from ti.schemas.attachment import AnexoOut
@@ -142,9 +141,6 @@ def criar_chamado_com_anexos(
         )
         ch = service_criar(db, payload)
         if files:
-            base_dir = pathlib.Path(__file__).resolve().parents[2]  # backend/
-            upload_root = base_dir / "uploads" / "chamados" / str(ch.id)
-            upload_root.mkdir(parents=True, exist_ok=True)
             user_id = None
             if autor_email:
                 try:
@@ -152,23 +148,25 @@ def criar_chamado_com_anexos(
                     user_id = user.id if user else None
                 except Exception:
                     user_id = None
+            try:
+                storage = get_storage()
+            except StorageError as e:
+                raise HTTPException(status_code=500, detail=str(e))
             import hashlib
             for f in files:
                 try:
-                    safe_name = pathlib.Path(f.filename or "arquivo").name
-                    ts = int(datetime.timestamp(datetime.now()))
-                    dest_name = f"{ts}_{safe_name}"
-                    dest_path = upload_root / dest_name
+                    safe_name = (f.filename or "arquivo")
                     content = f.file.read()
-                    with open(dest_path, "wb") as out:
-                        out.write(content)
-                    ext = pathlib.Path(safe_name).suffix.lower().lstrip(".")
+                    blob_name = build_blob_name("chamados", ch.id, safe_name)
+                    url = storage.upload_bytes(blob_name, content, f.content_type or None)
+                    ext = safe_name.rsplit(".", 1)[-1].lower() if "." in safe_name else None
+                    dest_name = blob_name.split("/")[-1]
                     sha = hashlib.sha256(content).hexdigest()
                     ca = ChamadoAnexo(
                         chamado_id=ch.id,
                         nome_original=safe_name,
                         nome_arquivo=dest_name,
-                        caminho_arquivo=str(dest_path.relative_to(base_dir).as_posix()),
+                        caminho_arquivo=url,
                         tamanho_bytes=len(content),
                         tipo_mime=f.content_type or None,
                         extensao=ext or None,
@@ -221,26 +219,25 @@ def enviar_ticket(
         h_id = h.id
         # salvar anexos em tickets_anexos com metadados e caminho
         if files:
-            base_dir = pathlib.Path(__file__).resolve().parents[2]  # backend/
-            upload_root = base_dir / "uploads" / "chamados" / str(chamado_id)
-            upload_root.mkdir(parents=True, exist_ok=True)
+            try:
+                storage = get_storage()
+            except StorageError as e:
+                raise HTTPException(status_code=500, detail=str(e))
+            import hashlib
             for f in files:
                 try:
-                    safe_name = pathlib.Path(f.filename or "arquivo").name
-                    ext = pathlib.Path(safe_name).suffix.lower().lstrip(".")
-                    ts = int(datetime.timestamp(datetime.now()))
-                    dest_name = f"{ts}_{safe_name}"
-                    dest_path = upload_root / dest_name
+                    safe_name = (f.filename or "arquivo")
                     content = f.file.read()
-                    with open(dest_path, "wb") as out:
-                        out.write(content)
-                    import hashlib
+                    blob_name = build_blob_name("chamados", chamado_id, safe_name)
+                    url = storage.upload_bytes(blob_name, content, f.content_type or None)
+                    ext = safe_name.rsplit(".", 1)[-1].lower() if "." in safe_name else None
+                    dest_name = blob_name.split("/")[-1]
                     sha = hashlib.sha256(content).hexdigest()
                     ta = TicketAnexo(
                         chamado_id=chamado_id,
                         nome_original=safe_name,
                         nome_arquivo=dest_name,
-                        caminho_arquivo=str(dest_path.relative_to(base_dir).as_posix()),
+                        caminho_arquivo=url,
                         tamanho_bytes=len(content),
                         tipo_mime=f.content_type or None,
                         extensao=ext or None,
