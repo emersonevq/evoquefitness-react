@@ -17,8 +17,7 @@ import json
 import pathlib
 from datetime import datetime
 from core.utils import now_brazil_naive
-from sqlalchemy import text
-from ..models import Chamado, User, TicketAnexo, ChamadoAnexo
+from ..models import Chamado, User, TicketAnexo, ChamadoAnexo, HistoricoTicket
 from ti.schemas.attachment import AnexoOut
 from ti.schemas.ticket import HistoricoItem, HistoricoResponse
 
