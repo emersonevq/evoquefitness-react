@@ -68,15 +68,16 @@ export default function RequireLogin({
         ? user!.setores.map(normalize)
         : [];
       const reqNorm = normalize(required);
+      // Prefer strict matching: exact match or shared whole-word tokens
       const has = userSectors.some((s) => {
         if (!s || !reqNorm) return false;
-        return (
-          s === reqNorm ||
-          s.includes(reqNorm) ||
-          reqNorm.includes(s) ||
-          s.split(" ").some((tok) => reqNorm.includes(tok)) ||
-          reqNorm.split(" ").some((tok) => s.includes(tok))
-        );
+        if (s === reqNorm) return true;
+        const sTokens = s.split(/\s+/).filter(Boolean);
+        const reqTokens = reqNorm.split(/\s+/).filter(Boolean);
+        // any whole token match
+        if (sTokens.some((tok) => reqTokens.includes(tok))) return true;
+        if (reqTokens.some((tok) => sTokens.includes(tok))) return true;
+        return false;
       });
       if (required && !has) {
         return <Navigate to="/access-denied" replace />;
