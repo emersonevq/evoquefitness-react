@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from core.db import Base
 
 class ChamadoAnexo(Base):
-    __tablename__ = "chamado_anexos"
+    __tablename__ = "chamado_anexo"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     chamado_id: Mapped[int] = mapped_column(Integer, ForeignKey("chamado.id"), nullable=False)
