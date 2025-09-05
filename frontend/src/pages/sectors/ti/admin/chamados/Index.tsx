@@ -378,7 +378,12 @@ export default function ChamadosPage() {
   const [selected, setSelected] = useState<UiTicket | null>(null);
   const [tab, setTab] = useState<"resumo" | "historico" | "ticket">("resumo");
   const [history, setHistory] = useState<
-    { t: number; label: string; attachments?: string[]; files?: { name: string; url: string; mime?: string }[] }[]
+    {
+      t: number;
+      label: string;
+      attachments?: string[];
+      files?: { name: string; url: string; mime?: string }[];
+    }[]
   >([]);
   const [template, setTemplate] = useState("");
   const [subject, setSubject] = useState("");
@@ -398,17 +403,37 @@ export default function ChamadosPage() {
 
     apiFetch(`/chamados/${s.id}/historico`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fail"))))
-      .then((data: { items: { t: string; tipo: string; label: string; anexos?: { id: number; nome_original: string; caminho_arquivo: string; mime_type?: string | null }[] }[] }) => {
-        const arr = data.items.map((it) => ({
-          t: new Date(it.t).getTime(),
-          label: it.label,
-          attachments: it.anexos ? it.anexos.map((a) => a.nome_original) : undefined,
-          files: it.anexos
-            ? it.anexos.map((a) => ({ name: a.nome_original, url: `${API_BASE.replace(/\/api$/, '')}/${a.caminho_arquivo}`, mime: a.mime_type || undefined }))
-            : undefined,
-        }));
-        setHistory(arr);
-      })
+      .then(
+        (data: {
+          items: {
+            t: string;
+            tipo: string;
+            label: string;
+            anexos?: {
+              id: number;
+              nome_original: string;
+              caminho_arquivo: string;
+              mime_type?: string | null;
+            }[];
+          }[];
+        }) => {
+          const arr = data.items.map((it) => ({
+            t: new Date(it.t).getTime(),
+            label: it.label,
+            attachments: it.anexos
+              ? it.anexos.map((a) => a.nome_original)
+              : undefined,
+            files: it.anexos
+              ? it.anexos.map((a) => ({
+                  name: a.nome_original,
+                  url: `${API_BASE.replace(/\/api$/, "")}/${a.caminho_arquivo}`,
+                  mime: a.mime_type || undefined,
+                }))
+              : undefined,
+          }));
+          setHistory(arr);
+        },
+      )
       .catch(() => {
         const base = new Date(s.criadoEm).getTime();
         setHistory([{ t: base, label: "Chamado aberto" }]);
@@ -421,18 +446,34 @@ export default function ChamadosPage() {
       const fd = new FormData();
       fd.set("assunto", subject || "Atualização do chamado");
       fd.set("mensagem", message || "");
-      const destinatarios = ccMe && user?.email ? `${selected.email},${user.email}` : selected.email;
+      const destinatarios =
+        ccMe && user?.email
+          ? `${selected.email},${user.email}`
+          : selected.email;
       fd.set("destinatarios", destinatarios);
       if (user?.email) fd.set("autor_email", user.email);
       for (const f of files) fd.append("files", f);
-      const r = await apiFetch(`/chamados/${selected.id}/ticket`, { method: "POST", body: fd });
+      const r = await apiFetch(`/chamados/${selected.id}/ticket`, {
+        method: "POST",
+        body: fd,
+      });
       if (!r.ok) throw new Error(await r.text());
-      const hist = await apiFetch(`/chamados/${selected.id}/historico`).then((x) => x.json());
+      const hist = await apiFetch(`/chamados/${selected.id}/historico`).then(
+        (x) => x.json(),
+      );
       const arr = hist.items.map((it: any) => ({
         t: new Date(it.t).getTime(),
         label: it.label,
-        attachments: it.anexos ? it.anexos.map((a: any) => a.nome_original) : undefined,
-        files: it.anexos ? it.anexos.map((a: any) => ({ name: a.nome_original, url: `${API_BASE.replace(/\/api$/, '')}/${a.caminho_arquivo}`, mime: a.mime_type || undefined })) : undefined,
+        attachments: it.anexos
+          ? it.anexos.map((a: any) => a.nome_original)
+          : undefined,
+        files: it.anexos
+          ? it.anexos.map((a: any) => ({
+              name: a.nome_original,
+              url: `${API_BASE.replace(/\/api$/, "")}/${a.caminho_arquivo}`,
+              mime: a.mime_type || undefined,
+            }))
+          : undefined,
       }));
       setHistory(arr);
       setTab("historico");
@@ -794,30 +835,39 @@ export default function ChamadosPage() {
                           </div>
                           {(ev.files || ev.attachments) && (
                             <div className="mt-1 flex flex-wrap gap-2">
-                              {ev.files && ev.files.map((f, i) => (
-                                <a
-                                  key={`f-${i}`}
-                                  href={f.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs"
-                                >
-                                  {f.mime && f.mime.startsWith("image/") ? (
-                                    <img src={f.url} alt={f.name} className="h-10 w-10 object-cover rounded" />
-                                  ) : (
-                                    <span>📎</span>
-                                  )}
-                                  <span className="truncate max-w-[160px]">{f.name}</span>
-                                </a>
-                              ))}
-                              {!ev.files && ev.attachments && ev.attachments.map((a, i) => (
-                                <span
-                                  key={`a-${i}`}
-                                  className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs"
-                                >
-                                  📎 {a}
-                                </span>
-                              ))}
+                              {ev.files &&
+                                ev.files.map((f, i) => (
+                                  <a
+                                    key={`f-${i}`}
+                                    href={f.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs"
+                                  >
+                                    {f.mime && f.mime.startsWith("image/") ? (
+                                      <img
+                                        src={f.url}
+                                        alt={f.name}
+                                        className="h-10 w-10 object-cover rounded"
+                                      />
+                                    ) : (
+                                      <span>📎</span>
+                                    )}
+                                    <span className="truncate max-w-[160px]">
+                                      {f.name}
+                                    </span>
+                                  </a>
+                                ))}
+                              {!ev.files &&
+                                ev.attachments &&
+                                ev.attachments.map((a, i) => (
+                                  <span
+                                    key={`a-${i}`}
+                                    className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs"
+                                  >
+                                    📎 {a}
+                                  </span>
+                                ))}
                             </div>
                           )}
                         </div>

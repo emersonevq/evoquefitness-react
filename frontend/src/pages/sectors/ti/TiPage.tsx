@@ -130,8 +130,10 @@ export default function TiPage() {
                     fd.set("telefone", payload.telefone);
                     fd.set("unidade", payload.unidade);
                     fd.set("problema", payload.problema);
-                    if (payload.internetItem) fd.set("internetItem", payload.internetItem);
-                    if (payload.descricao) fd.set("descricao", payload.descricao);
+                    if (payload.internetItem)
+                      fd.set("internetItem", payload.internetItem);
+                    if (payload.descricao)
+                      fd.set("descricao", payload.descricao);
                     if (payload.files && payload.files.length > 0) {
                       for (const f of payload.files) fd.append("files", f);
                     }
