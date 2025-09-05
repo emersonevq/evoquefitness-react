@@ -3,7 +3,6 @@ from .user import User
 from .unidade import Unidade
 from .problema import Problema
 from .notification import Notification
-from .attachment import AnexoArquivo
 from .ticket_anexo import TicketAnexo
 from .chamado_anexo import ChamadoAnexo
 __all__ = [
@@ -12,7 +11,6 @@ __all__ = [
     "Unidade",
     "Problema",
     "Notification",
-    "AnexoArquivo",
     "TicketAnexo",
     "ChamadoAnexo",
 ]
