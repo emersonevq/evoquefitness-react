@@ -19,6 +19,8 @@ from ..models import Chamado, User, TicketAnexo, ChamadoAnexo, HistoricoTicket
 from ti.schemas.attachment import AnexoOut
 from ti.schemas.ticket import HistoricoItem, HistoricoResponse
 
+from fastapi.responses import Response
+
 router = APIRouter(prefix="/chamados", tags=["TI - Chamados"])
 
 def _normalize_status(s: str) -> str:
