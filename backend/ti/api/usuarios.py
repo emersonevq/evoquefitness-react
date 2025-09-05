@@ -12,6 +12,7 @@ from ti.services.users import (
     set_block_status,
     delete_user,
     list_blocked_users,
+    has_user_sector,
 )
 
 router = APIRouter(prefix="/usuarios", tags=["TI - Usuarios"])
