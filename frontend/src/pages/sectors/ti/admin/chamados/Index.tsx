@@ -573,11 +573,15 @@ export default function ChamadosPage() {
                   );
                   // Refresh history if this ticket is selected and modal open
                   if (selected && selected.id === id) {
-                    const hist = await apiFetch(`/chamados/${id}/historico`).then((x) => x.json());
+                    const hist = await apiFetch(
+                      `/chamados/${id}/historico`,
+                    ).then((x) => x.json());
                     const arr = hist.items.map((it: any) => ({
                       t: new Date(it.t).getTime(),
                       label: it.label,
-                      attachments: it.anexos ? it.anexos.map((a: any) => a.nome_original) : undefined,
+                      attachments: it.anexos
+                        ? it.anexos.map((a: any) => a.nome_original)
+                        : undefined,
                       files: it.anexos
                         ? it.anexos.map((a: any) => ({
                             name: a.nome_original,
@@ -820,9 +824,9 @@ export default function ChamadosPage() {
                                 ),
                               );
                               // Refresh history to show status update
-                              const hist = await apiFetch(`/chamados/${selected.id}/historico`).then(
-                                (x) => x.json(),
-                              );
+                              const hist = await apiFetch(
+                                `/chamados/${selected.id}/historico`,
+                              ).then((x) => x.json());
                               const arr = hist.items.map((it: any) => ({
                                 t: new Date(it.t).getTime(),
                                 label: it.label,
