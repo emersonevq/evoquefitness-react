@@ -684,7 +684,7 @@ export default function ChamadosPage() {
       </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl overflow-y-hidden">
           {selected && (
             <div className="space-y-4">
               {/* Hidden title for a11y */}
