@@ -151,6 +151,23 @@ def desbloquear_usuario(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Erro ao desbloquear: {e}")
 
 
+@router.post("/{user_id}/change-password")
+def change_password(user_id: int, payload: dict, db: Session = Depends(get_db)):
+    try:
+        senha = payload.get('senha') or payload.get('password')
+        if not senha:
+            raise HTTPException(status_code=400, detail='Informe a nova senha')
+        from ti.services.users import change_user_password
+        change_user_password(db, user_id, senha, require_change=False)
+        return {"ok": True}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao alterar senha: {e}")
+
+
 @router.delete("/{user_id}")
 def excluir_usuario(user_id: int, db: Session = Depends(get_db)):
     try:
