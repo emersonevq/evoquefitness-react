@@ -18,6 +18,7 @@ from core.utils import now_brazil_naive
 from ..models import Chamado, User, TicketAnexo, ChamadoAnexo, HistoricoTicket
 from ti.schemas.attachment import AnexoOut
 from ti.schemas.ticket import HistoricoItem, HistoricoResponse
+from sqlalchemy import inspect
 
 from fastapi.responses import Response
 
@@ -108,6 +109,16 @@ def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao criar chamado: {e}")
 
+def _ensure_column(table: str, column: str, ddl: str) -> None:
+    try:
+        insp = inspect(engine)
+        cols = [c.get("name") for c in insp.get_columns(table)]
+        if column not in cols:
+            with engine.connect() as conn:
+                conn.exec_driver_sql(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}")
+    except Exception:
+        pass
+
 @router.post("/with-attachments", response_model=ChamadoOut)
 def criar_chamado_com_anexos(
     solicitante: str = Form(...),
@@ -127,6 +138,7 @@ def criar_chamado_com_anexos(
         try:
             Chamado.__table__.create(bind=engine, checkfirst=True)
             ChamadoAnexo.__table__.create(bind=engine, checkfirst=True)
+            _ensure_column("chamado_anexo", "conteudo", "MEDIUMBLOB NULL")
         except Exception:
             pass
         payload = ChamadoCreate(
@@ -194,6 +206,7 @@ def enviar_ticket(
     try:
         # garantir tabelas necessárias para anexos de ticket
         TicketAnexo.__table__.create(bind=engine, checkfirst=True)
+        _ensure_column("ticket_anexos", "conteudo", "MEDIUMBLOB NULL")
         user_id = None
         if autor_email:
             try:
