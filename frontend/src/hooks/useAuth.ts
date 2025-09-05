@@ -117,7 +117,8 @@ export function useAuth() {
           sessionStorage.setItem(AUTH_KEY, payload);
         }
       } catch {}
-      return true;
+      // return full server data for immediate decisions
+      return data;
     } catch (err) {
       throw err;
     }
