@@ -224,12 +224,12 @@ export default function ChamadosPage() {
 
   useEffect(() => {
     function toUiStatus(s: string): TicketStatus {
-      const n = s?.toUpperCase();
-      if (n === "EM_ANDAMENTO" || n === "AGUARDANDO") return "EM_ANDAMENTO";
-      if (n === "EM_ANALISE" || n === "EM ANÁLISE" || n === "EM ANALISE")
-        return "EM_ANALISE";
-      if (n === "CONCLUIDO" || n === "CONCLUÍDO") return "CONCLUIDO";
-      if (n === "CANCELADO") return "CANCELADO";
+      const n = (s || "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toUpperCase();
+      const nn = n.replace(/\s+/g, "_");
+      if (nn === "EM_ANDAMENTO" || nn === "AGUARDANDO") return "EM_ANDAMENTO";
+      if (nn === "EM_ANALISE") return "EM_ANALISE";
+      if (nn === "CONCLUIDO") return "CONCLUIDO";
+      if (nn === "CANCELADO") return "CANCELADO";
       return "ABERTO";
     }
 
@@ -444,7 +444,7 @@ export default function ChamadosPage() {
     if (!selected) return;
     try {
       const fd = new FormData();
-      fd.set("assunto", subject || "Atualização do chamado");
+      fd.set("assunto", subject || "Atualiza��ão do chamado");
       fd.set("mensagem", message || "");
       const destinatarios =
         ccMe && user?.email
