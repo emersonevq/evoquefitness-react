@@ -386,6 +386,7 @@ export function Bloqueios() {
     email: string;
     nivel_acesso: string;
     setor: string | null;
+    bloqueado?: boolean;
   };
   const [blocked, setBlocked] = useState<ApiUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -401,11 +402,18 @@ export function Bloqueios() {
 
   useEffect(() => {
     load();
+    const onChanged = () => load();
+    window.addEventListener("users:changed", onChanged as EventListener);
+    return () => window.removeEventListener("users:changed", onChanged as EventListener);
   }, []);
 
   const unblock = async (id: number) => {
     const res = await fetch(`/api/usuarios/${id}/unblock`, { method: "POST" });
-    if (res.ok) load();
+    if (res.ok) {
+      // notify other parts of the UI
+      window.dispatchEvent(new CustomEvent('users:changed'));
+      load();
+    }
   };
 
   return (
