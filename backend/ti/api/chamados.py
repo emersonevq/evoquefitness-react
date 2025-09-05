@@ -18,7 +18,7 @@ import pathlib
 from datetime import datetime
 from core.utils import now_brazil_naive
 from sqlalchemy import text
-from ..models import AnexoArquivo, Chamado, User, TicketAnexo, ChamadoAnexo
+from ..models import Chamado, User, TicketAnexo, ChamadoAnexo
 from ti.schemas.attachment import AnexoOut
 from ti.schemas.ticket import HistoricoItem, HistoricoResponse
 
@@ -266,20 +266,6 @@ def enviar_ticket(
         return {"ok": True, "historico_id": h_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao enviar ticket: {e}")
-
-@router.get("/anexos/{anexo_id}")
-def baixar_anexo(anexo_id: int, db: Session = Depends(get_db)):
-    try:
-        an = db.query(AnexoArquivo).filter(AnexoArquivo.id == anexo_id).first()
-        if not an:
-            raise HTTPException(status_code=404, detail="Anexo não encontrado")
-        from fastapi import Response
-        headers = {"Content-Disposition": f"inline; filename=\"{an.nome_original}\""}
-        return Response(content=an.conteudo, media_type=an.mime_type or "application/octet-stream", headers=headers)
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao baixar anexo: {e}")
 
 @router.get("/{chamado_id}/historico", response_model=HistoricoResponse)
 def obter_historico(chamado_id: int, db: Session = Depends(get_db)):
