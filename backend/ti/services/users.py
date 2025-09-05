@@ -61,9 +61,26 @@ def criar_usuario(db: Session, payload: UserCreate) -> UserCreatedOut:
 
     setores_json = None
     setor = None
-    if payload.setores and len(payload.setores) > 0:
+
+    # If creating an administrator, grant all sectors automatically
+    ALL_SECTORES = [
+        "Setor de Marketing",
+        "Setor de Produtos",
+        "Setor Financeiro",
+        "Setor de Compras",
+        "Setor de TI",
+        "Setor de Manutencao",
+        "Setor Comercial",
+        "Outros Servicos",
+    ]
+
+    if payload.nivel_acesso == "Administrador":
+        normalized = [_normalize_str(str(s)) for s in ALL_SECTORES]
+        setores_json = json.dumps(normalized, ensure_ascii=False)
+        setor = normalized[0] if normalized else None
+    elif payload.setores and len(payload.setores) > 0:
         normalized = [_normalize_str(str(s)) for s in payload.setores]
-        setores_json = json.dumps(normalized)
+        setores_json = json.dumps(normalized, ensure_ascii=False)
         setor = normalized[0]
 
     novo = User(
