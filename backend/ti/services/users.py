@@ -91,3 +91,104 @@ def criar_usuario(db: Session, payload: UserCreate) -> UserCreatedOut:
         setor=novo.setor,
         senha=generated_password,
     )
+
+
+def _set_setores(user: User, setores):
+    if setores and isinstance(setores, list) and len(setores) > 0:
+        user._setores = json.dumps([str(s) for s in setores])
+        user.setor = str(setores[0])
+    else:
+        user._setores = None
+        user.setor = None
+
+
+def update_user(db: Session, user_id: int, data: dict) -> User:
+    try:
+        User.__table__.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise ValueError("Usuário não encontrado")
+
+    if "email" in data and data["email"] and data["email"] != user.email:
+        if db.query(User).filter(User.email == str(data["email"])) .first():
+            raise ValueError("E-mail já cadastrado")
+        user.email = str(data["email"])  # type: ignore
+    if "usuario" in data and data["usuario"] and data["usuario"] != user.usuario:
+        if db.query(User).filter(User.usuario == data["usuario"]).first():
+            raise ValueError("Nome de usuário já cadastrado")
+        user.usuario = data["usuario"]  # type: ignore
+
+    if "nome" in data and data["nome"] is not None:
+        user.nome = data["nome"]  # type: ignore
+    if "sobrenome" in data and data["sobrenome"] is not None:
+        user.sobrenome = data["sobrenome"]  # type: ignore
+    if "nivel_acesso" in data and data["nivel_acesso"] is not None:
+        user.nivel_acesso = data["nivel_acesso"]  # type: ignore
+    if "alterar_senha_primeiro_acesso" in data and data["alterar_senha_primeiro_acesso"] is not None:
+        user.alterar_senha_primeiro_acesso = bool(data["alterar_senha_primeiro_acesso"])  # type: ignore
+    if "bloqueado" in data and data["bloqueado"] is not None:
+        user.bloqueado = bool(data["bloqueado"])  # type: ignore
+    if "setores" in data:
+        _set_setores(user, data["setores"])  # type: ignore
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def regenerate_password(db: Session, user_id: int, length: int = 6) -> str:
+    if length < 6:
+        length = 6
+    if length > 64:
+        length = 64
+    try:
+        User.__table__.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise ValueError("Usuário não encontrado")
+    new_pwd = _generate_password(length)
+    user.senha_hash = generate_password_hash(new_pwd)
+    user.alterar_senha_primeiro_acesso = True
+    db.commit()
+    return new_pwd
+
+
+def set_block_status(db: Session, user_id: int, blocked: bool) -> User:
+    try:
+        User.__table__.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise ValueError("Usuário não encontrado")
+    user.bloqueado = bool(blocked)
+    if not blocked:
+        user.tentativas_login = 0
+        user.bloqueado_ate = None
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def delete_user(db: Session, user_id: int) -> None:
+    try:
+        User.__table__.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return
+    db.delete(user)
+    db.commit()
+
+
+def list_blocked_users(db: Session) -> list[User]:
+    try:
+        User.__table__.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
+    return db.query(User).filter(User.bloqueado == True).order_by(User.id.desc()).all()
