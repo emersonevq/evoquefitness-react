@@ -93,10 +93,26 @@ def criar_usuario(db: Session, payload: UserCreate) -> UserCreatedOut:
     )
 
 
+import unicodedata
+
+def _normalize_str(s: str) -> str:
+    if not s:
+        return s
+    # Remove accents and normalize whitespace
+    nfkd = unicodedata.normalize('NFKD', s)
+    only_ascii = ''.join([c for c in nfkd if not unicodedata.combining(c)])
+    return only_ascii.replace('\u00a0', ' ').strip()
+
+
 def _set_setores(user: User, setores):
     if setores and isinstance(setores, list) and len(setores) > 0:
-        user._setores = json.dumps([str(s) for s in setores])
-        user.setor = str(setores[0])
+        normalized = [_normalize_str(str(s)) for s in setores]
+        user._setores = json.dumps(normalized)
+        user.setor = normalized[0] if normalized else None
+    elif setores and isinstance(setores, str):
+        normalized = _normalize_str(str(setores))
+        user._setores = json.dumps([normalized])
+        user.setor = normalized
     else:
         user._setores = None
         user.setor = None
