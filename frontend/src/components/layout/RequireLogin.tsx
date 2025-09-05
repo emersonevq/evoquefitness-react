@@ -49,8 +49,12 @@ export default function RequireLogin({
 
       // Only check when we have a sector to validate
       setChecking(true);
+      // Use AbortController to timeout the fetch if backend is unreachable
+      const controller = new AbortController();
+      const timeoutMs = 5000;
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
-        const res = await fetch(`/api/usuarios/${user.id}`);
+        const res = await fetch(`/api/usuarios/${user.id}`, { signal: controller.signal });
         if (!res.ok) throw new Error("failed");
         const data = await res.json();
         const remoteSectors = Array.isArray(data.setores) ? data.setores : [];
@@ -94,8 +98,11 @@ export default function RequireLogin({
         });
         if (mounted) setAllowed(Boolean(has));
       } catch (e) {
-        if (mounted) setAllowed(false);
+        // On timeout or network error, fallback to client-side cached sectors (do not block)
+        console.warn("Permission check failed or timed out:", e);
+        if (mounted) setAllowed(null);
       } finally {
+        clearTimeout(timer);
         if (mounted) setChecking(false);
       }
     }
