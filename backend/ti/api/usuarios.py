@@ -249,3 +249,34 @@ def assign_admin_sectors(db: Session = Depends(get_db)):
         return {"updated": updated}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao atribuir setores a administradores: {e}")
+
+
+@router.get("/{user_id}/has-setor")
+def has_setor(user_id: int, sector: str | None = None, db: Session = Depends(get_db)):
+    """Quick check whether a user has permission for a given sector.
+    sector is expected to be the slug (e.g. 'ti', 'marketing') or a full sector name.
+    Returns {ok: true|false}
+    """
+    try:
+        if not sector:
+            raise HTTPException(status_code=400, detail="Informe o parâmetro 'sector'")
+        mapa: dict = {
+            'ti': 'TI',
+            'compras': 'Compras',
+            'manutencao': 'Manutencao',
+            'financeiro': 'Financeiro',
+            'marketing': 'Marketing',
+            'produtos': 'Produtos',
+            'comercial': 'Comercial',
+            'outros-servicos': 'Outros',
+            'servicos': 'Outros',
+        }
+        # allow either slug or friendly name
+        key = sector.lower()
+        required = mapa.get(key, sector)
+        ok = has_user_sector(db, user_id, required)
+        return {"ok": bool(ok)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao verificar setor: {e}")
