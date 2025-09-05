@@ -178,6 +178,25 @@ def change_password(user_id: int, payload: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Erro ao alterar senha: {e}")
 
 
+@router.get("/{user_id}", response_model=UserOut)
+def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
+    """Return user by id (used by frontend to refresh permissions)."""
+    try:
+        from ..models import User
+        try:
+            User.__table__.create(bind=engine, checkfirst=True)
+        except Exception:
+            pass
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuário não encontrado")
+        return user
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao obter usuário: {e}")
+
+
 @router.delete("/{user_id}")
 def excluir_usuario(user_id: int, db: Session = Depends(get_db)):
     try:
