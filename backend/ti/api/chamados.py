@@ -14,7 +14,6 @@ from core.realtime import sio
 from werkzeug.security import check_password_hash
 from ..models.notification import Notification
 import json
-from core.storage import get_storage, build_blob_name, StorageError
 from core.utils import now_brazil_naive
 from ..models import Chamado, User, TicketAnexo, ChamadoAnexo, HistoricoTicket
 from ti.schemas.attachment import AnexoOut
