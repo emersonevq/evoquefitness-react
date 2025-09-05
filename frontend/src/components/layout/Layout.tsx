@@ -183,7 +183,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         {sectors.map((s) => (
                           <SheetClose asChild key={s.slug}>
                             <Link
-                              to={`/setor/${s.slug}`}
+                              to={user ? `/setor/${s.slug}` : `/login?redirect=/setor/${s.slug}`}
                               className="block rounded-md px-3 py-2 hover:bg-secondary"
                             >
                               {s.title}
