@@ -287,12 +287,11 @@ def force_logout(user_id: int, db: Session = Depends(get_db)):
         db.refresh(user)
         print(f"[API] committed session_revoked_at for user {user.id}")
         try:
-            # Emit using socketio server background task directly
-            from core.realtime import sio
-            room = f"user:{user.id}"
+            # Emit using socketio server background task with a sync wrapper to be safe across threads
+            from core.realtime import sio, emit_logout_sync
             try:
-                sio.start_background_task(sio.emit, "auth:logout", {"user_id": user.id}, room=room)
-                print(f"[API] scheduled socket emit to room={room}")
+                sio.start_background_task(emit_logout_sync, user.id)
+                print(f"[API] scheduled socket emit via emit_logout_sync for user={user.id}")
             except Exception as ex:
                 print(f"[API] sio.start_background_task failed: {ex}")
         except Exception as e:
