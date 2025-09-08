@@ -12,7 +12,7 @@ export default function RequireLogin({
   const [remoteUser, setRemoteUser] = useState<any | null>(null);
   const [checking, setChecking] = useState(false);
 
-  // Mostrar loading enquanto verifica autenticação
+  // Mostrar loading enquanto verifica autenticação inicial
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -26,15 +26,21 @@ export default function RequireLogin({
 
   // Permitir bypass temporário (para navegação após login)
   const bypassGate = location.state?.bypassGate;
+  const pathname = location.pathname || "";
 
-  // If user is authenticated, fetch latest user info from backend to validate permissions
+  // Only fetch remote user when the user navigates into a sector route or when explicit events occur.
   useEffect(() => {
     let mounted = true;
     let abort = false;
-    let intervalHandle: number | null = null;
+
+    const shouldCheckNow = () => {
+      // Only check when entering sector pages or when there is an explicit event
+      return pathname.startsWith("/setor/");
+    };
+
     const fetchRemote = async () => {
       if (!isAuthenticated || !user?.id) return;
-      // Administrators don't need frequent checks
+      // Administrators don't need remote validation
       if (user?.nivel_acesso === "Administrador") {
         if (mounted) {
           setRemoteUser(null);
@@ -42,9 +48,9 @@ export default function RequireLogin({
         }
         return;
       }
+
       try {
-        // only show checking UI on first fetch
-        if (!remoteUser && mounted) setChecking(true);
+        if (mounted && !remoteUser) setChecking(true);
         const res = await fetch(`/api/usuarios/${user.id}`);
         if (!res.ok) {
           if (mounted) setRemoteUser(null);
@@ -58,18 +64,14 @@ export default function RequireLogin({
         if (mounted && !abort) setChecking(false);
       }
     };
-    // initial fetch
-    fetchRemote();
 
-    // poll every 15s to detect session_revoked_at changes from other clients
-    if (isAuthenticated && user?.id && user?.nivel_acesso !== "Administrador") {
-      intervalHandle = window.setInterval(() => {
-        fetchRemote();
-      }, 15000);
-    }
+    // If we're on a sector route, perform the check once.
+    if (shouldCheckNow()) fetchRemote();
 
+    // Listen to global events that should revalidate permissions on demand
     const onUsersChanged = () => {
-      fetchRemote();
+      // only revalidate if on sector route
+      if (shouldCheckNow()) fetchRemote();
     };
     window.addEventListener("users:changed", onUsersChanged as EventListener);
     window.addEventListener("auth:refresh", onUsersChanged as EventListener);
@@ -77,40 +79,11 @@ export default function RequireLogin({
     return () => {
       mounted = false;
       abort = true;
-      if (intervalHandle) window.clearInterval(intervalHandle);
-      window.removeEventListener(
-        "users:changed",
-        onUsersChanged as EventListener,
-      );
-      window.removeEventListener(
-        "auth:refresh",
-        onUsersChanged as EventListener,
-      );
+      window.removeEventListener("users:changed", onUsersChanged as EventListener);
+      window.removeEventListener("auth:refresh", onUsersChanged as EventListener);
     };
-  }, [isAuthenticated, user?.id]);
-
-  // Show loading while checking remote permissions only when necessary
-  if (checking && user?.nivel_acesso !== "Administrador") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 bg-primary rounded-lg mx-auto mb-4 animate-pulse"></div>
-          <p className="text-muted-foreground">Verificando permissões...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If not authenticated and no bypass, redirect to login
-  if (!isAuthenticated && !bypassGate) {
-    const redirect = location.pathname + location.search;
-    return (
-      <Navigate
-        to={`/login?redirect=${encodeURIComponent(redirect)}`}
-        replace
-      />
-    );
-  }
+    // Intentionally include pathname so checks run when navigating to sector pages
+  }, [isAuthenticated, user?.id, pathname]);
 
   // Use remoteUser if available, else fallback to local user
   const effectiveUser = remoteUser || user;
@@ -134,8 +107,6 @@ export default function RequireLogin({
   } catch (e) {}
 
   // Additional authorization: block access to admin pages for non-admins and sectors
-  const pathname = location.pathname || "";
-
   // Admin routes: only Administrador
   if (
     pathname.startsWith("/setor/ti/admin") &&
@@ -190,5 +161,15 @@ export default function RequireLogin({
     }
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {/* Non-blocking checking indicator */}
+      {checking && effectiveUser?.nivel_acesso !== "Administrador" && (
+        <div className="fixed left-1/2 top-16 -translate-x-1/2 z-50 rounded-md bg-yellow-50 border border-yellow-200 px-4 py-2 text-sm text-yellow-800 shadow-sm">
+          Verificando permissões...
+        </div>
+      )}
+      {children}
+    </>
+  );
 }
