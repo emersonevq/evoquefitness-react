@@ -93,6 +93,19 @@ export default function RequireLogin({
   // Use remoteUser if available, else fallback to local user
   const effectiveUser = remoteUser || user;
 
+  // If server marked session revoked after the current loginTime, force local logout
+  try {
+    if (remoteUser && user && remoteUser.session_revoked_at) {
+      const revokedTs = Date.parse(remoteUser.session_revoked_at);
+      if (!isNaN(revokedTs) && revokedTs > (user.loginTime || 0)) {
+        // force logout and redirect to login
+        logout();
+        const redirect = location.pathname + location.search;
+        return <Navigate to={`/login?redirect=${encodeURIComponent(redirect)}`} replace />;
+      }
+    }
+  } catch (e) {}
+
   // Additional authorization: block access to admin pages for non-admins and sectors
   const pathname = location.pathname || "";
 
