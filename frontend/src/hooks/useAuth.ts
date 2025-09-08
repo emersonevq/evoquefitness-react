@@ -146,8 +146,45 @@ export function useAuth() {
     if (existing) setUser(existing);
     setIsLoading(false);
 
-    // Listen for explicit refresh events so other parts can trigger auth refresh
+    // Socket.IO connection (shared on window so multiple imports don't recreate)
+    let socket: any = (window as any).__APP_SOCK__;
     let mounted = true;
+    const setupSocket = async () => {
+      if (socket) return socket;
+      try {
+        const { io } = await import("socket.io-client");
+        const base = (import.meta as any)?.env?.VITE_API_BASE || "/api";
+        const origin = String(base).replace(/\/$/, "").replace(/\/api$/, "");
+        const path = String(base).endsWith("/api") ? "/api/socket.io" : "/socket.io";
+        socket = io(origin, { path, transports: ["websocket", "polling"], autoConnect: true });
+        (window as any).__APP_SOCK__ = socket;
+        socket.on("connect", () => {
+          // identify if we have a current user
+          const curr = readFromStorage();
+          if (curr && curr.id) {
+            socket.emit("identify", { user_id: curr.id });
+          }
+        });
+        socket.on("auth:logout", (data: any) => {
+          try {
+            const uid = data?.user_id;
+            const curr = readFromStorage();
+            if (curr && curr.id && uid === curr.id) {
+              // force local logout
+              setUser(null);
+              sessionStorage.removeItem(AUTH_KEY);
+              localStorage.removeItem(AUTH_KEY);
+              window.dispatchEvent(new CustomEvent("auth:revoked"));
+            }
+          } catch (e) {}
+        });
+      } catch (e) {
+        // ignore socket setup errors
+      }
+      return socket;
+    };
+    setupSocket();
+
     const refresh = async () => {
       try {
         if (!mounted) return;
@@ -177,6 +214,11 @@ export function useAuth() {
           if (sessionRaw) sessionStorage.setItem(AUTH_KEY, JSON.stringify(record));
           else localStorage.setItem(AUTH_KEY, JSON.stringify(record));
         } catch {}
+        // re-identify socket on refresh
+        try {
+          const s = (window as any).__APP_SOCK__;
+          if (s && s.connected && base.id) s.emit("identify", { user_id: base.id });
+        } catch (e) {}
       } catch {}
     };
     window.addEventListener("auth:refresh", refresh as EventListener);
@@ -185,6 +227,7 @@ export function useAuth() {
       mounted = false;
       window.removeEventListener("auth:refresh", refresh as EventListener);
       window.removeEventListener("users:changed", refresh as EventListener);
+      // do not disconnect socket here - keep global alive
     };
   }, []);
 
