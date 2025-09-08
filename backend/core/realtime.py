@@ -49,3 +49,13 @@ async def emit_logout_for_user(user_id: int):
         await sio.emit("auth:logout", {"user_id": user_id}, room=room)
     except Exception as e:
         print(f"[SIO] emit_logout error: {e}")
+
+
+# Synchronous wrapper that can be safely passed to start_background_task from any thread.
+def emit_logout_sync(user_id: int):
+    """Run the async emit in a fresh event loop (safe from threads)."""
+    try:
+        import asyncio
+        asyncio.run(emit_logout_for_user(user_id))
+    except Exception as e:
+        print(f"[SIO] emit_logout_sync error: {e}")
