@@ -8,7 +8,7 @@ export default function RequireLogin({
   children: React.ReactNode;
 }) {
   const location = useLocation();
-  const { isAuthenticated, isLoading, user } = useAuthContext();
+  const { isAuthenticated, isLoading, user, logout } = useAuthContext();
   const [remoteUser, setRemoteUser] = useState<any | null>(null);
   const [checking, setChecking] = useState(false);
 
