@@ -287,6 +287,16 @@ def force_logout(user_id: int, db: Session = Depends(get_db)):
         db.refresh(user)
         print(f"[API] committed session_revoked_at for user {user.id}")
         try:
+            # verify value directly from DB using raw SQL to ensure commit persisted
+            from sqlalchemy import text
+            try:
+                row = db.execute(text("SELECT session_revoked_at FROM `user` WHERE id = :id"), {"id": user.id}).fetchone()
+                print(f"[API] raw select after commit -> {row}")
+            except Exception as rex:
+                print(f"[API] raw select failed: {rex}")
+        except Exception:
+            pass
+        try:
             # Emit using a background thread to run the synchronous wrapper safely
             from core.realtime import emit_logout_sync
             import threading
