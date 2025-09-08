@@ -31,16 +31,20 @@ export default function RequireLogin({
   useEffect(() => {
     let mounted = true;
     let abort = false;
+    let intervalHandle: number | null = null;
     const fetchRemote = async () => {
       if (!isAuthenticated || !user?.id) return;
       // Administrators don't need frequent checks
       if (user?.nivel_acesso === "Administrador") {
-        setRemoteUser(null);
-        setChecking(false);
+        if (mounted) {
+          setRemoteUser(null);
+          setChecking(false);
+        }
         return;
       }
-      setChecking(true);
       try {
+        // only show checking UI on first fetch
+        if (!remoteUser && mounted) setChecking(true);
         const res = await fetch(`/api/usuarios/${user.id}`);
         if (!res.ok) {
           if (mounted) setRemoteUser(null);
@@ -54,7 +58,15 @@ export default function RequireLogin({
         if (mounted && !abort) setChecking(false);
       }
     };
+    // initial fetch
     fetchRemote();
+
+    // poll every 15s to detect session_revoked_at changes from other clients
+    if (isAuthenticated && user?.id && user?.nivel_acesso !== "Administrador") {
+      intervalHandle = window.setInterval(() => {
+        fetchRemote();
+      }, 15000);
+    }
 
     const onUsersChanged = () => {
       fetchRemote();
@@ -65,6 +77,7 @@ export default function RequireLogin({
     return () => {
       mounted = false;
       abort = true;
+      if (intervalHandle) window.clearInterval(intervalHandle);
       window.removeEventListener("users:changed", onUsersChanged as EventListener);
       window.removeEventListener("auth:refresh", onUsersChanged as EventListener);
     };
