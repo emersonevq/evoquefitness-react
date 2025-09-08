@@ -98,19 +98,30 @@ export default function TiPage() {
           </div>
         )}
         <div className="flex items-center justify-between gap-4">
-          <div className="md:hidden">
-            <Button asChild variant="secondary" className="rounded-full">
-              <Link to="/setor/ti/admin">Painel administrativo</Link>
-            </Button>
-          </div>
+          {/** show admin shortcut only to Administrador */}
+        {(() => {
+          const { user } = useAuthContext();
+          return user?.nivel_acesso === "Administrador" ? (
+            <div className="md:hidden">
+              <Button asChild variant="secondary" className="rounded-full">
+                <Link to="/setor/ti/admin">Painel administrativo</Link>
+              </Button>
+            </div>
+          ) : null;
+        })()}
           <h2 className="text-lg sm:text-xl font-semibold">
             Histórico de chamados
           </h2>
-          <div className="hidden md:block">
-            <Button asChild className="mr-2 rounded-full">
-              <Link to="/setor/ti/admin">Painel administrativo</Link>
-            </Button>
-          </div>
+          {(() => {
+            const { user } = useAuthContext();
+            return user?.nivel_acesso === "Administrador" ? (
+              <div className="hidden md:block">
+                <Button asChild className="mr-2 rounded-full">
+                  <Link to="/setor/ti/admin">Painel administrativo</Link>
+                </Button>
+              </div>
+            ) : null;
+          })()}
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="rounded-full">Abrir novo chamado</Button>
