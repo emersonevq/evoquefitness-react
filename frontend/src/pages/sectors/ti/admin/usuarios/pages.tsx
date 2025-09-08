@@ -691,6 +691,24 @@ export function Permissoes() {
               </Button>
               <Button
                 type="button"
+                variant="secondary"
+                onClick={async () => {
+                  if (!confirm(`Deslogar o usuário ${u.nome}?`)) return;
+                  try {
+                    const res = await fetch(`/api/usuarios/${u.id}/logout`, { method: "POST" });
+                    if (!res.ok) throw new Error("Falha ao deslogar");
+                    window.dispatchEvent(new CustomEvent("users:changed"));
+                    window.dispatchEvent(new CustomEvent("auth:refresh"));
+                    alert("Usuário deslogado com sucesso.");
+                  } catch (e: any) {
+                    alert(e?.message || "Erro ao deslogar usuário");
+                  }
+                }}
+              >
+                Deslogar
+              </Button>
+              <Button
+                type="button"
                 variant="destructive"
                 onClick={() => deleteUser(u)}
               >
