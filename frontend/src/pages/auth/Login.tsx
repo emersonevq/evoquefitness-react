@@ -57,18 +57,18 @@ export default function Login() {
       </div>
 
       {/* Form side */}
-      <div className="flex min-h-[100svh] w-full items-center justify-center p-6 md:min-h-0 md:p-10">
-        <div className="w-full h-full sm:max-w-md sm:mx-auto flex flex-col justify-center">
-          {/* Mobile logo */}
-          <div className="md:hidden flex items-center justify-center mb-8">
-            <img
-              src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
-              alt="Evoque Fitness Logo"
-              className="h-8 w-auto rounded-sm shadow-sm"
-            />
-          </div>
-
-          <div className="card-surface w-full h-full sm:h-auto rounded-xl p-6 sm:p-8 flex flex-col justify-center">
+      <div className="flex min-h-[100svh] w-full items-center justify-center p-0 md:min-h-0 md:p-10">
+        <div className="w-full h-full sm:max-w-md sm:mx-auto flex flex-col justify-center px-4 sm:px-0">
+          <div className="card-surface w-full h-full sm:h-auto rounded-none sm:rounded-xl p-0 sm:p-8 flex flex-col justify-center overflow-hidden">
+            <div className="mx-auto mb-4 sm:mb-6">
+              <div className="flex items-center justify-center bg-primary text-primary-foreground rounded-full h-16 w-16 shadow-md">
+                <img
+                  src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
+                  alt="Evoque Fitness"
+                  className="h-8 w-auto"
+                />
+              </div>
+            </div>
             <h2 className="text-xl font-semibold">Entrar</h2>
             <p className="text-sm text-muted-foreground mt-1">
               Use suas credenciais para acessar o ERP.
