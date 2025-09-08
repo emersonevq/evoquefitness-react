@@ -79,8 +79,14 @@ export default function RequireLogin({
     return () => {
       mounted = false;
       abort = true;
-      window.removeEventListener("users:changed", onUsersChanged as EventListener);
-      window.removeEventListener("auth:refresh", onUsersChanged as EventListener);
+      window.removeEventListener(
+        "users:changed",
+        onUsersChanged as EventListener,
+      );
+      window.removeEventListener(
+        "auth:refresh",
+        onUsersChanged as EventListener,
+      );
     };
     // Intentionally include pathname so checks run when navigating to sector pages
   }, [isAuthenticated, user?.id, pathname]);
