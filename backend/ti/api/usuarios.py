@@ -177,7 +177,55 @@ def get_usuario(user_id: int, db: Session = Depends(get_db)):
         from ..models import User
         import json
         User.__table__.create(bind=engine, checkfirst=True)
-        user = db.query(User).filter(User.id == user_id).first()
+        # Try ORM query; if DB schema doesn't include newer columns this may fail -> fallback
+        try:
+            user = db.query(User).filter(User.id == user_id).first()
+        except Exception:
+            # fallback to raw SQL selecting known columns (compatible with older schema)
+            from sqlalchemy import text
+            try:
+                row = db.execute(text("SELECT id, nome, sobrenome, usuario, email, nivel_acesso, setor, bloqueado FROM \"user\" WHERE id = :id"), {"id": user_id}).fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Usuário não encontrado")
+                s = row[6]
+                setores_list = [str(s)] if s else []
+                return {
+                    "id": row[0],
+                    "nome": row[1],
+                    "sobrenome": row[2],
+                    "usuario": row[3],
+                    "email": row[4],
+                    "nivel_acesso": row[5],
+                    "setor": setores_list[0] if setores_list else None,
+                    "setores": setores_list,
+                    "bloqueado": bool(row[7]) if len(row) > 7 else False,
+                    "session_revoked_at": None,
+                }
+            except HTTPException:
+                raise
+            except Exception as ex:
+                # try legacy table name 'usuarios'
+                try:
+                    row = db.execute(text("SELECT id, nome, sobrenome, usuario, email, nivel_acesso, setor FROM usuarios WHERE id = :id"), {"id": user_id}).fetchone()
+                    if not row:
+                        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+                    s = row[6]
+                    setores_list = [str(s)] if s else []
+                    return {
+                        "id": row[0],
+                        "nome": row[1],
+                        "sobrenome": row[2],
+                        "usuario": row[3],
+                        "email": row[4],
+                        "nivel_acesso": row[5],
+                        "setor": setores_list[0] if setores_list else None,
+                        "setores": setores_list,
+                        "bloqueado": False,
+                        "session_revoked_at": None,
+                    }
+                except Exception:
+                    raise ex
+
         if not user:
             raise HTTPException(status_code=404, detail="Usuário não encontrado")
         try:
@@ -200,6 +248,7 @@ def get_usuario(user_id: int, db: Session = Depends(get_db)):
             "setor": setores_list[0] if setores_list else None,
             "setores": setores_list,
             "bloqueado": bool(user.bloqueado),
+            "session_revoked_at": user.session_revoked_at.isoformat() if getattr(user, 'session_revoked_at', None) else None,
         }
     except HTTPException:
         raise
