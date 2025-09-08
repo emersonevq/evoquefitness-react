@@ -57,82 +57,69 @@ export default function Login() {
       </div>
 
       {/* Form side */}
-      <div className="flex min-h-[100svh] w-full items-center justify-center p-0 md:min-h-0 md:p-10">
-        <div className="w-full h-full sm:max-w-md sm:mx-auto flex flex-col justify-center px-4 sm:px-0">
-          <div className="card-surface w-full h-full sm:h-auto rounded-none sm:rounded-xl p-0 sm:p-8 flex flex-col justify-center overflow-hidden relative">
-            <div className="absolute inset-0 flex items-start justify-center pointer-events-none opacity-5 sm:opacity-10">
-              <img
-                src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
-                alt=""
-                className="w-52 h-auto object-contain grayscale"
-              />
-            </div>
+      <div className="flex items-center justify-center p-6 md:p-10">
+        <div className="w-full max-w-md">
+          {/* Mobile logo */}
+          <div className="md:hidden flex items-center justify-center mb-8">
+            <img
+              src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
+              alt="Evoque Fitness Logo"
+              className="h-8 w-auto rounded-sm shadow-sm"
+            />
+          </div>
 
-            <div className="login-card relative z-10 w-full h-full bg-card/80 sm:bg-transparent sm:backdrop-blur-sm p-6 sm:p-8 flex flex-col gap-4 items-stretch">
-              <div className="mx-auto w-full">
-                <div className="text-center sm:text-left">
-                  <div className="mx-auto sm:mx-0 mb-2">
-                    <img
-                      src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
-                      alt="Evoque"
-                      className="h-8 mx-auto opacity-90"
-                    />
-                  </div>
-
-                  <h2 className="text-2xl font-semibold">Painel administrativo</h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Acesse com suas credenciais para entrar no sistema.
-                  </p>
-                </div>
+          <div className="card-surface rounded-xl p-6 sm:p-8">
+            <h2 className="text-xl font-semibold">Entrar</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Use suas credenciais para acessar o ERP.
+            </p>
+            <form onSubmit={submit} className="mt-6 grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="identifier">E-mail ou usuário</Label>
+                <Input
+                  id="identifier"
+                  type="text"
+                  placeholder="E-mail ou nome de usuário"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
-
-              <form onSubmit={submit} className="mt-2 grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="identifier">E-mail ou usuário</Label>
-                  <Input
-                    id="identifier"
-                    type="text"
-                    placeholder="E-mail ou nome de usuário"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+              <div className="grid gap-2">
+                <Label htmlFor="password">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-border bg-background"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
                   />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="password">Senha</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
-                  <label className="inline-flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-border bg-background"
-                      checked={remember}
-                      onChange={(e) => setRemember(e.target.checked)}
-                    />
-                    Lembrar-me
-                  </label>
-                  <Link to="/auth/forgot-password" className="text-primary hover:underline">
-                    Esqueci minha senha
-                  </Link>
-                </div>
-
-                <Button type="submit" className="w-full h-12 rounded-lg bg-primary text-primary-foreground" disabled={isLoading}>
-                  {isLoading ? "Entrando..." : "Entrar"}
-                </Button>
-
-                <p className="text-xs text-muted-foreground text-center mt-2 sm:mt-4">
-                  © {new Date().getFullYear()} Evoque Fitness — Sistema interno
-                </p>
-              </form>
-            </div>
+                  Lembrar-me
+                </label>
+                <Link
+                  to="/auth/forgot-password"
+                  className="text-primary hover:underline"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
+              <Button
+                type="submit"
+                className="w-full h-11 rounded-md"
+                disabled={isLoading}
+              >
+                {isLoading ? "Entrando..." : "Entrar"}
+              </Button>
+            </form>
           </div>
 
           <p className="text-xs text-muted-foreground text-center mt-6">
