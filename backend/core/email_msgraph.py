@@ -109,90 +109,116 @@ def _format_dt(dt) -> str:
         return str(dt) if dt else ""
 
 
+def _escape(s: str) -> str:
+    if s is None:
+        return ""
+    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def _build_chamado_table(ch) -> str:
-    visita = ch.data_visita.strftime("%d/%m/%Y") if getattr(ch, "data_visita", None) else "-"
-    internet = getattr(ch, "internet_item", None) or "-"
-    descricao = (getattr(ch, "descricao", None) or "").replace("\n", "<br>")
-    abertura = _format_dt(getattr(ch, "data_abertura", None))
-    # Stylish two-column layout with subtle shadows and brand accents
+    visita = _escape(ch.data_visita.strftime("%d/%m/%Y") if getattr(ch, "data_visita", None) else "-")
+    internet = _escape(getattr(ch, "internet_item", None) or "-")
+    descricao = _escape(getattr(ch, "descricao", None) or "").replace("\n", "<br>")
+    abertura = _escape(_format_dt(getattr(ch, "data_abertura", None)))
+
     rows = [
-        ("Código", ch.codigo),
-        ("Protocolo", ch.protocolo),
-        ("Status", ch.status),
-        ("Prioridade", ch.prioridade),
-        ("Solicitante", ch.solicitante),
-        ("Cargo", ch.cargo),
-        ("Telefone", ch.telefone),
-        ("E-mail", ch.email),
-        ("Unidade", ch.unidade),
-        ("Problema", ch.problema),
+        ("Código", _escape(ch.codigo)),
+        ("Protocolo", _escape(ch.protocolo)),
+        ("Status", _escape(ch.status)),
+        ("Prioridade", _escape(ch.prioridade)),
+        ("Solicitante", _escape(ch.solicitante)),
+        ("Cargo", _escape(ch.cargo)),
+        ("Telefone", _escape(ch.telefone)),
+        ("E-mail", _escape(ch.email)),
+        ("Unidade", _escape(ch.unidade)),
+        ("Problema", _escape(ch.problema)),
         ("Item de Internet", internet),
         ("Data de Visita", visita),
         ("Aberto em", abertura),
     ]
-    html = [
-        '<div style="font-family:Inter, Arial, sans-serif;max-width:680px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e6e9ef">',
-        '<div style="background:linear-gradient(90deg,#0ea5a4,#2563eb);padding:20px;color:#fff;display:flex;align-items:center;gap:12px">',
-        '<div style="width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-weight:700">',
-        'E',
-        '</div>',
-        f'<div style="font-size:16px;font-weight:700">Evoque Fitness — Chamado {ch.codigo}</div>',
-        '</div>',
-        '<div style="padding:18px;color:#102a43;line-height:1.4;font-size:14px">',
-        f'<p style="margin:0 0 12px">Olá <strong>{ch.solicitante}</strong>,</p>',
-        '<p style="margin:0 0 14px;color:#334155">Recebemos seu chamado e registramos as informações abaixo.</p>',
-        '<div style="display:flex;flex-direction:column;gap:8px">',
-    ]
+
+    logo_url = "https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
+    portal_url = os.getenv("PORTAL_URL", "https://academiaevoque.com.br")
+
+    html = []
+    # Preheader (hidden) for Gmail and others
+    preheader = f"Seu chamado {ch.codigo} foi registrado — protocolo {ch.protocolo}."
+    html.append(f'<span style="display:none!important;visibility:hidden;mso-hide:all;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden">{_escape(preheader)}</span>')
+
+    html.append('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f6fb;padding:24px 0">')
+    html.append('<tr><td align="center">')
+    html.append('<table role="presentation" width="680" cellpadding="0" cellspacing="0" style="background:#ffffff;border-collapse:collapse">')
+    # Header
+    html.append('<tr><td style="background:linear-gradient(90deg,#0ea5a4,#2563eb);padding:18px 24px;color:#fff;font-family:Arial,Helvetica,sans-serif">')
+    html.append('<table role="presentation" width="100%"><tr><td valign="middle" style="width:56px">')
+    html.append(f'<img src="{logo_url}" width="48" height="48" alt="Evoque" style="display:block;border:0;outline:none;text-decoration:none;border-radius:6px"/>')
+    html.append('</td><td valign="middle" style="padding-left:12px">')
+    html.append(f'<div style="font-size:16px;font-weight:700">Evoque Fitness</div>')
+    html.append(f'<div style="font-size:13px;opacity:0.95">Chamado {_escape(ch.codigo)}</div>')
+    html.append('</td></tr></table>')
+    html.append('</td></tr>')
+    # Body intro
+    html.append('<tr><td style="padding:20px 24px;font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:14px;line-height:20px">')
+    html.append(f'<p style="margin:0 0 12px">Olá <strong>{_escape(ch.solicitante)}</strong>,</p>')
+    html.append('<p style="margin:0 0 14px;color:#334155">Recebemos seu chamado. Abaixo estão os detalhes registrados:</p>')
+    # Details table
+    html.append('<table role="presentation" width="100%" cellpadding="8" cellspacing="0" style="border-collapse:separate;border-spacing:8px 8px">')
     for k, v in rows:
-        html.append(
-            f'<div style="display:flex;justify-content:space-between;padding:10px 12px;background:#f8fafc;border-radius:6px;border:1px solid #eef2f7">'
-            f'<div style="font-weight:600;color:#0f172a">{k}</div>'
-            f'<div style="color:#334155">{v or "-"}</div>'
-            '</div>'
-        )
+        html.append('<tr>')
+        html.append(f'<td width="35%" style="background:#f8fafc;border:1px solid #eef2f7;border-radius:6px;font-weight:700;color:#0f172a;vertical-align:top">{k}</td>')
+        html.append(f'<td style="background:#ffffff;border:1px solid #eef2f7;border-radius:6px;color:#334155;vertical-align:top">{v or "-"}</td>')
+        html.append('</tr>')
+    html.append('</table>')
     if descricao:
-        html.append(
-            '<div style="margin-top:8px;padding:12px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0">'
-            '<div style="font-weight:600;margin-bottom:6px;color:#0f172a">Descrição</div>'
-            f'<div style="color:#334155">{descricao}</div>'
-            '</div>'
-        )
-    html.extend([
-        '</div>',
-        '<div style="margin-top:18px;display:flex;gap:8px;align-items:center">',
-        '<a href="/" style="display:inline-block;padding:10px 14px;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Ver chamado</a>',
-        '<div style="color:#64748b;font-size:13px">Se precisar responder, acesse o portal ou conte conosco em ti@academiaevoque.com.br</div>',
-        '</div>',
-        '<div style="margin-top:18px;border-top:1px dashed #e6eef7;padding-top:12px;color:#94a3b8;font-size:12px">Este é um e‑mail automático. Por favor, não responda diretamente a ele.</div>',
-        '</div>',
-        '</div>',
-    ])
+        html.append('<div style="margin-top:12px">')
+        html.append('<div style="font-weight:700;color:#0f172a;margin-bottom:6px">Descrição</div>')
+        html.append(f'<div style="color:#334155;padding:12px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px">{descricao}</div>')
+        html.append('</div>')
+    # CTA
+    html.append('<div style="margin-top:18px;display:block">')
+    html.append(f'<a href="{portal_url}" style="display:inline-block;padding:12px 18px;background:#2563eb;color:#ffffff;border-radius:6px;text-decoration:none;font-weight:700">Ver chamado</a>')
+    html.append('<div style="display:inline-block;margin-left:10px;color:#64748b;font-size:13px;vertical-align:middle">Se precisar, responda pelo portal ou contate ti@academiaevoque.com.br</div>')
+    html.append('</div>')
+
+    html.append('</td></tr>')
+    # Footer
+    html.append('<tr><td style="padding:14px 24px;background:#fbfdff;border-top:1px solid #eef3fb;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#94a3b8">')
+    html.append('Este é um e‑mail automático enviado pelo sistema de chamados da Evoque Fitness.')
+    html.append('</td></tr>')
+
+    html.append('</table>')
+    html.append('</td></tr>')
+    html.append('</table>')
+
     return "".join(html)
 
 
 def build_email_chamado_aberto(ch) -> Tuple[str, str]:
     subject = f"[Evoque TI] Chamado {ch.codigo} aberto (Protocolo {ch.protocolo})"
-    body = [
-        _build_chamado_table(ch)
-    ]
-    return subject, "".join(body)
+    body = _build_chamado_table(ch)
+    # plain text fallback
+    text = f"Seu chamado {ch.codigo} foi criado. Protocolo: {ch.protocolo}. Status: {ch.status}."
+    return subject, body
 
 
 def build_email_status_atualizado(ch, status_anterior: str) -> Tuple[str, str]:
     subject = f"[Evoque TI] Status do chamado {ch.codigo}: {status_anterior} → {ch.status}"
-    body = [
-        '<div style="font-family:Inter, Arial, sans-serif;max-width:680px;margin:0 auto;">',
-        '<div style="background:linear-gradient(90deg,#0ea5a4,#2563eb);padding:16px;color:#fff;border-radius:8px 8px 0 0;font-weight:700">',
-        f'Atualização de status — Chamado {ch.codigo}',
-        '</div>',
-        '<div style="background:#fff;padding:18px;border:1px solid #e6e9ef;border-top:none;border-radius:0 0 8px 8px;color:#102a43">',
-        f'<p style="margin:0 0 10px">Olá <strong>{ch.solicitante}</strong>,</p>',
-        f'<p style="margin:0 0 12px;color:#334155">O status do seu chamado foi atualizado de <strong>{status_anterior}</strong> para <strong>{ch.status}</strong>.</p>',
-        _build_chamado_table(ch),
-        '<div style="margin-top:14px;color:#64748b;font-size:13px">Se desejar mais detalhes, acesse o portal.</div>',
-        '</div>',
-        '</div>'
-    ]
+    body = []
+    body.append('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f6fb;padding:24px 0">')
+    body.append('<tr><td align="center">')
+    body.append('<table role="presentation" width="680" cellpadding="0" cellspacing="0" style="background:#ffffff;border-collapse:collapse">')
+    body.append('<tr><td style="background:linear-gradient(90deg,#0ea5a4,#2563eb);padding:16px;color:#fff;border-radius:8px 8px 0 0;font-weight:700;font-family:Arial,Helvetica,sans-serif">')
+    body.append(f'Atualização de status — Chamado {_escape(ch.codigo)}')
+    body.append('</td></tr>')
+    body.append('<tr><td style="background:#fff;padding:18px;border:1px solid #e6e9ef;border-top:none;color:#102a43;font-family:Arial,Helvetica,sans-serif">')
+    body.append(f'<p style="margin:0 0 10px">Olá <strong>{_escape(ch.solicitante)}</strong>,</p>')
+    body.append(f'<p style="margin:0 0 12px;color:#334155">O status do seu chamado foi atualizado de <strong>{_escape(status_anterior)}</strong> para <strong>{_escape(ch.status)}</strong>.</p>')
+    body.append(_build_chamado_table(ch))
+    body.append('<div style="margin-top:14px;color:#64748b;font-size:13px">Se desejar mais detalhes, acesse o portal.</div>')
+    body.append('</td></tr>')
+    body.append('</table>')
+    body.append('</td></tr>')
+    body.append('</table>')
     return subject, "".join(body)
 
 
