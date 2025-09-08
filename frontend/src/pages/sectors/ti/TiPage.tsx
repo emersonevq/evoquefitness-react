@@ -99,16 +99,16 @@ export default function TiPage() {
         )}
         <div className="flex items-center justify-between gap-4">
           {/** show admin shortcut only to Administrador */}
-        {(() => {
-          const { user } = useAuthContext();
-          return user?.nivel_acesso === "Administrador" ? (
-            <div className="md:hidden">
-              <Button asChild variant="secondary" className="rounded-full">
-                <Link to="/setor/ti/admin">Painel administrativo</Link>
-              </Button>
-            </div>
-          ) : null;
-        })()}
+          {(() => {
+            const { user } = useAuthContext();
+            return user?.nivel_acesso === "Administrador" ? (
+              <div className="md:hidden">
+                <Button asChild variant="secondary" className="rounded-full">
+                  <Link to="/setor/ti/admin">Painel administrativo</Link>
+                </Button>
+              </div>
+            ) : null;
+          })()}
           <h2 className="text-lg sm:text-xl font-semibold">
             Histórico de chamados
           </h2>
