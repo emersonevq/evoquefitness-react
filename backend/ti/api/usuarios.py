@@ -122,7 +122,38 @@ def generate_password_endpoint(length: int = 6):
 @router.get("/blocked", response_model=list[UserOut])
 def listar_bloqueados(db: Session = Depends(get_db)):
     try:
-        return list_blocked_users(db)
+        import json
+        from ..models import User
+        users = list_blocked_users(db)
+        rows = []
+        for u in users:
+            try:
+                if u.bloqueado is None:
+                    u.bloqueado = True
+            except Exception:
+                pass
+            try:
+                if getattr(u, "_setores", None):
+                    raw = json.loads(getattr(u, "_setores"))
+                    setores_list = [str(x) for x in raw if x is not None]
+                elif getattr(u, "setor", None):
+                    setores_list = [str(getattr(u, "setor"))]
+                else:
+                    setores_list = []
+            except Exception:
+                setores_list = [str(getattr(u, "setor"))] if getattr(u, "setor", None) else []
+            rows.append({
+                "id": u.id,
+                "nome": u.nome,
+                "sobrenome": u.sobrenome,
+                "usuario": u.usuario,
+                "email": u.email,
+                "nivel_acesso": u.nivel_acesso,
+                "setor": setores_list[0] if setores_list else None,
+                "setores": setores_list,
+                "bloqueado": bool(u.bloqueado),
+            })
+        return rows
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar bloqueados: {e}")
 
