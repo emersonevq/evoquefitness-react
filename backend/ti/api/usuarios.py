@@ -153,6 +153,7 @@ def listar_bloqueados(db: Session = Depends(get_db)):
                 "setor": setores_list[0] if setores_list else None,
                 "setores": setores_list,
                 "bloqueado": bool(u.bloqueado),
+                "session_revoked_at": u.session_revoked_at.isoformat() if getattr(u, 'session_revoked_at', None) else None,
             })
         return rows
     except Exception as e:
