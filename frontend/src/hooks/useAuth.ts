@@ -153,19 +153,28 @@ export function useAuth() {
       if (socket) return socket;
       try {
         const { io } = await import("socket.io-client");
-        const base = (import.meta as any)?.env?.VITE_API_BASE || "/api";
-        const origin = String(base).replace(/\/$/, "").replace(/\/api$/, "");
-        const path = String(base).endsWith("/api") ? "/api/socket.io" : "/socket.io";
+        // Connect socket to same origin (server mounts socket.io at root /socket.io)
+        const origin = window.location.origin;
+        const path = "/socket.io";
         socket = io(origin, { path, transports: ["websocket", "polling"], autoConnect: true });
         (window as any).__APP_SOCK__ = socket;
         socket.on("connect", () => {
+          console.debug('[SIO] connect', socket.id);
           // identify if we have a current user
           const curr = readFromStorage();
           if (curr && curr.id) {
             socket.emit("identify", { user_id: curr.id });
+            console.debug('[SIO] identify emitted for user', curr.id);
           }
         });
+        socket.on("disconnect", (reason: any) => {
+          console.debug('[SIO] disconnect', reason);
+        });
+        socket.on("connect_error", (err: any) => {
+          console.debug('[SIO] connect_error', err);
+        });
         socket.on("auth:logout", (data: any) => {
+          console.debug('[SIO] auth:logout received', data);
           try {
             const uid = data?.user_id;
             const curr = readFromStorage();
