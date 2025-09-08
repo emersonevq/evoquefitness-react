@@ -520,6 +520,10 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
         except Exception:
             db.rollback()
             pass
+        try:
+            send_async(send_chamado_status, ch, prev)
+        except Exception:
+            pass
         return ch
     except HTTPException:
         raise
