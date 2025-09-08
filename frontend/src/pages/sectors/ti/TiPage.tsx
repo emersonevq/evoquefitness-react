@@ -2,6 +2,7 @@ import Layout from "@/components/layout/Layout";
 import { sectors } from "@/data/sectors";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuthContext } from "@/lib/auth-context";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, Copy } from "lucide-react";
 import {
