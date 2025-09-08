@@ -57,7 +57,7 @@ export default function Login() {
       </div>
 
       {/* Form side */}
-      <div className="flex items-center justify-center p-6 md:p-10">
+      <div className="flex min-h-[100svh] w-full items-center justify-center p-6 md:min-h-0 md:p-10">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="md:hidden flex items-center justify-center mb-8">
