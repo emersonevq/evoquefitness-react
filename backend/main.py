@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
-from ti.api import chamados_router, unidades_router, problemas_router, notifications_router
+from ti.api import chamados_router, unidades_router, problemas_router, notifications_router, email_debug_router
 from ti.api.usuarios import router as usuarios_router
 from core.realtime import mount_socketio
 
@@ -33,6 +33,7 @@ _http.include_router(usuarios_router, prefix="/api")
 _http.include_router(unidades_router, prefix="/api")
 _http.include_router(problemas_router, prefix="/api")
 _http.include_router(notifications_router, prefix="/api")
+_http.include_router(email_debug_router, prefix="/api")
 
 # Compatibility mount without prefix, in case the server is run without proxy
 _http.include_router(chamados_router)
@@ -40,6 +41,7 @@ _http.include_router(usuarios_router)
 _http.include_router(unidades_router)
 _http.include_router(problemas_router)
 _http.include_router(notifications_router)
+_http.include_router(email_debug_router)
 
 # Wrap with Socket.IO ASGI app (exports as 'app')
 app = mount_socketio(_http)

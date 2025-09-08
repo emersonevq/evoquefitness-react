@@ -3,8 +3,9 @@ import os
 import time
 import json
 import threading
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Any
 from urllib import request, parse, error
+import base64
 
 # Try to import backend/env.py as module to support key=value configs
 try:
@@ -74,7 +75,8 @@ def _post_graph(path: str, payload: dict) -> bool:
     req.add_header("Content-Type", "application/json")
     try:
         with request.urlopen(req, timeout=20) as resp:
-            # sendMail returns 202 Accepted with no body
+            body = resp.read().decode("utf-8") if resp else ""
+            print(f"[EMAIL] Graph sendMail response: status={resp.status} body={body}")
             return 200 <= resp.status < 300 or resp.status == 202
     except error.HTTPError as e:
         try:
@@ -112,6 +114,7 @@ def _build_chamado_table(ch) -> str:
     internet = getattr(ch, "internet_item", None) or "-"
     descricao = (getattr(ch, "descricao", None) or "").replace("\n", "<br>")
     abertura = _format_dt(getattr(ch, "data_abertura", None))
+    # Stylish two-column layout with subtle shadows and brand accents
     rows = [
         ("Código", ch.codigo),
         ("Protocolo", ch.protocolo),
@@ -128,31 +131,49 @@ def _build_chamado_table(ch) -> str:
         ("Aberto em", abertura),
     ]
     html = [
-        '<table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px">'
+        '<div style="font-family:Inter, Arial, sans-serif;max-width:680px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e6e9ef">',
+        '<div style="background:linear-gradient(90deg,#0ea5a4,#2563eb);padding:20px;color:#fff;display:flex;align-items:center;gap:12px">',
+        '<div style="width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-weight:700">',
+        'E',
+        '</div>',
+        f'<div style="font-size:16px;font-weight:700">Evoque Fitness — Chamado {ch.codigo}</div>',
+        '</div>',
+        '<div style="padding:18px;color:#102a43;line-height:1.4;font-size:14px">',
+        f'<p style="margin:0 0 12px">Olá <strong>{ch.solicitante}</strong>,</p>',
+        '<p style="margin:0 0 14px;color:#334155">Recebemos seu chamado e registramos as informações abaixo.</p>',
+        '<div style="display:flex;flex-direction:column;gap:8px">',
     ]
     for k, v in rows:
         html.append(
-            f'<tr><td style="border:1px solid #ddd;padding:8px;background:#f7f7f7;font-weight:bold">{k}</td>'
-            f'<td style="border:1px solid #ddd;padding:8px">{v}</td></tr>'
+            f'<div style="display:flex;justify-content:space-between;padding:10px 12px;background:#f8fafc;border-radius:6px;border:1px solid #eef2f7">'
+            f'<div style="font-weight:600;color:#0f172a">{k}</div>'
+            f'<div style="color:#334155">{v or "-"}</div>'
+            '</div>'
         )
     if descricao:
         html.append(
-            '<tr><td style="border:1px solid #ddd;padding:8px;background:#f7f7f7;font-weight:bold">Descrição</td>'
-            f'<td style="border:1px solid #ddd;padding:8px">{descricao}</td></tr>'
+            '<div style="margin-top:8px;padding:12px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0">'
+            '<div style="font-weight:600;margin-bottom:6px;color:#0f172a">Descrição</div>'
+            f'<div style="color:#334155">{descricao}</div>'
+            '</div>'
         )
-    html.append("</table>")
+    html.extend([
+        '</div>',
+        '<div style="margin-top:18px;display:flex;gap:8px;align-items:center">',
+        '<a href="/" style="display:inline-block;padding:10px 14px;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Ver chamado</a>',
+        '<div style="color:#64748b;font-size:13px">Se precisar responder, acesse o portal ou conte conosco em ti@academiaevoque.com.br</div>',
+        '</div>',
+        '<div style="margin-top:18px;border-top:1px dashed #e6eef7;padding-top:12px;color:#94a3b8;font-size:12px">Este é um e‑mail automático. Por favor, não responda diretamente a ele.</div>',
+        '</div>',
+        '</div>',
+    ])
     return "".join(html)
 
 
 def build_email_chamado_aberto(ch) -> Tuple[str, str]:
     subject = f"[Evoque TI] Chamado {ch.codigo} aberto (Protocolo {ch.protocolo})"
     body = [
-        "<div style=\"font-family:Arial,sans-serif;color:#111\">",
-        f"<p>Olá {ch.solicitante},</p>",
-        "<p>Recebemos seu chamado e ele foi registrado com sucesso. Veja os detalhes abaixo:</p>",
-        _build_chamado_table(ch),
-        "<p>Em breve nossa equipe entrará em contato. Este é um e-mail automático, não responda.</p>",
-        "</div>",
+        _build_chamado_table(ch)
     ]
     return subject, "".join(body)
 
@@ -160,17 +181,22 @@ def build_email_chamado_aberto(ch) -> Tuple[str, str]:
 def build_email_status_atualizado(ch, status_anterior: str) -> Tuple[str, str]:
     subject = f"[Evoque TI] Status do chamado {ch.codigo}: {status_anterior} → {ch.status}"
     body = [
-        "<div style=\"font-family:Arial,sans-serif;color:#111\">",
-        f"<p>Olá {ch.solicitante},</p>",
-        f"<p>O status do seu chamado foi atualizado: <strong>{status_anterior}</strong> → <strong>{ch.status}</strong>.</p>",
+        '<div style="font-family:Inter, Arial, sans-serif;max-width:680px;margin:0 auto;">',
+        '<div style="background:linear-gradient(90deg,#0ea5a4,#2563eb);padding:16px;color:#fff;border-radius:8px 8px 0 0;font-weight:700">',
+        f'Atualização de status — Chamado {ch.codigo}',
+        '</div>',
+        '<div style="background:#fff;padding:18px;border:1px solid #e6e9ef;border-top:none;border-radius:0 0 8px 8px;color:#102a43">',
+        f'<p style="margin:0 0 10px">Olá <strong>{ch.solicitante}</strong>,</p>',
+        f'<p style="margin:0 0 12px;color:#334155">O status do seu chamado foi atualizado de <strong>{status_anterior}</strong> para <strong>{ch.status}</strong>.</p>',
         _build_chamado_table(ch),
-        "<p>Qualquer dúvida, estamos à disposição.</p>",
-        "</div>",
+        '<div style="margin-top:14px;color:#64748b;font-size:13px">Se desejar mais detalhes, acesse o portal.</div>',
+        '</div>',
+        '</div>'
     ]
     return subject, "".join(body)
 
 
-def send_mail(subject: str, html_body: str, to: List[str], cc: Optional[List[str]] = None) -> bool:
+def send_mail(subject: str, html_body: str, to: List[str], cc: Optional[List[str]] = None, attachments: Optional[List[Dict[str, Any]]] = None) -> bool:
     if not _have_graph_config():
         print("[EMAIL] Graph configuration missing; skipping send.")
         return False
@@ -186,6 +212,25 @@ def send_mail(subject: str, html_body: str, to: List[str], cc: Optional[List[str
     }
     if cc_list:
         message["message"]["ccRecipients"] = cc_list
+    # Attachments must be a list of microsoft.graph.fileAttachment objects with base64 content
+    if attachments:
+        # Ensure structure
+        attach_list = []
+        for a in attachments:
+            # expect dict with name, contentType, contentBytes (base64 string)
+            name = a.get("name")
+            contentType = a.get("contentType") or a.get("mime") or "application/octet-stream"
+            contentBytes = a.get("contentBytes") or a.get("content")
+            if not name or not contentBytes:
+                continue
+            attach_list.append({
+                "@odata.type": "#microsoft.graph.fileAttachment",
+                "name": name,
+                "contentType": contentType,
+                "contentBytes": contentBytes,
+            })
+        if attach_list:
+            message["message"]["attachments"] = attach_list
     path = f"/users/{USER_ID}/sendMail"
     return _post_graph(path, message)
 
@@ -199,17 +244,17 @@ def send_async(func, *args, **kwargs) -> None:
     threading.Thread(target=_runner, daemon=True).start()
 
 
-def send_chamado_abertura(ch) -> bool:
+def send_chamado_abertura(ch, attachments: Optional[List[Dict[str, Any]]] = None) -> bool:
     subject, html = build_email_chamado_aberto(ch)
     cc = []
     if EMAIL_TI:
         cc.append(str(EMAIL_TI))
-    return send_mail(subject, html, to=[str(ch.email)], cc=cc)
+    return send_mail(subject, html, to=[str(ch.email)], cc=cc, attachments=attachments)
 
 
-def send_chamado_status(ch, status_anterior: str) -> bool:
+def send_chamado_status(ch, status_anterior: str, attachments: Optional[List[Dict[str, Any]]] = None) -> bool:
     subject, html = build_email_status_atualizado(ch, status_anterior)
     cc = []
     if EMAIL_TI:
         cc.append(str(EMAIL_TI))
-    return send_mail(subject, html, to=[str(ch.email)], cc=cc)
+    return send_mail(subject, html, to=[str(ch.email)], cc=cc, attachments=attachments)

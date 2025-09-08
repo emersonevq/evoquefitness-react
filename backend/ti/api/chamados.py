@@ -251,6 +251,37 @@ def criar_chamado_com_anexos(
             db.commit()
             if files and saved == 0:
                 raise HTTPException(status_code=500, detail="Falha ao salvar anexos da abertura")
+            # Try to gather saved attachments and send them with the opening email
+            try:
+                attach_rows = db.execute(text("SELECT id, nome_original, tipo_mime FROM chamado_anexo WHERE chamado_id=:i"), {"i": ch.id}).fetchall()
+                attachments_payload = []
+                import base64
+                for ar in attach_rows:
+                    try:
+                        aid = int(ar[0])
+                        nome = ar[1] or f"anexo_{aid}"
+                        mime = ar[2] or "application/octet-stream"
+                        res = db.execute(text(_select_download_query("chamado_anexo")), {"i": aid}).fetchone()
+                        if res and res[4]:
+                            content = res[4]
+                            b64 = base64.b64encode(content).decode("ascii")
+                            attachments_payload.append({
+                                "name": nome,
+                                "contentType": mime,
+                                "contentBytes": b64,
+                            })
+                    except Exception:
+                        continue
+                # send async email with attachments
+                try:
+                    if attachments_payload:
+                        send_async(send_chamado_abertura, ch, attachments_payload)
+                    else:
+                        send_async(send_chamado_abertura, ch)
+                except Exception:
+                    pass
+            except Exception:
+                pass
         return ch
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao criar chamado com anexos: {e}")
