@@ -35,7 +35,7 @@ export default function Login() {
   };
 
   return (
-    <div className="h-[100svh] w-[100vw] grid md:grid-cols-2 bg-background">
+    <div className="h-[100svh] w-[100vw] grid md:grid-cols-2 bg-background items-center justify-center overflow-hidden">
       {/* Brand side (desktop) */}
       <div className="hidden md:flex items-center justify-center p-10">
         <div className="w-full h-full rounded-2xl brand-gradient flex items-center justify-center">
@@ -57,9 +57,9 @@ export default function Login() {
       </div>
 
       {/* Form side */}
-      <div className="flex h-full w-full items-center justify-center p-0 md:p-10">
-        <div className="w-full h-full sm:max-w-md">
-          <div className="card-surface h-full sm:h-auto rounded-none sm:rounded-xl p-6 sm:p-8">
+      <div className="flex items-center justify-center p-0 md:p-10 min-h-0">
+        <div className="w-full sm:max-w-md mx-auto">
+          <div className="card-surface rounded-xl p-6 sm:p-8 w-full">
             <h2 className="text-xl font-semibold">Entrar</h2>
             <p className="text-sm text-muted-foreground mt-1">
               Use suas credenciais para acessar o ERP.
