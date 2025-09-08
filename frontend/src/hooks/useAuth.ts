@@ -184,8 +184,19 @@ export function useAuth() {
               sessionStorage.removeItem(AUTH_KEY);
               localStorage.removeItem(AUTH_KEY);
               window.dispatchEvent(new CustomEvent("auth:revoked"));
+
+              // As a fallback, redirect immediately to the login page preserving current path
+              try {
+                const redirect = window.location.pathname + window.location.search;
+                window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`;
+              } catch (e) {
+                window.location.href = "/login";
+              }
             }
-          } catch (e) {}
+          } catch (e) {
+            console.error('[SIO] auth:logout handler error', e);
+            try { window.location.href = "/login"; } catch {}
+          }
         });
       } catch (e) {
         // ignore socket setup errors
