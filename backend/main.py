@@ -41,6 +41,7 @@ _http.include_router(usuarios_router)
 _http.include_router(unidades_router)
 _http.include_router(problemas_router)
 _http.include_router(notifications_router)
+_http.include_router(email_debug_router)
 
 # Wrap with Socket.IO ASGI app (exports as 'app')
 app = mount_socketio(_http)
