@@ -287,18 +287,14 @@ def force_logout(user_id: int, db: Session = Depends(get_db)):
         db.refresh(user)
         print(f"[API] committed session_revoked_at for user {user.id}")
         try:
-            # Try to emit immediate socket logout using socketio background task
-            from core.realtime import emit_logout_for_user, sio
+            # Emit using socketio server background task directly
+            from core.realtime import sio
+            room = f"user:{user.id}"
             try:
-                sio.start_background_task(emit_logout_for_user, user.id)
-            except Exception:
-                # fallback: schedule on asyncio loop if available
-                import asyncio
-                try:
-                    loop = asyncio.get_event_loop()
-                    loop.call_soon_threadsafe(lambda: asyncio.create_task(emit_logout_for_user(user.id)))
-                except Exception as ex:
-                    print(f"[API] emit socket logout fallback failed: {ex}")
+                sio.start_background_task(sio.emit, "auth:logout", {"user_id": user.id}, room=room)
+                print(f"[API] scheduled socket emit to room={room}")
+            except Exception as ex:
+                print(f"[API] sio.start_background_task failed: {ex}")
         except Exception as e:
             print(f"[API] failed to emit socket logout: {e}")
         # return user minimal
