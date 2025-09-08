@@ -58,7 +58,7 @@ export default function Login() {
 
       {/* Form side */}
       <div className="flex min-h-[100svh] w-full items-center justify-center p-6 md:min-h-0 md:p-10">
-        <div className="w-full max-w-md">
+        <div className="w-full h-full sm:max-w-md sm:mx-auto flex flex-col justify-center">
           {/* Mobile logo */}
           <div className="md:hidden flex items-center justify-center mb-8">
             <img
@@ -68,7 +68,7 @@ export default function Login() {
             />
           </div>
 
-          <div className="card-surface rounded-xl p-6 sm:p-8">
+          <div className="card-surface w-full h-full sm:h-auto rounded-xl p-6 sm:p-8 flex flex-col justify-center">
             <h2 className="text-xl font-semibold">Entrar</h2>
             <p className="text-sm text-muted-foreground mt-1">
               Use suas credenciais para acessar o ERP.
