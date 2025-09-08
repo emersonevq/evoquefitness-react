@@ -74,7 +74,8 @@ def _post_graph(path: str, payload: dict) -> bool:
     req.add_header("Content-Type", "application/json")
     try:
         with request.urlopen(req, timeout=20) as resp:
-            # sendMail returns 202 Accepted with no body
+            body = resp.read().decode("utf-8") if resp else ""
+            print(f"[EMAIL] Graph sendMail response: status={resp.status} body={body}")
             return 200 <= resp.status < 300 or resp.status == 202
     except error.HTTPError as e:
         try:
