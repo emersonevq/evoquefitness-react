@@ -20,6 +20,19 @@ router = APIRouter(prefix="/usuarios", tags=["TI - Usuarios"])
 def listar_usuarios(db: Session = Depends(get_db)):
     try:
         from ..models import User
+        import json
+        # helper to compute setores list
+        def compute_setores(u) -> list[str]:
+            try:
+                if getattr(u, "_setores", None):
+                    raw = json.loads(getattr(u, "_setores"))
+                    return [str(x).encode('utf-8', 'ignore').decode('utf-8') if x is not None else "" for x in raw]
+                if getattr(u, "setor", None):
+                    return [str(getattr(u, "setor"))]
+            except Exception:
+                pass
+            return []
+
         # cria tabela se não existir
         try:
             User.__table__.create(bind=engine, checkfirst=True)
@@ -29,11 +42,23 @@ def listar_usuarios(db: Session = Depends(get_db)):
         # pega todos os usuários
         try:
             users = db.query(User).order_by(User.id.desc()).all()
-            # garante que 'bloqueado' nunca seja None
+            rows = []
             for u in users:
                 if u.bloqueado is None:
                     u.bloqueado = False
-            return users
+                setores_list = compute_setores(u)
+                rows.append({
+                    "id": u.id,
+                    "nome": u.nome,
+                    "sobrenome": u.sobrenome,
+                    "usuario": u.usuario,
+                    "email": u.email,
+                    "nivel_acesso": u.nivel_acesso,
+                    "setor": setores_list[0] if setores_list else None,
+                    "setores": setores_list,
+                    "bloqueado": bool(u.bloqueado),
+                })
+            return rows
         except Exception:
             pass
 
@@ -45,6 +70,8 @@ def listar_usuarios(db: Session = Depends(get_db)):
             ))
             rows = []
             for r in res.fetchall():
+                s = r[6]
+                setores_list = [str(s)] if s else []
                 rows.append({
                     "id": r[0],
                     "nome": r[1],
@@ -52,8 +79,9 @@ def listar_usuarios(db: Session = Depends(get_db)):
                     "usuario": r[3],
                     "email": r[4],
                     "nivel_acesso": r[5],
-                    "setor": r[6],
-                    "bloqueado": False,  # já tá ok
+                    "setor": s,
+                    "setores": setores_list,
+                    "bloqueado": False,
                 })
             return rows
         except Exception:
