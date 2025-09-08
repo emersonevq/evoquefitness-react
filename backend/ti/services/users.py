@@ -271,6 +271,7 @@ def authenticate_user(db: Session, identifier: str, senha: str) -> dict:
         "nivel_acesso": user.nivel_acesso,
         "setores": setores_list,
         "alterar_senha_primeiro_acesso": bool(user.alterar_senha_primeiro_acesso),
+        "session_revoked_at": user.session_revoked_at.isoformat() if getattr(user, 'session_revoked_at', None) else None,
     }
 
 # Migration script to normalize setores in DB

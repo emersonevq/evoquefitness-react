@@ -23,3 +23,4 @@ class User(Base):
     ultimo_acesso: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     tentativas_login: Mapped[int] = mapped_column(Integer, default=0)
     bloqueado_ate: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    session_revoked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

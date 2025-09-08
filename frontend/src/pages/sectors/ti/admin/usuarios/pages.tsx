@@ -20,6 +20,25 @@ import {
 } from "@/components/ui/dialog";
 import { Copy } from "lucide-react";
 
+const normalize = (s: string) => {
+  try {
+    return s
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\u00a0/g, " ")
+      .trim();
+  } catch {
+    return s;
+  }
+};
+
+const matchSectorTitle = (value: string | null | undefined) => {
+  if (!value) return null;
+  const n = normalize(String(value));
+  const found = sectors.find((sec) => normalize(sec.title) === n);
+  return found ? found.title : value;
+};
+
 export function CriarUsuario() {
   const [first, setFirst] = useState("");
   const [last, setLast] = useState("");
@@ -52,8 +71,9 @@ export function CriarUsuario() {
   };
 
   const toggleSector = (name: string) => {
+    const key = normalize(name);
     setSelSectors((prev) =>
-      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name],
+      prev.includes(key) ? prev.filter((n) => n !== key) : [...prev, key],
     );
   };
 
@@ -275,7 +295,7 @@ export function CriarUsuario() {
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border-border bg-background"
-                    checked={selSectors.includes(s)}
+                    checked={selSectors.includes(normalize(s))}
                     onChange={() => toggleSector(s)}
                   />
                   {s}
@@ -388,6 +408,7 @@ export function Bloqueios() {
     email: string;
     nivel_acesso: string;
     setor: string | null;
+    setores?: string[] | null;
     bloqueado?: boolean;
   };
   const [blocked, setBlocked] = useState<ApiUser[]>([]);
@@ -472,6 +493,7 @@ export function Permissoes() {
     email: string;
     nivel_acesso: string;
     setor: string | null;
+    setores?: string[] | null;
     bloqueado?: boolean;
   };
   const [users, setUsers] = useState<ApiUser[]>([]);
@@ -493,8 +515,9 @@ export function Permissoes() {
 
   const allSectors = useMemo(() => sectors.map((s) => s.title), []);
   const toggleEditSector = (name: string) => {
+    const key = normalize(name);
     setEditSetores((prev) =>
-      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name],
+      prev.includes(key) ? prev.filter((n) => n !== key) : [...prev, key],
     );
   };
 
@@ -524,7 +547,11 @@ export function Permissoes() {
     setEditEmail(u.email);
     setEditUsuario(u.usuario);
     setEditNivel(u.nivel_acesso);
-    setEditSetores(u.setor ? [u.setor] : []);
+    if (u.setores && Array.isArray(u.setores) && u.setores.length > 0) {
+      setEditSetores(u.setores.map((x) => normalize(String(x))));
+    } else {
+      setEditSetores(u.setor ? [normalize(u.setor)] : []);
+    }
     setEditForceReset(false);
   };
 
@@ -547,6 +574,17 @@ export function Permissoes() {
       setEditing(null);
       load();
       window.dispatchEvent(new CustomEvent("users:changed"));
+      try {
+        // If we edited the currently logged in user, request auth refresh so permissions update immediately
+        const current = (window as any).__CURRENT_AUTH_USER__;
+        // Fallback: use global event - we'll dispatch auth:refresh with user id in detail
+        if (current && current.id === editing?.id) {
+          window.dispatchEvent(new CustomEvent("auth:refresh"));
+        } else {
+          // still dispatch to be safe
+          window.dispatchEvent(new CustomEvent("auth:refresh"));
+        }
+      } catch (e) {}
     } else {
       const t = await res.json().catch(() => ({}) as any);
       alert((t && (t.detail || t.message)) || "Falha ao salvar");
@@ -625,7 +663,10 @@ export function Permissoes() {
               </div>
               <div className="grid grid-cols-2 gap-x-6">
                 <div className="text-muted-foreground">Setor</div>
-                <div className="text-right">{u.setor || "—"}</div>
+                <div className="text-right">
+                  {matchSectorTitle((u.setores && u.setores[0]) || u.setor) ||
+                    "—"}
+                </div>
               </div>
             </div>
 
@@ -650,6 +691,26 @@ export function Permissoes() {
                 onClick={() => blockUser(u)}
               >
                 Bloquear
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={async () => {
+                  if (!confirm(`Deslogar o usuário ${u.nome}?`)) return;
+                  try {
+                    const res = await fetch(`/api/usuarios/${u.id}/logout`, {
+                      method: "POST",
+                    });
+                    if (!res.ok) throw new Error("Falha ao deslogar");
+                    window.dispatchEvent(new CustomEvent("users:changed"));
+                    window.dispatchEvent(new CustomEvent("auth:refresh"));
+                    alert("Usuário deslogado com sucesso.");
+                  } catch (e: any) {
+                    alert(e?.message || "Erro ao deslogar usuário");
+                  }
+                }}
+              >
+                Deslogar
               </Button>
               <Button
                 type="button"
@@ -733,7 +794,7 @@ export function Permissoes() {
                       <input
                         type="checkbox"
                         className="h-4 w-4 rounded border-border bg-background"
-                        checked={editSetores.includes(s)}
+                        checked={editSetores.includes(normalize(s))}
                         onChange={() => toggleEditSector(s)}
                       />
                       {s}

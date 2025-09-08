@@ -21,6 +21,7 @@ class UserOut(BaseModel):
     email: EmailStr
     nivel_acesso: str
     setor: str | None
+    setores: Optional[List[str]] | None = None
     bloqueado: bool = False
 
     class Config:

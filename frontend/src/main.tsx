@@ -206,4 +206,14 @@ const App = () => (
   </QueryClientProvider>
 );
 
+// Global handler: when server forces logout, redirect user to login preserving current path
+window.addEventListener("auth:revoked", () => {
+  try {
+    const redirect = window.location.pathname + window.location.search;
+    window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`;
+  } catch (e) {
+    window.location.href = "/login";
+  }
+});
+
 createRoot(document.getElementById("root")!).render(<App />);

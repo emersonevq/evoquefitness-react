@@ -1,4 +1,3 @@
-import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +15,23 @@ import {
 import { sectors } from "@/data/sectors";
 import { ChevronDown, Menu, LogOut } from "lucide-react";
 import { useAuthContext } from "@/lib/auth-context";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthContext();
   const location = useLocation();
+  const navigate = useNavigate();
+  const doLogout = () => {
+    try {
+      // notify socket that we are logging out
+      const s = (window as any).__APP_SOCK__;
+      try {
+        if (s && s.connected) s.emit("identify", { user_id: null });
+      } catch {}
+    } catch {}
+    logout();
+    navigate("/login");
+  };
   const isAdminRoute = location.pathname.startsWith("/setor/ti/admin");
   const adminGroups = [
     {
@@ -115,7 +127,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   {user?.email || "admin@evoque.com"}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout} className="text-red-600">
+                <DropdownMenuItem onClick={doLogout} className="text-red-600">
                   <LogOut className="size-4 mr-2" />
                   Sair
                 </DropdownMenuItem>
@@ -165,7 +177,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                           {user?.email || "admin@evoque.com"}
                         </div>
                         <button
-                          onClick={logout}
+                          onClick={doLogout}
                           className="w-full text-left rounded-md px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
                         >
                           <LogOut className="size-4" />
@@ -207,7 +219,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                           {user?.email || "admin@evoque.com"}
                         </div>
                         <button
-                          onClick={logout}
+                          onClick={doLogout}
                           className="w-full text-left rounded-md px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
                         >
                           <LogOut className="size-4" />
