@@ -169,6 +169,42 @@ def atualizar_usuario(user_id: int, payload: dict, db: Session = Depends(get_db)
         raise HTTPException(status_code=500, detail=f"Erro ao atualizar: {e}")
 
 
+@router.get("/{user_id}", response_model=UserOut)
+def get_usuario(user_id: int, db: Session = Depends(get_db)):
+    try:
+        from ..models import User
+        import json
+        User.__table__.create(bind=engine, checkfirst=True)
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuário não encontrado")
+        try:
+            if user._setores:
+                raw = json.loads(user._setores)
+                setores_list = [str(x) for x in raw if x is not None]
+            elif user.setor:
+                setores_list = [str(user.setor)]
+            else:
+                setores_list = []
+        except Exception:
+            setores_list = [str(user.setor)] if user.setor else []
+        return {
+            "id": user.id,
+            "nome": user.nome,
+            "sobrenome": user.sobrenome,
+            "usuario": user.usuario,
+            "email": user.email,
+            "nivel_acesso": user.nivel_acesso,
+            "setor": setores_list[0] if setores_list else None,
+            "setores": setores_list,
+            "bloqueado": bool(user.bloqueado),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao obter usuário: {e}")
+
+
 @router.post("/{user_id}/generate-password")
 def gerar_nova_senha(user_id: int, length: int = 6, db: Session = Depends(get_db)):
     try:
