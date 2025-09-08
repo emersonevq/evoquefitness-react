@@ -271,22 +271,28 @@ def gerar_nova_senha(user_id: int, length: int = 6, db: Session = Depends(get_db
 def force_logout(user_id: int, db: Session = Depends(get_db)):
     """Force logout by setting session_revoked_at to now."""
     try:
+        print(f"[API] force_logout called for user_id={user_id}")
         from ..models import User
+        import traceback
         User.__table__.create(bind=engine, checkfirst=True)
         user = db.query(User).filter(User.id == user_id).first()
+        print(f"[API] queried user -> {bool(user)}")
         if not user:
             raise HTTPException(status_code=404, detail="Usuário não encontrado")
         from core.utils import now_brazil_naive
-        user.session_revoked_at = now_brazil_naive()
+        ts = now_brazil_naive()
+        print(f"[API] setting session_revoked_at={ts.isoformat()}")
+        user.session_revoked_at = ts
         db.commit()
         db.refresh(user)
+        print(f"[API] committed session_revoked_at for user {user.id}")
         # return user minimal
         try:
             setores_list = []
             import json
-            if user._setores:
+            if getattr(user, "_setores", None):
                 setores_list = [str(x) for x in json.loads(user._setores) if x is not None]
-            elif user.setor:
+            elif getattr(user, "setor", None):
                 setores_list = [str(user.setor)]
         except Exception:
             setores_list = [str(user.setor)] if user.setor else []
@@ -305,6 +311,8 @@ def force_logout(user_id: int, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except Exception as e:
+        print("[API] force_logout error:")
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao deslogar usuário: {e}")
 
 
