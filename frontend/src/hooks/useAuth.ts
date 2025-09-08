@@ -275,6 +275,11 @@ export function useAuth() {
           sessionStorage.setItem(AUTH_KEY, payload);
         }
       } catch {}
+      // identify socket if present
+      try {
+        const s = (window as any).__APP_SOCK__;
+        if (s && s.connected && base.id) s.emit("identify", { user_id: base.id });
+      } catch (e) {}
       // return full server data for immediate decisions
       return data;
     } catch (err) {
