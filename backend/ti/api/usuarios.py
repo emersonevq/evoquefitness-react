@@ -286,6 +286,13 @@ def force_logout(user_id: int, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(user)
         print(f"[API] committed session_revoked_at for user {user.id}")
+        try:
+            # Try to emit immediate socket logout
+            from core.realtime import emit_logout_for_user
+            import asyncio
+            asyncio.create_task(emit_logout_for_user(user.id))
+        except Exception as e:
+            print(f"[API] failed to emit socket logout: {e}")
         # return user minimal
         try:
             setores_list = []
