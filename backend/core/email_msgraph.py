@@ -220,17 +220,17 @@ def send_async(func, *args, **kwargs) -> None:
     threading.Thread(target=_runner, daemon=True).start()
 
 
-def send_chamado_abertura(ch) -> bool:
+def send_chamado_abertura(ch, attachments: Optional[List[Dict[str, Any]]] = None) -> bool:
     subject, html = build_email_chamado_aberto(ch)
     cc = []
     if EMAIL_TI:
         cc.append(str(EMAIL_TI))
-    return send_mail(subject, html, to=[str(ch.email)], cc=cc)
+    return send_mail(subject, html, to=[str(ch.email)], cc=cc, attachments=attachments)
 
 
-def send_chamado_status(ch, status_anterior: str) -> bool:
+def send_chamado_status(ch, status_anterior: str, attachments: Optional[List[Dict[str, Any]]] = None) -> bool:
     subject, html = build_email_status_atualizado(ch, status_anterior)
     cc = []
     if EMAIL_TI:
         cc.append(str(EMAIL_TI))
-    return send_mail(subject, html, to=[str(ch.email)], cc=cc)
+    return send_mail(subject, html, to=[str(ch.email)], cc=cc, attachments=attachments)
