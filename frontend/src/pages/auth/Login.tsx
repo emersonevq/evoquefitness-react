@@ -59,23 +59,31 @@ export default function Login() {
       {/* Form side */}
       <div className="flex min-h-[100svh] w-full items-center justify-center p-0 md:min-h-0 md:p-10">
         <div className="w-full h-full sm:max-w-md sm:mx-auto flex flex-col justify-center px-4 sm:px-0">
-          <div className="card-surface w-full h-full sm:h-auto rounded-none sm:rounded-xl p-0 sm:p-8 flex flex-col justify-center overflow-hidden">
-            <div className="login-card w-full h-full bg-card/70 sm:bg-transparent sm:backdrop-blur-sm p-6 sm:p-8 flex flex-col gap-4 items-stretch">
-              <div className="logo-wrap mx-auto">
-                <div className="logo-badge flex items-center justify-center bg-primary text-primary-foreground rounded-full h-16 w-16 shadow-lg">
-                  <img
-                    src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
-                    alt="Evoque Fitness"
-                    className="h-8 w-auto"
-                  />
-                </div>
-              </div>
+          <div className="card-surface w-full h-full sm:h-auto rounded-none sm:rounded-xl p-0 sm:p-8 flex flex-col justify-center overflow-hidden relative">
+            <div className="absolute inset-0 flex items-start justify-center pointer-events-none opacity-5 sm:opacity-10">
+              <img
+                src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
+                alt=""
+                className="w-52 h-auto object-contain grayscale"
+              />
+            </div>
 
-              <div className="text-center sm:text-left">
-                <h2 className="text-2xl font-semibold">Bem-vindo de volta</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Entre com suas credenciais para acessar o painel administrativo.
-                </p>
+            <div className="login-card relative z-10 w-full h-full bg-card/80 sm:bg-transparent sm:backdrop-blur-sm p-6 sm:p-8 flex flex-col gap-4 items-stretch">
+              <div className="mx-auto w-full">
+                <div className="text-center sm:text-left">
+                  <div className="mx-auto sm:mx-0 mb-2">
+                    <img
+                      src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
+                      alt="Evoque"
+                      className="h-8 mx-auto opacity-90"
+                    />
+                  </div>
+
+                  <h2 className="text-2xl font-semibold">Painel administrativo</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Acesse com suas credenciais para entrar no sistema.
+                  </p>
+                </div>
               </div>
 
               <form onSubmit={submit} className="mt-2 grid gap-4">
