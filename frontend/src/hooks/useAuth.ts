@@ -156,25 +156,29 @@ export function useAuth() {
         // Connect socket to same origin (server mounts socket.io at root /socket.io)
         const origin = window.location.origin;
         const path = "/socket.io";
-        socket = io(origin, { path, transports: ["websocket", "polling"], autoConnect: true });
+        socket = io(origin, {
+          path,
+          transports: ["websocket", "polling"],
+          autoConnect: true,
+        });
         (window as any).__APP_SOCK__ = socket;
         socket.on("connect", () => {
-          console.debug('[SIO] connect', socket.id);
+          console.debug("[SIO] connect", socket.id);
           // identify if we have a current user
           const curr = readFromStorage();
           if (curr && curr.id) {
             socket.emit("identify", { user_id: curr.id });
-            console.debug('[SIO] identify emitted for user', curr.id);
+            console.debug("[SIO] identify emitted for user", curr.id);
           }
         });
         socket.on("disconnect", (reason: any) => {
-          console.debug('[SIO] disconnect', reason);
+          console.debug("[SIO] disconnect", reason);
         });
         socket.on("connect_error", (err: any) => {
-          console.debug('[SIO] connect_error', err);
+          console.debug("[SIO] connect_error", err);
         });
         socket.on("auth:logout", (data: any) => {
-          console.debug('[SIO] auth:logout received', data);
+          console.debug("[SIO] auth:logout received", data);
           try {
             const uid = data?.user_id;
             const curr = readFromStorage();
@@ -187,15 +191,18 @@ export function useAuth() {
 
               // As a fallback, redirect immediately to the login page preserving current path
               try {
-                const redirect = window.location.pathname + window.location.search;
+                const redirect =
+                  window.location.pathname + window.location.search;
                 window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`;
               } catch (e) {
                 window.location.href = "/login";
               }
             }
           } catch (e) {
-            console.error('[SIO] auth:logout handler error', e);
-            try { window.location.href = "/login"; } catch {}
+            console.error("[SIO] auth:logout handler error", e);
+            try {
+              window.location.href = "/login";
+            } catch {}
           }
         });
       } catch (e) {
@@ -231,13 +238,15 @@ export function useAuth() {
         try {
           // prefer preserving existing storage choice
           const sessionRaw = sessionStorage.getItem(AUTH_KEY);
-          if (sessionRaw) sessionStorage.setItem(AUTH_KEY, JSON.stringify(record));
+          if (sessionRaw)
+            sessionStorage.setItem(AUTH_KEY, JSON.stringify(record));
           else localStorage.setItem(AUTH_KEY, JSON.stringify(record));
         } catch {}
         // re-identify socket on refresh
         try {
           const s = (window as any).__APP_SOCK__;
-          if (s && s.connected && base.id) s.emit("identify", { user_id: base.id });
+          if (s && s.connected && base.id)
+            s.emit("identify", { user_id: base.id });
         } catch (e) {}
       } catch {}
     };
@@ -298,7 +307,8 @@ export function useAuth() {
       // identify socket if present
       try {
         const s = (window as any).__APP_SOCK__;
-        if (s && s.connected && base.id) s.emit("identify", { user_id: base.id });
+        if (s && s.connected && base.id)
+          s.emit("identify", { user_id: base.id });
       } catch (e) {}
       // return full server data for immediate decisions
       return data;

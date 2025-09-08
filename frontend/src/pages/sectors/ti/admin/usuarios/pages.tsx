@@ -663,7 +663,10 @@ export function Permissoes() {
               </div>
               <div className="grid grid-cols-2 gap-x-6">
                 <div className="text-muted-foreground">Setor</div>
-                <div className="text-right">{matchSectorTitle((u.setores && u.setores[0]) || u.setor) || "—"}</div>
+                <div className="text-right">
+                  {matchSectorTitle((u.setores && u.setores[0]) || u.setor) ||
+                    "—"}
+                </div>
               </div>
             </div>
 
@@ -695,7 +698,9 @@ export function Permissoes() {
                 onClick={async () => {
                   if (!confirm(`Deslogar o usuário ${u.nome}?`)) return;
                   try {
-                    const res = await fetch(`/api/usuarios/${u.id}/logout`, { method: "POST" });
+                    const res = await fetch(`/api/usuarios/${u.id}/logout`, {
+                      method: "POST",
+                    });
                     if (!res.ok) throw new Error("Falha ao deslogar");
                     window.dispatchEvent(new CustomEvent("users:changed"));
                     window.dispatchEvent(new CustomEvent("auth:refresh"));

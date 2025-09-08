@@ -212,7 +212,7 @@ window.addEventListener("auth:revoked", () => {
     const redirect = window.location.pathname + window.location.search;
     window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`;
   } catch (e) {
-    window.location.href = '/login';
+    window.location.href = "/login";
   }
 });
 

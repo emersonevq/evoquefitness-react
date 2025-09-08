@@ -30,7 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       } catch {}
     } catch {}
     logout();
-    navigate('/login');
+    navigate("/login");
   };
   const isAdminRoute = location.pathname.startsWith("/setor/ti/admin");
   const adminGroups = [

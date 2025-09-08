@@ -78,8 +78,14 @@ export default function RequireLogin({
       mounted = false;
       abort = true;
       if (intervalHandle) window.clearInterval(intervalHandle);
-      window.removeEventListener("users:changed", onUsersChanged as EventListener);
-      window.removeEventListener("auth:refresh", onUsersChanged as EventListener);
+      window.removeEventListener(
+        "users:changed",
+        onUsersChanged as EventListener,
+      );
+      window.removeEventListener(
+        "auth:refresh",
+        onUsersChanged as EventListener,
+      );
     };
   }, [isAuthenticated, user?.id]);
 
@@ -99,7 +105,10 @@ export default function RequireLogin({
   if (!isAuthenticated && !bypassGate) {
     const redirect = location.pathname + location.search;
     return (
-      <Navigate to={`/login?redirect=${encodeURIComponent(redirect)}`} replace />
+      <Navigate
+        to={`/login?redirect=${encodeURIComponent(redirect)}`}
+        replace
+      />
     );
   }
 
@@ -114,7 +123,12 @@ export default function RequireLogin({
         // force logout and redirect to login
         logout();
         const redirect = location.pathname + location.search;
-        return <Navigate to={`/login?redirect=${encodeURIComponent(redirect)}`} replace />;
+        return (
+          <Navigate
+            to={`/login?redirect=${encodeURIComponent(redirect)}`}
+            replace
+          />
+        );
       }
     }
   } catch (e) {}
@@ -123,7 +137,10 @@ export default function RequireLogin({
   const pathname = location.pathname || "";
 
   // Admin routes: only Administrador
-  if (pathname.startsWith("/setor/ti/admin") && effectiveUser?.nivel_acesso !== "Administrador") {
+  if (
+    pathname.startsWith("/setor/ti/admin") &&
+    effectiveUser?.nivel_acesso !== "Administrador"
+  ) {
     return <Navigate to="/access-denied" replace />;
   }
 
