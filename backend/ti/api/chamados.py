@@ -19,6 +19,7 @@ from ..models import Chamado, User, TicketAnexo, ChamadoAnexo, HistoricoTicket, 
 from ti.schemas.attachment import AnexoOut
 from ti.schemas.ticket import HistoricoItem, HistoricoResponse
 from sqlalchemy import inspect, text
+from core.email_msgraph import send_async, send_chamado_abertura, send_chamado_status
 
 from fastapi.responses import Response
 
