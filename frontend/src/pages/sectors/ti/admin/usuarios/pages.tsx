@@ -574,6 +574,17 @@ export function Permissoes() {
       setEditing(null);
       load();
       window.dispatchEvent(new CustomEvent("users:changed"));
+      try {
+        // If we edited the currently logged in user, request auth refresh so permissions update immediately
+        const current = (window as any).__CURRENT_AUTH_USER__;
+        // Fallback: use global event - we'll dispatch auth:refresh with user id in detail
+        if (current && current.id === editing?.id) {
+          window.dispatchEvent(new CustomEvent("auth:refresh"));
+        } else {
+          // still dispatch to be safe
+          window.dispatchEvent(new CustomEvent("auth:refresh"));
+        }
+      } catch (e) {}
     } else {
       const t = await res.json().catch(() => ({}) as any);
       alert((t && (t.detail || t.message)) || "Falha ao salvar");

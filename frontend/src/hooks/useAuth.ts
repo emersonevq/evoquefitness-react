@@ -145,6 +145,47 @@ export function useAuth() {
     const existing = readFromStorage();
     if (existing) setUser(existing);
     setIsLoading(false);
+
+    // Listen for explicit refresh events so other parts can trigger auth refresh
+    let mounted = true;
+    const refresh = async () => {
+      try {
+        if (!mounted) return;
+        const current = readFromStorage();
+        if (!current || !current.id) return;
+        const res = await fetch(`/api/usuarios/${current.id}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const now = Date.now();
+        const base: AuthUser = {
+          id: data.id,
+          email: data.email,
+          name: `${data.nome} ${data.sobrenome}`,
+          nivel_acesso: data.nivel_acesso,
+          setores: Array.isArray(data.setores) ? data.setores : [],
+          loginTime: now,
+          alterar_senha_primeiro_acesso: !!data.alterar_senha_primeiro_acesso,
+        };
+        const record: AuthRecord = {
+          ...base,
+          expiresAt: now + REMEMBER_EXPIRY,
+        };
+        setUser(base);
+        try {
+          // prefer preserving existing storage choice
+          const sessionRaw = sessionStorage.getItem(AUTH_KEY);
+          if (sessionRaw) sessionStorage.setItem(AUTH_KEY, JSON.stringify(record));
+          else localStorage.setItem(AUTH_KEY, JSON.stringify(record));
+        } catch {}
+      } catch {}
+    };
+    window.addEventListener("auth:refresh", refresh as EventListener);
+    window.addEventListener("users:changed", refresh as EventListener);
+    return () => {
+      mounted = false;
+      window.removeEventListener("auth:refresh", refresh as EventListener);
+      window.removeEventListener("users:changed", refresh as EventListener);
+    };
   }, []);
 
   const login = async (

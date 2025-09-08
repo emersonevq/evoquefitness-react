@@ -30,31 +30,48 @@ export default function RequireLogin({
   // If user is authenticated, fetch latest user info from backend to validate permissions
   useEffect(() => {
     let mounted = true;
+    let abort = false;
     const fetchRemote = async () => {
       if (!isAuthenticated || !user?.id) return;
+      // Administrators don't need frequent checks
+      if (user?.nivel_acesso === "Administrador") {
+        setRemoteUser(null);
+        setChecking(false);
+        return;
+      }
       setChecking(true);
       try {
         const res = await fetch(`/api/usuarios/${user.id}`);
         if (!res.ok) {
-          setRemoteUser(null);
+          if (mounted) setRemoteUser(null);
           return;
         }
         const data = await res.json();
-        if (mounted) setRemoteUser(data);
+        if (mounted && !abort) setRemoteUser(data);
       } catch (e) {
-        if (mounted) setRemoteUser(null);
+        if (mounted && !abort) setRemoteUser(null);
       } finally {
-        if (mounted) setChecking(false);
+        if (mounted && !abort) setChecking(false);
       }
     };
     fetchRemote();
+
+    const onUsersChanged = () => {
+      fetchRemote();
+    };
+    window.addEventListener("users:changed", onUsersChanged as EventListener);
+    window.addEventListener("auth:refresh", onUsersChanged as EventListener);
+
     return () => {
       mounted = false;
+      abort = true;
+      window.removeEventListener("users:changed", onUsersChanged as EventListener);
+      window.removeEventListener("auth:refresh", onUsersChanged as EventListener);
     };
-  }, [isAuthenticated, user?.id, location.pathname]);
+  }, [isAuthenticated, user?.id]);
 
-  // Show loading while checking remote permissions
-  if (checking) {
+  // Show loading while checking remote permissions only when necessary
+  if (checking && user?.nivel_acesso !== "Administrador") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
