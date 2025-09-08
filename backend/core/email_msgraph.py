@@ -172,7 +172,7 @@ def build_email_status_atualizado(ch, status_anterior: str) -> Tuple[str, str]:
     return subject, "".join(body)
 
 
-def send_mail(subject: str, html_body: str, to: List[str], cc: Optional[List[str]] = None) -> bool:
+def send_mail(subject: str, html_body: str, to: List[str], cc: Optional[List[str]] = None, attachments: Optional[List[Dict[str, Any]]] = None) -> bool:
     if not _have_graph_config():
         print("[EMAIL] Graph configuration missing; skipping send.")
         return False
@@ -188,6 +188,25 @@ def send_mail(subject: str, html_body: str, to: List[str], cc: Optional[List[str
     }
     if cc_list:
         message["message"]["ccRecipients"] = cc_list
+    # Attachments must be a list of microsoft.graph.fileAttachment objects with base64 content
+    if attachments:
+        # Ensure structure
+        attach_list = []
+        for a in attachments:
+            # expect dict with name, contentType, contentBytes (base64 string)
+            name = a.get("name")
+            contentType = a.get("contentType") or a.get("mime") or "application/octet-stream"
+            contentBytes = a.get("contentBytes") or a.get("content")
+            if not name or not contentBytes:
+                continue
+            attach_list.append({
+                "@odata.type": "#microsoft.graph.fileAttachment",
+                "name": name,
+                "contentType": contentType,
+                "contentBytes": contentBytes,
+            })
+        if attach_list:
+            message["message"]["attachments"] = attach_list
     path = f"/users/{USER_ID}/sendMail"
     return _post_graph(path, message)
 
