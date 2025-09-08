@@ -16,10 +16,23 @@ import {
 import { sectors } from "@/data/sectors";
 import { ChevronDown, Menu, LogOut } from "lucide-react";
 import { useAuthContext } from "@/lib/auth-context";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthContext();
   const location = useLocation();
+  const navigate = useNavigate();
+  const doLogout = () => {
+    try {
+      // notify socket that we are logging out
+      const s = (window as any).__APP_SOCK__;
+      try {
+        if (s && s.connected) s.emit("identify", { user_id: null });
+      } catch {}
+    } catch {}
+    logout();
+    navigate('/login');
+  };
   const isAdminRoute = location.pathname.startsWith("/setor/ti/admin");
   const adminGroups = [
     {
