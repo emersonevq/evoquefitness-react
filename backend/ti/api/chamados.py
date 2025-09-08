@@ -282,6 +282,12 @@ def criar_chamado_com_anexos(
                     pass
             except Exception:
                 pass
+        else:
+            # No files: still send the opening email
+            try:
+                send_async(send_chamado_abertura, ch)
+            except Exception:
+                pass
         return ch
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao criar chamado com anexos: {e}")
