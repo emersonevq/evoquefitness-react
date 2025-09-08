@@ -19,6 +19,7 @@ from ..models import Chamado, User, TicketAnexo, ChamadoAnexo, HistoricoTicket, 
 from ti.schemas.attachment import AnexoOut
 from ti.schemas.ticket import HistoricoItem, HistoricoResponse
 from sqlalchemy import inspect, text
+from core.email_msgraph import send_async, send_chamado_abertura, send_chamado_status
 
 from fastapi.responses import Response
 
@@ -101,6 +102,10 @@ def criar_chamado(payload: ChamadoCreate, db: Session = Depends(get_db)):
                 "lido": n.lido,
                 "criado_em": n.criado_em.isoformat() if n.criado_em else None,
             })
+        except Exception:
+            pass
+        try:
+            send_async(send_chamado_abertura, ch)
         except Exception:
             pass
         return ch
@@ -514,6 +519,10 @@ def atualizar_status(chamado_id: int, payload: ChamadoStatusUpdate, db: Session 
             })
         except Exception:
             db.rollback()
+            pass
+        try:
+            send_async(send_chamado_status, ch, prev)
+        except Exception:
             pass
         return ch
     except HTTPException:
