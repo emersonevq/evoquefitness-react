@@ -16,7 +16,7 @@ import {
 import { sectors } from "@/data/sectors";
 import { ChevronDown, Menu, LogOut } from "lucide-react";
 import { useAuthContext } from "@/lib/auth-context";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthContext();
