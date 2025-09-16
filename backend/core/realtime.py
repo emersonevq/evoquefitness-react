@@ -51,6 +51,16 @@ async def emit_logout_for_user(user_id: int):
         print(f"[SIO] emit_logout error: {e}")
 
 
+async def emit_refresh_for_user(user_id: int):
+    """Notify a specific user that their permissions/profile changed."""
+    try:
+        room = f"user:{user_id}"
+        print(f"[SIO] emitting auth:refresh to room={room}")
+        await sio.emit("auth:refresh", {"user_id": user_id}, room=room)
+    except Exception as e:
+        print(f"[SIO] emit_refresh error: {e}")
+
+
 # Synchronous wrapper that can be safely passed to start_background_task from any thread.
 def emit_logout_sync(user_id: int):
     """Run the async emit in a fresh event loop (safe from threads)."""
@@ -59,3 +69,12 @@ def emit_logout_sync(user_id: int):
         asyncio.run(emit_logout_for_user(user_id))
     except Exception as e:
         print(f"[SIO] emit_logout_sync error: {e}")
+
+
+def emit_refresh_sync(user_id: int):
+    """Sync wrapper for emit_refresh_for_user."""
+    try:
+        import asyncio
+        asyncio.run(emit_refresh_for_user(user_id))
+    except Exception as e:
+        print(f"[SIO] emit_refresh_sync error: {e}")

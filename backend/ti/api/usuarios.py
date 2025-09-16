@@ -164,6 +164,14 @@ def listar_bloqueados(db: Session = Depends(get_db)):
 def atualizar_usuario(user_id: int, payload: dict, db: Session = Depends(get_db)):
     try:
         updated = update_user(db, user_id, payload)
+        # Notify the specific user their permissions/profile changed
+        try:
+            from core.realtime import emit_refresh_sync
+            import threading
+            t = threading.Thread(target=emit_refresh_sync, args=(updated.id,), daemon=True)
+            t.start()
+        except Exception as ex:
+            print(f"[API] failed to emit auth:refresh: {ex}")
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
