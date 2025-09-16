@@ -13,6 +13,12 @@ import { useAuthContext } from "@/lib/auth-context";
 
 export default function Index() {
   const { user } = useAuthContext();
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const handler = () => setTick((t) => t + 1);
+    window.addEventListener("auth:refresh", handler as EventListener);
+    return () => window.removeEventListener("auth:refresh", handler as EventListener);
+  }, []);
 
   const normalize = (s: any) =>
     typeof s === "string"
