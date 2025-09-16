@@ -33,6 +33,34 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     navigate("/login");
   };
   const isAdminRoute = location.pathname.startsWith("/setor/ti/admin");
+
+  const normalize = (s: any) =>
+    typeof s === "string"
+      ? s
+          .normalize("NFKD")
+          .replace(/\p{Diacritic}/gu, "")
+          .toLowerCase()
+      : s;
+  const slugToKey: Record<string, string> = {
+    ti: "TI",
+    compras: "Compras",
+    manutencao: "Manutencao",
+    financeiro: "Financeiro",
+    marketing: "Marketing",
+    produtos: "Produtos",
+    comercial: "Comercial",
+    "outros-servicos": "Outros",
+    servicos: "Outros",
+  };
+  const canAccess = (slug: string) => {
+    if (!user) return false;
+    if (user.nivel_acesso === "Administrador") return true;
+    const required = slugToKey[slug];
+    if (!required) return false;
+    const req = normalize(required);
+    const arr = Array.isArray(user.setores) ? user.setores.map(normalize) : [];
+    return arr.some((s) => s && (s === req || s.includes(req) || req.includes(s)));
+  };
   const adminGroups = [
     {
       title: "Operação",
@@ -97,18 +125,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                {sectors.map((s) => (
-                  <Link
-                    key={s.slug}
-                    to={
-                      user
-                        ? `/setor/${s.slug}`
-                        : `/login?redirect=/setor/${s.slug}`
-                    }
-                  >
-                    <DropdownMenuItem>{s.title}</DropdownMenuItem>
-                  </Link>
-                ))}
+                {sectors.map((s) => {
+                  const allowed = canAccess(s.slug);
+                  const href = user
+                    ? `/setor/${s.slug}`
+                    : `/login?redirect=/setor/${s.slug}`;
+                  return (
+                    <Link key={s.slug} to={href}>
+                      <DropdownMenuItem className={!user || allowed ? "" : "opacity-50 pointer-events-none"}>
+                        {s.title}
+                      </DropdownMenuItem>
+                    </Link>
+                  );
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
@@ -199,20 +228,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         Setores
                       </div>
                       <div className="grid grid-cols-1 gap-1">
-                        {sectors.map((s) => (
-                          <SheetClose asChild key={s.slug}>
-                            <Link
-                              to={
-                                user
-                                  ? `/setor/${s.slug}`
-                                  : `/login?redirect=/setor/${s.slug}`
-                              }
-                              className="block rounded-md px-3 py-2 hover:bg-secondary"
-                            >
-                              {s.title}
-                            </Link>
-                          </SheetClose>
-                        ))}
+                        {sectors.map((s) => {
+                          const allowed = canAccess(s.slug);
+                          const href = user
+                            ? `/setor/${s.slug}`
+                            : `/login?redirect=/setor/${s.slug}`;
+                          return (
+                            <SheetClose asChild key={s.slug}>
+                              <Link
+                                to={href}
+                                className={`block rounded-md px-3 py-2 hover:bg-secondary ${user && !allowed ? "opacity-50 pointer-events-none" : ""}`}
+                                aria-disabled={user ? String(!allowed) : undefined}
+                              >
+                                {s.title}
+                              </Link>
+                            </SheetClose>
+                          );
+                        })}
                       </div>
                       <div className="border-t border-border/60 mt-4 pt-4">
                         <div className="text-xs text-muted-foreground px-1 mb-2">
