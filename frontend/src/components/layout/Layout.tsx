@@ -21,6 +21,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthContext();
   const location = useLocation();
   const navigate = useNavigate();
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const handler = () => setTick((t) => t + 1);
+    window.addEventListener("auth:refresh", handler as EventListener);
+    return () => window.removeEventListener("auth:refresh", handler as EventListener);
+  }, []);
   const doLogout = () => {
     try {
       // notify socket that we are logging out
