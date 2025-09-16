@@ -35,7 +35,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-[100svh] w-full grid md:grid-cols-2 bg-background">
+    <div className="h-[100svh] w-[100vw] grid md:grid-cols-2 bg-background place-items-center overflow-hidden">
       {/* Brand side (desktop) */}
       <div className="hidden md:flex items-center justify-center p-10">
         <div className="w-full h-full rounded-2xl brand-gradient flex items-center justify-center">
@@ -57,18 +57,9 @@ export default function Login() {
       </div>
 
       {/* Form side */}
-      <div className="flex items-center justify-center p-6 md:p-10">
-        <div className="w-full max-w-md">
-          {/* Mobile logo */}
-          <div className="md:hidden flex items-center justify-center mb-8">
-            <img
-              src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
-              alt="Evoque Fitness Logo"
-              className="h-8 w-auto rounded-sm shadow-sm"
-            />
-          </div>
-
-          <div className="card-surface rounded-xl p-6 sm:p-8">
+      <div className="flex items-center justify-center p-0 md:p-10 min-h-0">
+        <div className="w-full sm:max-w-md mx-auto">
+          <div className="card-surface rounded-xl p-6 sm:p-8 w-full max-h-[88svh] overflow-auto flex flex-col justify-center">
             <h2 className="text-xl font-semibold">Entrar</h2>
             <p className="text-sm text-muted-foreground mt-1">
               Use suas credenciais para acessar o ERP.
@@ -120,11 +111,9 @@ export default function Login() {
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
+            <p className="text-xs text-muted-foreground text-center mt-4 sm:mt-6">© {new Date().getFullYear()} Evoque Fitness — Sistema interno</p>
           </div>
 
-          <p className="text-xs text-muted-foreground text-center mt-6">
-            © {new Date().getFullYear()} Evoque Fitness — Sistema interno
-          </p>
         </div>
       </div>
     </div>

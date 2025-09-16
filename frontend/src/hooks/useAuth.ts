@@ -205,6 +205,20 @@ export function useAuth() {
             } catch {}
           }
         });
+
+        // Server-side permission/profile update for this user
+        socket.on("auth:refresh", (data: any) => {
+          try {
+            const uid = data?.user_id;
+            const curr = readFromStorage();
+            if (curr && curr.id && uid === curr.id) {
+              console.debug("[SIO] auth:refresh for user", uid);
+              window.dispatchEvent(new CustomEvent("auth:refresh"));
+            }
+          } catch (e) {
+            console.debug("[SIO] auth:refresh handler error", e);
+          }
+        });
       } catch (e) {
         // ignore socket setup errors
       }
