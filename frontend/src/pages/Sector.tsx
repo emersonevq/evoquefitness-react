@@ -74,7 +74,27 @@ export default function SectorPage() {
     };
     const required = mapa[slug || ""];
     if (!required) return false;
-    return Array.isArray(user.setores) && user.setores.includes(required);
+    const normalize = (s: any) =>
+      typeof s === "string"
+        ? s
+            .normalize("NFKD")
+            .replace(/\p{Diacritic}/gu, "")
+            .toLowerCase()
+        : s;
+    const userSectors = Array.isArray(user.setores)
+      ? user.setores.map(normalize)
+      : [];
+    const reqNorm = normalize(required);
+    return userSectors.some((s) => {
+      if (!s || !reqNorm) return false;
+      return (
+        s === reqNorm ||
+        s.includes(reqNorm) ||
+        reqNorm.includes(s) ||
+        s.split(" ").some((tok) => reqNorm.includes(tok)) ||
+        reqNorm.split(" ").some((tok) => s.includes(tok))
+      );
+    });
   };
 
   if (!isTI) {
