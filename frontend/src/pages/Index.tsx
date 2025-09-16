@@ -10,6 +10,7 @@ import { sectors } from "@/data/sectors";
 import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "@/lib/auth-context";
+import { useEffect, useState } from "react";
 
 export default function Index() {
   const { user } = useAuthContext();
