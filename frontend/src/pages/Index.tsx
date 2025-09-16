@@ -18,7 +18,8 @@ export default function Index() {
   useEffect(() => {
     const handler = () => setTick((t) => t + 1);
     window.addEventListener("auth:refresh", handler as EventListener);
-    return () => window.removeEventListener("auth:refresh", handler as EventListener);
+    return () =>
+      window.removeEventListener("auth:refresh", handler as EventListener);
   }, []);
 
   const normalize = (s: any) =>
@@ -46,7 +47,9 @@ export default function Index() {
     if (!required) return false;
     const req = normalize(required);
     const arr = Array.isArray(user.setores) ? user.setores.map(normalize) : [];
-    return arr.some((s) => s && (s === req || s.includes(req) || req.includes(s)));
+    return arr.some(
+      (s) => s && (s === req || s.includes(req) || req.includes(s)),
+    );
   };
 
   return (
@@ -81,7 +84,13 @@ export default function Index() {
                         : `/login?redirect=/setor/${s.slug}`;
                       return (
                         <Link key={s.slug} to={href}>
-                          <DropdownMenuItem className={!user || allowed ? "" : "opacity-50 pointer-events-none"}>
+                          <DropdownMenuItem
+                            className={
+                              !user || allowed
+                                ? ""
+                                : "opacity-50 pointer-events-none"
+                            }
+                          >
                             {s.title}
                           </DropdownMenuItem>
                         </Link>
@@ -102,7 +111,9 @@ export default function Index() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {sectors.map((s) => {
               const allowed = canAccess(s.slug);
-              const href = user ? `/setor/${s.slug}` : `/login?redirect=/setor/${s.slug}`;
+              const href = user
+                ? `/setor/${s.slug}`
+                : `/login?redirect=/setor/${s.slug}`;
               return (
                 <Link
                   to={href}

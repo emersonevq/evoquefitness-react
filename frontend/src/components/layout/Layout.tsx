@@ -26,7 +26,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handler = () => setTick((t) => t + 1);
     window.addEventListener("auth:refresh", handler as EventListener);
-    return () => window.removeEventListener("auth:refresh", handler as EventListener);
+    return () =>
+      window.removeEventListener("auth:refresh", handler as EventListener);
   }, []);
   const doLogout = () => {
     try {
@@ -66,7 +67,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (!required) return false;
     const req = normalize(required);
     const arr = Array.isArray(user.setores) ? user.setores.map(normalize) : [];
-    return arr.some((s) => s && (s === req || s.includes(req) || req.includes(s)));
+    return arr.some(
+      (s) => s && (s === req || s.includes(req) || req.includes(s)),
+    );
   };
   const adminGroups = [
     {
@@ -139,7 +142,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     : `/login?redirect=/setor/${s.slug}`;
                   return (
                     <Link key={s.slug} to={href}>
-                      <DropdownMenuItem className={!user || allowed ? "" : "opacity-50 pointer-events-none"}>
+                      <DropdownMenuItem
+                        className={
+                          !user || allowed
+                            ? ""
+                            : "opacity-50 pointer-events-none"
+                        }
+                      >
                         {s.title}
                       </DropdownMenuItem>
                     </Link>
@@ -245,7 +254,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                               <Link
                                 to={href}
                                 className={`block rounded-md px-3 py-2 hover:bg-secondary ${user && !allowed ? "opacity-50 pointer-events-none" : ""}`}
-                                aria-disabled={user ? String(!allowed) : undefined}
+                                aria-disabled={
+                                  user ? String(!allowed) : undefined
+                                }
                               >
                                 {s.title}
                               </Link>
