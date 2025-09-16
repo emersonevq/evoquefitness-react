@@ -14,6 +14,34 @@ import { useAuthContext } from "@/lib/auth-context";
 export default function Index() {
   const { user } = useAuthContext();
 
+  const normalize = (s: any) =>
+    typeof s === "string"
+      ? s
+          .normalize("NFKD")
+          .replace(/\p{Diacritic}/gu, "")
+          .toLowerCase()
+      : s;
+  const slugToKey: Record<string, string> = {
+    ti: "TI",
+    compras: "Compras",
+    manutencao: "Manutencao",
+    financeiro: "Financeiro",
+    marketing: "Marketing",
+    produtos: "Produtos",
+    comercial: "Comercial",
+    "outros-servicos": "Outros",
+    servicos: "Outros",
+  };
+  const canAccess = (slug: string) => {
+    if (!user) return false;
+    if (user.nivel_acesso === "Administrador") return true;
+    const required = slugToKey[slug];
+    if (!required) return false;
+    const req = normalize(required);
+    const arr = Array.isArray(user.setores) ? user.setores.map(normalize) : [];
+    return arr.some((s) => s && (s === req || s.includes(req) || req.includes(s)));
+  };
+
   return (
     <Layout>
       {/* Hero */}
@@ -39,18 +67,19 @@ export default function Index() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="center">
-                    {sectors.map((s) => (
-                      <Link
-                        key={s.slug}
-                        to={
-                          user
-                            ? `/setor/${s.slug}`
-                            : `/login?redirect=/setor/${s.slug}`
-                        }
-                      >
-                        <DropdownMenuItem>{s.title}</DropdownMenuItem>
-                      </Link>
-                    ))}
+                    {sectors.map((s) => {
+                      const allowed = canAccess(s.slug);
+                      const href = user
+                        ? `/setor/${s.slug}`
+                        : `/login?redirect=/setor/${s.slug}`;
+                      return (
+                        <Link key={s.slug} to={href}>
+                          <DropdownMenuItem className={!user || allowed ? "" : "opacity-50 pointer-events-none"}>
+                            {s.title}
+                          </DropdownMenuItem>
+                        </Link>
+                      );
+                    })}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -64,25 +93,28 @@ export default function Index() {
         <div className="container">
           <h2 className="text-xl sm:text-2xl font-bold mb-6">Nossos setores</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {sectors.map((s) => (
-              <Link
-                to={
-                  user ? `/setor/${s.slug}` : `/login?redirect=/setor/${s.slug}`
-                }
-                key={s.slug}
-                className="card-surface group rounded-xl p-5 transition hover:shadow-lg hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <div className="flex items-center gap-3">
-                  <s.icon className="size-8 text-primary" />
-                  <div>
-                    <h3 className="font-semibold">{s.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {s.description}
-                    </p>
+            {sectors.map((s) => {
+              const allowed = canAccess(s.slug);
+              const href = user ? `/setor/${s.slug}` : `/login?redirect=/setor/${s.slug}`;
+              return (
+                <Link
+                  to={href}
+                  key={s.slug}
+                  className={`card-surface group rounded-xl p-5 transition hover:shadow-lg hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring ${user && !allowed ? "opacity-50 pointer-events-none" : ""}`}
+                  aria-disabled={user ? String(!allowed) : undefined}
+                >
+                  <div className="flex items-center gap-3">
+                    <s.icon className="size-8 text-primary" />
+                    <div>
+                      <h3 className="font-semibold">{s.title}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {s.description}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
