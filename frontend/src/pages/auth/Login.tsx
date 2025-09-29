@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthContext } from "@/lib/auth-context";
+import LoginMediaPanel from "./components/LoginMediaPanel";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -36,24 +37,9 @@ export default function Login() {
 
   return (
     <div className="h-[100svh] w-[100vw] grid md:grid-cols-2 bg-background place-items-center overflow-hidden">
-      {/* Brand side (desktop) */}
+      {/* Brand/Media side (desktop) */}
       <div className="hidden md:flex items-center justify-center p-10">
-        <div className="w-full h-full rounded-2xl brand-gradient flex items-center justify-center">
-          <div className="max-w-md text-center text-primary-foreground px-8">
-            <img
-              src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
-              alt="Evoque Fitness Logo"
-              className="h-10 w-auto mx-auto mb-6 rounded-sm shadow-sm"
-            />
-            <h1 className="text-3xl font-extrabold drop-shadow">
-              Evoque Fitness
-            </h1>
-            <p className="mt-3 text-sm/6 opacity-90">
-              Acesse seu painel para gerenciar chamados e acompanhar métricas do
-              setor.
-            </p>
-          </div>
-        </div>
+        <LoginMediaPanel />
       </div>
 
       {/* Form side */}
