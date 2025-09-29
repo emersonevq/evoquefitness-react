@@ -24,16 +24,38 @@ async function fetchLoginMedia(signal?: AbortSignal): Promise<MediaItem[]> {
 }
 
 export default function LoginMediaPanel() {
-  const [items, setItems] = useState<MediaItem[]>([]);
+  const defaultItems: MediaItem[] = [
+    {
+      id: "default-1",
+      type: "image",
+      url: "https://cdn.builder.io/api/v1/image/assets%2Ffebea1b69437410ebd88e454001ca510%2Fe38b6c90873e4ea48f163db39b62fff9?format=webp&width=1600",
+      title: "EVOQUE ACADEMIA",
+      description: "no mundo da inteligência artificial",
+      alt: "Evoque Academia",
+    },
+    {
+      id: "default-2",
+      type: "image",
+      url: "https://cdn.builder.io/api/v1/image/assets%2Ffebea1b69437410ebd88e454001ca510%2F3a4a4f300e384651b805810074ea77d3?format=webp&width=1600",
+      title: "Evoque Collection",
+      description: "estilo é atitude",
+      alt: "Evoque Collection",
+    },
+  ];
+
+  const [items, setItems] = useState<MediaItem[]>(defaultItems);
   const [error, setError] = useState<string | null>(null);
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start", skipSnaps: false });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "center", skipSnaps: false });
   const autoplayRef = useRef<number | null>(null);
 
   useEffect(() => {
     const ac = new AbortController();
     fetchLoginMedia(ac.signal)
-      .then((list) => setItems(list.filter(Boolean)))
-      .catch(() => setItems([]))
+      .then((list) => {
+        const filtered = list.filter(Boolean);
+        if (filtered.length > 0) setItems(filtered);
+      })
+      .catch(() => setError("failed"))
       .finally(() => ac.abort());
     return () => ac.abort();
   }, []);
