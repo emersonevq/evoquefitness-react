@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from ti.api import chamados_router, unidades_router, problemas_router, notifications_router, email_debug_router
 from ti.api.usuarios import router as usuarios_router
 from core.realtime import mount_socketio
+import json
+from typing import Any
 
 # Create the FastAPI application (HTTP)
 _http = FastAPI(title="Evoque API - TI", version="1.0.0")
@@ -26,6 +28,19 @@ _http.add_middleware(
 @_http.get("/api/ping")
 def ping():
     return {"message": "pong"}
+
+@_http.get("/api/login-media")
+def login_media():
+    path = _uploads / "login-media.json"
+    if not path.exists():
+        return []
+    try:
+        data: Any = json.loads(path.read_text("utf-8"))
+        if isinstance(data, list):
+            return data
+        return []
+    except Exception:
+        return []
 
 # Primary mount under /api
 _http.include_router(chamados_router, prefix="/api")

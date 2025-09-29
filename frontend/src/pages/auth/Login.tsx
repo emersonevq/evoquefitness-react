@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthContext } from "@/lib/auth-context";
+import LoginMediaPanel from "./components/LoginMediaPanel";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -35,29 +36,16 @@ export default function Login() {
   };
 
   return (
-    <div className="h-[100svh] w-[100vw] grid md:grid-cols-2 bg-background place-items-center overflow-hidden">
-      {/* Brand side (desktop) */}
-      <div className="hidden md:flex items-center justify-center p-10">
-        <div className="w-full h-full rounded-2xl brand-gradient flex items-center justify-center">
-          <div className="max-w-md text-center text-primary-foreground px-8">
-            <img
-              src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
-              alt="Evoque Fitness Logo"
-              className="h-10 w-auto mx-auto mb-6 rounded-sm shadow-sm"
-            />
-            <h1 className="text-3xl font-extrabold drop-shadow">
-              Evoque Fitness
-            </h1>
-            <p className="mt-3 text-sm/6 opacity-90">
-              Acesse seu painel para gerenciar chamados e acompanhar métricas do
-              setor.
-            </p>
-          </div>
-        </div>
+    <div className="relative h-[100svh] w-[100vw] grid md:grid-cols-3 bg-background place-items-center overflow-hidden">
+      <div className="absolute inset-0 login-backdrop pointer-events-none -z-10" />
+
+      {/* Brand/Media side (desktop) - larger */}
+      <div className="hidden md:flex md:col-span-2 items-center justify-center px-6 py-8 md:px-10 md:py-10 w-full h-full">
+        <LoginMediaPanel />
       </div>
 
       {/* Form side */}
-      <div className="flex items-center justify-center p-0 md:p-10 min-h-0">
+      <div className="flex items-center justify-center p-4 md:p-10 min-h-0 md:col-span-1 w-full">
         <div className="w-full sm:max-w-md mx-auto">
           <div className="card-surface rounded-xl p-6 sm:p-8 w-full max-h-[88svh] overflow-auto flex flex-col justify-center">
             <h2 className="text-xl font-semibold">Entrar</h2>
@@ -111,9 +99,10 @@ export default function Login() {
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
-            <p className="text-xs text-muted-foreground text-center mt-4 sm:mt-6">© {new Date().getFullYear()} Evoque Fitness — Sistema interno</p>
+            <p className="text-xs text-muted-foreground text-center mt-4 sm:mt-6">
+              © {new Date().getFullYear()} Evoque Fitness — Sistema interno
+            </p>
           </div>
-
         </div>
       </div>
     </div>
