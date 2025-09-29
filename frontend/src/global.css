@@ -196,4 +196,15 @@
       hsl(290 70% 50%) 100%
     );
   }
+
+  /* Login unified backdrop and media tweaks */
+  .login-backdrop {
+    background-image: linear-gradient(90deg, rgba(var(--brand-start), 0.06), rgba(var(--brand-end), 0.06));
+    backdrop-filter: blur(6px);
+  }
+  .login-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
