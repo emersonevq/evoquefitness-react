@@ -55,8 +55,8 @@ export default function LoginMediaPanel() {
 
   if (showFallback) {
     return (
-      <div className="w-full h-full rounded-2xl brand-gradient flex items-center justify-center">
-        <div className="max-w-md text-center text-primary-foreground px-8">
+      <div className="w-full h-full rounded-2xl overflow-hidden brand-gradient flex items-center justify-center">
+        <div className="max-w-lg text-center text-primary-foreground px-6">
           <img
             src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
             alt="Evoque Fitness Logo"
@@ -72,7 +72,7 @@ export default function LoginMediaPanel() {
   }
 
   return (
-    <div className="w-full h-full rounded-2xl overflow-hidden relative">
+    <div className="w-full h-full rounded-2xl overflow-hidden relative min-h-[60vh]">
       <div className="absolute inset-0 brand-gradient opacity-70" aria-hidden="true" />
       <div className="relative h-full embla" ref={emblaRef}>
         <div className="embla__container flex h-full">
