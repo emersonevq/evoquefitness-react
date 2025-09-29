@@ -36,14 +36,16 @@ export default function Login() {
   };
 
   return (
-    <div className="h-[100svh] w-[100vw] grid md:grid-cols-2 bg-background place-items-center overflow-hidden">
-      {/* Brand/Media side (desktop) */}
-      <div className="hidden md:flex items-center justify-center p-10">
+    <div className="relative h-[100svh] w-[100vw] grid md:grid-cols-3 bg-background place-items-center overflow-hidden">
+      <div className="absolute inset-0 login-backdrop pointer-events-none -z-10" />
+
+      {/* Brand/Media side (desktop) - larger */}
+      <div className="hidden md:flex md:col-span-2 items-center justify-center px-6 py-8 md:px-10 md:py-10 w-full h-full">
         <LoginMediaPanel />
       </div>
 
       {/* Form side */}
-      <div className="flex items-center justify-center p-0 md:p-10 min-h-0">
+      <div className="flex items-center justify-center p-4 md:p-10 min-h-0 md:col-span-1 w-full">
         <div className="w-full sm:max-w-md mx-auto">
           <div className="card-surface rounded-xl p-6 sm:p-8 w-full max-h-[88svh] overflow-auto flex flex-col justify-center">
             <h2 className="text-xl font-semibold">Entrar</h2>
