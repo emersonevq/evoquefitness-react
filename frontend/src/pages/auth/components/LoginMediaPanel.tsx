@@ -94,11 +94,11 @@ function Slide({ item }: { item: MediaItem }) {
         <img
           src={item.url}
           alt={item.alt || item.title || "Imagem"}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover login-media"
         />
       ) : item.type === "video" && item.url ? (
         <video
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover login-media"
           src={item.url}
           autoPlay
           muted
