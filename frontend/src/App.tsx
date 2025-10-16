@@ -53,6 +53,7 @@ import {
   Integracoes as ConfIntegracoes,
   Acoes as ConfAcoes,
 } from "./pages/sectors/ti/admin/configuracoes/pages";
+import LoginMediaConfig from "./pages/sectors/ti/admin/configuracoes/LoginMediaConfig";
 import {
   Monitoramento as AdminMonitoramento,
   Historico as AdminHistorico,
