@@ -246,20 +246,29 @@ export function useAuth() {
         if (!mounted) return;
         const current = readFromStorage();
         if (!current || !current.id) return;
-        console.debug("[AUTH] Refreshing user data for id", current.id);
+        console.debug("[AUTH] ⟳ Refreshing user data for id", current.id);
         const res = await fetch(`/api/usuarios/${current.id}`);
         if (!res.ok) {
-          console.debug("[AUTH] Refresh failed with status", res.status);
+          console.debug("[AUTH] ✗ Refresh failed with status", res.status);
           return;
         }
         const data = await res.json();
         const now = Date.now();
+        const oldSetores = current.setores || [];
+        const newSetores = Array.isArray(data.setores) ? data.setores : [];
+
+        // Check if setores actually changed
+        const setoresChanged = JSON.stringify(oldSetores.sort()) !== JSON.stringify(newSetores.sort());
+        if (setoresChanged) {
+          console.log("[AUTH] ✓ Setores changed:", oldSetores, "→", newSetores);
+        }
+
         const base: AuthUser = {
           id: data.id,
           email: data.email,
           name: `${data.nome} ${data.sobrenome}`,
           nivel_acesso: data.nivel_acesso,
-          setores: Array.isArray(data.setores) ? data.setores : [],
+          setores: newSetores,
           loginTime: now,
           alterar_senha_primeiro_acesso: !!data.alterar_senha_primeiro_acesso,
         };
@@ -267,7 +276,7 @@ export function useAuth() {
           ...base,
           expiresAt: now + REMEMBER_EXPIRY,
         };
-        console.debug("[AUTH] Updated user with setores:", base.setores);
+        console.debug("[AUTH] ✓ Updated user with setores:", base.setores);
         setUser(base);
         try {
           // prefer preserving existing storage choice
@@ -279,15 +288,21 @@ export function useAuth() {
         // re-identify socket on refresh
         try {
           const s = (window as any).__APP_SOCK__;
-          if (s && s.connected && base.id)
+          if (s && s.connected && base.id) {
+            console.debug("[AUTH] Re-identifying socket after refresh");
             s.emit("identify", { user_id: base.id });
-        } catch (e) {}
+          }
+        } catch (e) {
+          console.debug("[AUTH] Socket re-identify failed:", e);
+        }
       } catch (err) {
-        console.debug("[AUTH] Refresh error:", err);
+        console.error("[AUTH] ✗ Refresh error:", err);
       }
     };
+
     window.addEventListener("auth:refresh", refresh as EventListener);
     window.addEventListener("users:changed", refresh as EventListener);
+    window.addEventListener("user:updated", refresh as EventListener);
     return () => {
       mounted = false;
       window.removeEventListener("auth:refresh", refresh as EventListener);
