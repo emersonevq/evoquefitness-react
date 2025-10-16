@@ -163,20 +163,37 @@ def listar_bloqueados(db: Session = Depends(get_db)):
 @router.put("/{user_id}", response_model=UserOut)
 def atualizar_usuario(user_id: int, payload: dict, db: Session = Depends(get_db)):
     try:
-        print(f"[API] atualizar_usuario called for user_id={user_id}, payload={payload}")
+        print(f"[API] atualizar_usuario called for user_id={user_id}, payload keys={list(payload.keys())}")
         updated = update_user(db, user_id, payload)
         print(f"[API] User updated successfully, new setores={getattr(updated, '_setores', 'N/A')}")
+
         # Notify the specific user their permissions/profile changed
         try:
             from core.realtime import emit_refresh_sync
             import threading
-            print(f"[API] Starting thread to emit auth:refresh for user_id={updated.id}")
-            t = threading.Thread(target=emit_refresh_sync, args=(updated.id,), daemon=True)
+            import time
+
+            print(f"[API] Starting threads to emit auth:refresh for user_id={updated.id}")
+
+            # Send immediately
+            print(f"[API] Sending refresh event immediately...")
+            emit_refresh_sync(updated.id)
+
+            # Also send after a short delay to ensure client is ready
+            def delayed_emit():
+                time.sleep(0.2)
+                print(f"[API] Sending delayed refresh event for user_id={updated.id}")
+                emit_refresh_sync(updated.id)
+
+            t = threading.Thread(target=delayed_emit, daemon=True)
             t.start()
+
+            print(f"[API] Refresh events queued for user_id={updated.id}")
         except Exception as ex:
             print(f"[API] failed to emit auth:refresh: {ex}")
             import traceback
             traceback.print_exc()
+
         return updated
     except ValueError as e:
         print(f"[API] ValueError: {e}")
