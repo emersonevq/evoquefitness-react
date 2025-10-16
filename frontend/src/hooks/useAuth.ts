@@ -150,35 +150,42 @@ export function useAuth() {
     let socket: any = (window as any).__APP_SOCK__;
     let mounted = true;
     const setupSocket = async () => {
-      if (socket) return socket;
+      if (socket) {
+        console.debug("[SIO] Socket already exists, reusing");
+        return socket;
+      }
       try {
+        console.debug("[SIO] Setting up socket connection");
         const { io } = await import("socket.io-client");
         // Connect socket to same origin (server mounts socket.io at root /socket.io)
         const origin = window.location.origin;
         const path = "/socket.io";
+        console.debug("[SIO] Connecting to", origin, "path", path);
         socket = io(origin, {
           path,
           transports: ["websocket", "polling"],
           autoConnect: true,
         });
         (window as any).__APP_SOCK__ = socket;
+        console.debug("[SIO] Socket created and stored globally");
+
         socket.on("connect", () => {
-          console.debug("[SIO] connect", socket.id);
+          console.debug("[SIO] ✓ Socket connected with ID", socket.id);
           // identify if we have a current user
           const curr = readFromStorage();
           if (curr && curr.id) {
             socket.emit("identify", { user_id: curr.id });
-            console.debug("[SIO] identify emitted for user", curr.id);
+            console.debug("[SIO] ✓ Identify emitted for user", curr.id);
           }
         });
         socket.on("disconnect", (reason: any) => {
-          console.debug("[SIO] disconnect", reason);
+          console.debug("[SIO] Socket disconnected:", reason);
         });
         socket.on("connect_error", (err: any) => {
-          console.debug("[SIO] connect_error", err);
+          console.error("[SIO] ✗ Connection error:", err);
         });
         socket.on("auth:logout", (data: any) => {
-          console.debug("[SIO] auth:logout received", data);
+          console.debug("[SIO] Received auth:logout event", data);
           try {
             const uid = data?.user_id;
             const curr = readFromStorage();
@@ -208,24 +215,31 @@ export function useAuth() {
 
         // Server-side permission/profile update for this user
         socket.on("auth:refresh", (data: any) => {
+          console.debug("[SIO] ✓ Received auth:refresh event from server", data);
           try {
             const uid = data?.user_id;
             const curr = readFromStorage();
             if (curr && curr.id && uid === curr.id) {
-              console.debug("[SIO] auth:refresh for user", uid, "- refreshing permissions");
+              console.debug("[SIO] ✓ Event is for current user", uid, "- will refresh permissions");
               // Dispatch the refresh event to trigger permission updates
               window.dispatchEvent(new CustomEvent("auth:refresh"));
+            } else {
+              console.debug("[SIO] Event is for different user or no current user. uid:", uid, "curr.id:", curr?.id);
             }
           } catch (e) {
-            console.debug("[SIO] auth:refresh handler error", e);
+            console.error("[SIO] auth:refresh handler error", e);
           }
         });
       } catch (e) {
-        // ignore socket setup errors
+        console.error("[SIO] ✗ Socket setup error:", e);
       }
       return socket;
     };
-    setupSocket();
+
+    // Await socket setup to ensure it's ready before listening for refresh
+    setupSocket().catch((err) => {
+      console.error("[SIO] Failed to setup socket:", err);
+    });
 
     const refresh = async () => {
       try {
