@@ -27,15 +27,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const handler = () => {
-      console.debug("[LAYOUT] Permission update detected");
+      console.debug("[LAYOUT] Permission update detected (auth:refresh)");
       setTick((t) => t + 1);
       // Show feedback that permissions were updated
       setPermissionsUpdated(true);
       setTimeout(() => setPermissionsUpdated(false), 2500);
     };
+
+    const userDataHandler = () => {
+      console.debug("[LAYOUT] Permission update detected (user:data-updated)");
+      setTick((t) => t + 1);
+      setPermissionsUpdated(true);
+      setTimeout(() => setPermissionsUpdated(false), 2500);
+    };
+
     window.addEventListener("auth:refresh", handler as EventListener);
-    return () =>
+    window.addEventListener("user:data-updated", userDataHandler as EventListener);
+
+    return () => {
       window.removeEventListener("auth:refresh", handler as EventListener);
+      window.removeEventListener("user:data-updated", userDataHandler as EventListener);
+    };
   }, []);
   const doLogout = () => {
     try {
