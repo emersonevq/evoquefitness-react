@@ -82,7 +82,7 @@ export default function LoginMediaPanel() {
 
   if (showFallback) {
     return (
-      <div className="relative overflow-hidden rounded-2xl mx-auto size-[360px] sm:size-[460px] md:size-[520px] lg:size-[560px] xl:size-[640px] brand-gradient flex items-center justify-center">
+      <div className="relative overflow-hidden rounded-2xl mx-auto w-[360px] h-[360px] sm:w-[460px] sm:h-[460px] md:w-[520px] md:h-[520px] lg:w-[560px] lg:h-[560px] xl:w-[640px] xl:h-[640px] brand-gradient flex items-center justify-center">
         <div className="max-w-lg text-center text-primary-foreground px-6">
           <img
             src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
