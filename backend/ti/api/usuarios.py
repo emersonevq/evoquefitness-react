@@ -163,19 +163,28 @@ def listar_bloqueados(db: Session = Depends(get_db)):
 @router.put("/{user_id}", response_model=UserOut)
 def atualizar_usuario(user_id: int, payload: dict, db: Session = Depends(get_db)):
     try:
+        print(f"[API] atualizar_usuario called for user_id={user_id}, payload={payload}")
         updated = update_user(db, user_id, payload)
+        print(f"[API] User updated successfully, new setores={getattr(updated, '_setores', 'N/A')}")
         # Notify the specific user their permissions/profile changed
         try:
             from core.realtime import emit_refresh_sync
             import threading
+            print(f"[API] Starting thread to emit auth:refresh for user_id={updated.id}")
             t = threading.Thread(target=emit_refresh_sync, args=(updated.id,), daemon=True)
             t.start()
         except Exception as ex:
             print(f"[API] failed to emit auth:refresh: {ex}")
+            import traceback
+            traceback.print_exc()
         return updated
     except ValueError as e:
+        print(f"[API] ValueError: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        print(f"[API] Exception: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao atualizar: {e}")
 
 
