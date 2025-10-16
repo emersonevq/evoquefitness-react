@@ -295,15 +295,23 @@ export function useAuth() {
           ...base,
           expiresAt: now + REMEMBER_EXPIRY,
         };
-        console.debug("[AUTH] ✓ Updated user with setores:", base.setores);
+        console.debug("[AUTH] ✓ Updating user state with new data");
         setUser(base);
+
         try {
           // prefer preserving existing storage choice
           const sessionRaw = sessionStorage.getItem(AUTH_KEY);
-          if (sessionRaw)
+          if (sessionRaw) {
+            console.debug("[AUTH] Updating sessionStorage");
             sessionStorage.setItem(AUTH_KEY, JSON.stringify(record));
-          else localStorage.setItem(AUTH_KEY, JSON.stringify(record));
-        } catch {}
+          } else {
+            console.debug("[AUTH] Updating localStorage");
+            localStorage.setItem(AUTH_KEY, JSON.stringify(record));
+          }
+        } catch (e) {
+          console.error("[AUTH] Failed to update storage:", e);
+        }
+
         // re-identify socket on refresh
         try {
           const s = (window as any).__APP_SOCK__;
@@ -314,8 +322,17 @@ export function useAuth() {
         } catch (e) {
           console.debug("[AUTH] Socket re-identify failed:", e);
         }
+
+        // Force a secondary dispatch to ensure all listeners get notified
+        if (setoresChanged || nivelChanged) {
+          console.debug("[AUTH] Dispatching 'user:data-updated' event for UI re-render");
+          window.dispatchEvent(new CustomEvent("user:data-updated", {
+            detail: { changed: { setores: setoresChanged, nivel_acesso: nivelChanged } }
+          }));
+        }
       } catch (err) {
         console.error("[AUTH] ✗ Refresh error:", err);
+        permissionDebugger.log("api", `❌ Refresh failed: ${err}`, err);
       }
     };
 
