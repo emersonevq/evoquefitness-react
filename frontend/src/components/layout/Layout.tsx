@@ -106,6 +106,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   ];
   return (
     <div className="min-h-[100svh] md:min-h-screen w-full flex flex-col">
+      {/* Permission update notification */}
+      {permissionsUpdated && (
+        <div className="fixed top-4 right-4 z-50 bg-green-50 border border-green-300 rounded-lg px-4 py-3 text-sm text-green-800 shadow-md animate-in fade-in slide-in-from-right-2 duration-300">
+          ✓ Permissões sincronizadas
+        </div>
+      )}
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur">
         <div className="h-1 w-full brand-gradient" />
         <div className="container flex items-center justify-between py-3 gap-2">
