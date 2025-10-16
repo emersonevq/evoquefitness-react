@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import useEmblaCarousel, { EmblaCarouselType } from "embla-carousel-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 
 type MediaKind = "image" | "video" | "message";
 
@@ -16,7 +17,7 @@ interface MediaItem {
 }
 
 async function fetchLoginMedia(signal?: AbortSignal): Promise<MediaItem[]> {
-  const res = await fetch("/api/login-media", { signal });
+  const res = await apiFetch("/login-media", { signal });
   if (!res.ok) throw new Error("failed");
   const data = await res.json();
   if (!Array.isArray(data)) return [];
@@ -81,19 +82,16 @@ export default function LoginMediaPanel() {
 
   if (showFallback) {
     return (
-      <div className="w-full h-full rounded-2xl overflow-hidden brand-gradient flex items-center justify-center">
+      <div className="relative overflow-hidden rounded-2xl mx-auto size-[360px] sm:size-[460px] md:size-[520px] lg:size-[560px] xl:size-[640px] brand-gradient flex items-center justify-center">
         <div className="max-w-lg text-center text-primary-foreground px-6">
           <img
             src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
             alt="Evoque Fitness Logo"
             className="h-10 w-auto mx-auto mb-6 rounded-sm shadow-sm"
           />
-          <h1 className="text-3xl font-extrabold drop-shadow">
-            Evoque Fitness
-          </h1>
+          <h1 className="text-3xl font-extrabold drop-shadow">Evoque Fitness</h1>
           <p className="mt-3 text-sm/6 opacity-90">
-            Acesse seu painel para gerenciar chamados e acompanhar métricas do
-            setor.
+            Acesse seu painel para gerenciar chamados e acompanhar métricas do setor.
           </p>
         </div>
       </div>
@@ -101,18 +99,12 @@ export default function LoginMediaPanel() {
   }
 
   return (
-    <div className="w-full h-full rounded-2xl overflow-hidden relative min-h-[60vh]">
-      <div
-        className="absolute inset-0 brand-gradient opacity-70"
-        aria-hidden="true"
-      />
+    <div className="relative overflow-hidden rounded-2xl mx-auto size-[360px] sm:size-[460px] md:size-[520px] lg:size-[560px] xl:size-[640px]">
+      <div className="absolute inset-0 brand-gradient opacity-70" aria-hidden="true" />
       <div className="relative h-full embla" ref={emblaRef}>
         <div className="embla__container flex h-full">
           {items.map((item) => (
-            <div
-              key={item.id}
-              className="embla__slide min-w-0 flex-[0_0_100%] h-full"
-            >
+            <div key={item.id} className="embla__slide min-w-0 flex-[0_0_100%] h-full">
               <Slide item={item} />
             </div>
           ))}
