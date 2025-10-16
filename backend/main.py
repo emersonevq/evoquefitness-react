@@ -142,6 +142,7 @@ _http.include_router(usuarios_router, prefix="/api")
 _http.include_router(unidades_router, prefix="/api")
 _http.include_router(problemas_router, prefix="/api")
 _http.include_router(notifications_router, prefix="/api")
+_http.include_router(alerts_router, prefix="/api")
 _http.include_router(email_debug_router, prefix="/api")
 
 # Compatibility mount without prefix, in case the server is run without proxy
