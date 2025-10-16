@@ -71,7 +71,8 @@ export default function LoginMediaConfig() {
         <div>
           <div className="font-semibold">Mídia do Painel de Login</div>
           <p className="text-sm text-muted-foreground">
-            Envie imagens ou vídeos que serão exibidos no painel esquerdo da tela de login.
+            Envie imagens ou vídeos que serão exibidos no painel esquerdo da
+            tela de login.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -83,7 +84,11 @@ export default function LoginMediaConfig() {
             className="hidden"
             onChange={onUpload}
           />
-          <Button onClick={onPick} disabled={isUploading} className="h-9 rounded-md">
+          <Button
+            onClick={onPick}
+            disabled={isUploading}
+            className="h-9 rounded-md"
+          >
             {isUploading ? "Enviando..." : "Adicionar mídia"}
           </Button>
         </div>
@@ -91,18 +96,34 @@ export default function LoginMediaConfig() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((it) => (
-          <div key={it.id} className="border rounded-lg overflow-hidden bg-background">
+          <div
+            key={it.id}
+            className="border rounded-lg overflow-hidden bg-background"
+          >
             <div className="aspect-square w-full bg-muted/40 flex items-center justify-center">
               {it.type === "image" && it.url ? (
-                <img src={it.url} alt={it.alt || it.title || "Imagem"} className="w-full h-full object-cover" />
+                <img
+                  src={it.url}
+                  alt={it.alt || it.title || "Imagem"}
+                  className="w-full h-full object-cover"
+                />
               ) : it.type === "video" && it.url ? (
-                <video src={it.url} className="w-full h-full object-cover" muted controls />
+                <video
+                  src={it.url}
+                  className="w-full h-full object-cover"
+                  muted
+                  controls
+                />
               ) : (
-                <div className="p-4 text-sm text-muted-foreground">{it.title || "Mensagem"}</div>
+                <div className="p-4 text-sm text-muted-foreground">
+                  {it.title || "Mensagem"}
+                </div>
               )}
             </div>
             <div className="flex items-center justify-between p-2">
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">{it.type}</div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                {it.type}
+              </div>
               <button
                 onClick={() => onDelete(it.id)}
                 className="text-xs px-2 py-1 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -113,7 +134,9 @@ export default function LoginMediaConfig() {
           </div>
         ))}
         {items.length === 0 ? (
-          <div className="col-span-full text-sm text-muted-foreground">Nenhuma mídia enviada ainda.</div>
+          <div className="col-span-full text-sm text-muted-foreground">
+            Nenhuma mídia enviada ainda.
+          </div>
         ) : null}
       </div>
     </div>

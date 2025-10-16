@@ -72,10 +72,17 @@ export default function Index() {
     };
   }, []);
 
-  const dismissed = typeof window !== "undefined" ? (JSON.parse(localStorage.getItem("dismissedAlerts") || "[]") as number[]) : [];
+  const dismissed =
+    typeof window !== "undefined"
+      ? (JSON.parse(
+          localStorage.getItem("dismissedAlerts") || "[]",
+        ) as number[])
+      : [];
   const dismiss = (id: number) => {
     try {
-      const arr = JSON.parse(localStorage.getItem("dismissedAlerts") || "[]") as number[];
+      const arr = JSON.parse(
+        localStorage.getItem("dismissedAlerts") || "[]",
+      ) as number[];
       if (!Array.isArray(arr)) {
         localStorage.setItem("dismissedAlerts", JSON.stringify([id]));
       } else {
@@ -133,14 +140,22 @@ export default function Index() {
           .filter((a) => a && a.ativo)
           .filter((a) => !dismissed.includes(a.id))
           .map((a) => (
-            <div key={a.id} className={`pointer-events-auto w-full max-w-4xl rounded-lg px-4 py-3 shadow-md text-sm ${a.severity === "danger" ? "bg-red-50 border border-red-300 text-red-800" : a.severity === "warning" ? "bg-yellow-50 border border-yellow-300 text-yellow-800" : "bg-blue-50 border border-blue-300 text-blue-800"}`}>
+            <div
+              key={a.id}
+              className={`pointer-events-auto w-full max-w-4xl rounded-lg px-4 py-3 shadow-md text-sm ${a.severity === "danger" ? "bg-red-50 border border-red-300 text-red-800" : a.severity === "warning" ? "bg-yellow-50 border border-yellow-300 text-yellow-800" : "bg-blue-50 border border-blue-300 text-blue-800"}`}
+            >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="font-semibold">{a.title || "Aviso"}</div>
                   <div className="mt-1">{a.message}</div>
                 </div>
                 <div className="flex-shrink-0">
-                  <button onClick={() => dismiss(a.id)} className="px-3 py-1 rounded-md bg-background">Fechar</button>
+                  <button
+                    onClick={() => dismiss(a.id)}
+                    className="px-3 py-1 rounded-md bg-background"
+                  >
+                    Fechar
+                  </button>
                 </div>
               </div>
             </div>

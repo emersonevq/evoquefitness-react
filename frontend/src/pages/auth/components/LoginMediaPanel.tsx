@@ -89,9 +89,12 @@ export default function LoginMediaPanel() {
             alt="Evoque Fitness Logo"
             className="h-10 w-auto mx-auto mb-6 rounded-sm shadow-sm"
           />
-          <h1 className="text-3xl font-extrabold drop-shadow">Evoque Fitness</h1>
+          <h1 className="text-3xl font-extrabold drop-shadow">
+            Evoque Fitness
+          </h1>
           <p className="mt-3 text-sm/6 opacity-90">
-            Acesse seu painel para gerenciar chamados e acompanhar métricas do setor.
+            Acesse seu painel para gerenciar chamados e acompanhar métricas do
+            setor.
           </p>
         </div>
       </div>
@@ -100,11 +103,17 @@ export default function LoginMediaPanel() {
 
   return (
     <div className="relative overflow-hidden rounded-2xl mx-auto w-[360px] h-[360px] sm:w-[460px] sm:h-[460px] md:w-[520px] md:h-[520px] lg:w-[560px] lg:h-[560px] xl:w-[640px] xl:h-[640px]">
-      <div className="absolute inset-0 brand-gradient opacity-70" aria-hidden="true" />
+      <div
+        className="absolute inset-0 brand-gradient opacity-70"
+        aria-hidden="true"
+      />
       <div className="relative h-full embla" ref={emblaRef}>
         <div className="embla__container flex h-full">
           {items.map((item) => (
-            <div key={item.id} className="embla__slide min-w-0 flex-[0_0_100%] h-full">
+            <div
+              key={item.id}
+              className="embla__slide min-w-0 flex-[0_0_100%] h-full"
+            >
               <Slide item={item} />
             </div>
           ))}
