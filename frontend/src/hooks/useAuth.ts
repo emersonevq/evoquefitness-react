@@ -258,16 +258,28 @@ export function useAuth() {
         }
         const data = await res.json();
         const now = Date.now();
-        const oldSetores = current.setores || [];
-        const newSetores = Array.isArray(data.setores) ? data.setores : [];
+        const oldSetores = (current.setores || []).slice().sort();
+        const newSetores = (Array.isArray(data.setores) ? data.setores : []).slice().sort();
 
-        // Check if setores actually changed
-        const setoresChanged = JSON.stringify(oldSetores.sort()) !== JSON.stringify(newSetores.sort());
+        // Deep comparison of setores
+        const setoresChanged = JSON.stringify(oldSetores) !== JSON.stringify(newSetores);
+
+        // Also check nivel_acesso
+        const nivelChanged = current.nivel_acesso !== data.nivel_acesso;
+
         if (setoresChanged) {
-          console.log("[AUTH] ✓ Setores changed:", oldSetores, "→", newSetores);
-          permissionDebugger.log("state", `Setores updated: ${oldSetores.join(", ")} → ${newSetores.join(", ")}`);
-        } else {
-          permissionDebugger.log("api", "No permission changes detected");
+          console.log("[AUTH] ✓ SETORES CHANGED:", oldSetores.join(", "), "→", newSetores.join(", "));
+          permissionDebugger.log("state", `✓ Setores CHANGED: ${oldSetores.join(", ")} → ${newSetores.join(", ")}`);
+        }
+
+        if (nivelChanged) {
+          console.log("[AUTH] ✓ NIVEL_ACESSO CHANGED:", current.nivel_acesso, "→", data.nivel_acesso);
+          permissionDebugger.log("state", `✓ Nivel acesso CHANGED: ${current.nivel_acesso} → ${data.nivel_acesso}`);
+        }
+
+        if (!setoresChanged && !nivelChanged) {
+          console.debug("[AUTH] ℹ No permission changes detected");
+          permissionDebugger.log("api", "ℹ No changes in permissions");
         }
 
         const base: AuthUser = {
