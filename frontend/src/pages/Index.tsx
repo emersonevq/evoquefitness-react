@@ -62,6 +62,12 @@ export default function Index() {
 
   return (
     <Layout>
+      {/* Permission update indicator */}
+      {showPermissionUpdate && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-green-50 border border-green-300 rounded-lg px-4 py-3 text-sm text-green-800 shadow-md animate-in fade-in slide-in-from-top-2 duration-300">
+          ✓ Suas permissões foram atualizadas!
+        </div>
+      )}
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="container py-8 sm:py-16">
