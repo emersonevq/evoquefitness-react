@@ -403,7 +403,10 @@ export function useAuth() {
     };
 
     window.addEventListener("auth:refresh", handleAuthRefresh as EventListener);
-    window.addEventListener("users:changed", handleUsersChanged as EventListener);
+    window.addEventListener(
+      "users:changed",
+      handleUsersChanged as EventListener,
+    );
     window.addEventListener("user:updated", handleUserUpdated as EventListener);
 
     // Polling fallback: periodically check for permission updates (every 10 seconds)
@@ -425,9 +428,18 @@ export function useAuth() {
     return () => {
       mounted = false;
       if (pollInterval) clearInterval(pollInterval);
-      window.removeEventListener("auth:refresh", handleAuthRefresh as EventListener);
-      window.removeEventListener("users:changed", handleUsersChanged as EventListener);
-      window.removeEventListener("user:updated", handleUserUpdated as EventListener);
+      window.removeEventListener(
+        "auth:refresh",
+        handleAuthRefresh as EventListener,
+      );
+      window.removeEventListener(
+        "users:changed",
+        handleUsersChanged as EventListener,
+      );
+      window.removeEventListener(
+        "user:updated",
+        handleUserUpdated as EventListener,
+      );
       // do not disconnect socket here - keep global alive
     };
   }, []);

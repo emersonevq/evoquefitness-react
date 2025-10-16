@@ -9,12 +9,14 @@ Quando um administrador alterava as permissões de um usuário no painel admin, 
 ### Backend (Python/FastAPI)
 
 **Arquivo: `backend/core/realtime.py`**
+
 - Socket.IO é usado para comunicação em tempo real
 - Quando um usuário faz login, ele entra em uma sala com ID `user:{user_id}`
 - Quando permissões são alteradas via API PUT `/api/usuarios/{user_id}`, o backend emite um evento `auth:refresh` para essa sala
 - Os eventos são enviados usando `sio.emit()` que é thread-safe
 
 **Arquivo: `backend/ti/api/usuarios.py`**
+
 - No endpoint `PUT /api/usuarios/{user_id}`, após atualizar o usuário:
   - Imediatamente emite `auth:refresh` via `emit_refresh_sync()`
   - Envia novamente com 200ms de delay para garantir que o cliente está pronto
@@ -25,12 +27,12 @@ try:
     from core.realtime import emit_refresh_sync
     print(f"[API] Sending refresh event immediately...")
     emit_refresh_sync(updated.id)
-    
+
     # Also send after a short delay to ensure client is ready
     def delayed_emit():
         time.sleep(0.2)
         emit_refresh_sync(updated.id)
-    
+
     t = threading.Thread(target=delayed_emit, daemon=True)
     t.start()
 except Exception as ex:
@@ -40,6 +42,7 @@ except Exception as ex:
 ### Frontend (React/TypeScript)
 
 **Arquivo: `frontend/src/hooks/useAuth.ts`**
+
 - WebSocket é estabelecido automaticamente ao carregar a aplicação
 - Quando o evento `auth:refresh` é recebido, a função `refresh()` é chamada
 - `refresh()` faz uma chamada GET `/api/usuarios/{user_id}` para obter dados atualizados
@@ -67,6 +70,7 @@ const setupPolling = () => {
 ```
 
 **Arquivo: `frontend/src/components/layout/RequireLogin.tsx`**
+
 - Quando o usuário está em uma página de setor (`/setor/:slug`), ativa polling agressivo a cada 5 segundos
 - Isso garante que mudanças de permissão sejam refletidas imediatamente
 
@@ -74,7 +78,9 @@ const setupPolling = () => {
 // Aggressive polling on sector pages to ensure permissions are up-to-date
 let sectorPollInterval: ReturnType<typeof setInterval> | null = null;
 if (shouldCheckNow() && !user?.nivel_acesso?.includes("Administrador")) {
-  console.debug("[REQUIRE_LOGIN] Setting up aggressive polling on sector page (5s)");
+  console.debug(
+    "[REQUIRE_LOGIN] Setting up aggressive polling on sector page (5s)",
+  );
   sectorPollInterval = setInterval(() => {
     if (mounted && !abort) {
       fetchRemote().catch(() => {});
@@ -84,6 +90,7 @@ if (shouldCheckNow() && !user?.nivel_acesso?.includes("Administrador")) {
 ```
 
 **Arquivo: `frontend/src/pages/Index.tsx` e `frontend/src/pages/Sector.tsx`**
+
 - Escutam os eventos `auth:refresh` e `user:data-updated`
 - Forçam re-render quando permissões mudam
 - Mostram notificação visual ao usuário sobre atualização de permissões
@@ -104,20 +111,24 @@ if (shouldCheckNow() && !user?.nivel_acesso?.includes("Administrador")) {
 ## Cenários Cobertos
 
 ### ✅ Permissão Adicionada
+
 - Usuário abre painel admin e adiciona setor ao usuário
 - Usuário vê setor aparecer na página inicial imediatamente
 - Clica no setor e tem acesso instantaneamente
 
 ### ✅ Permissão Removida
+
 - Usuário está em um setor quando admin remove sua permissão
 - Após sincronização, é automaticamente redirecionado com "Acesso negado"
 - Página inicial é atualizada e setor desaparece
 
 ### ✅ WebSocket Falha
+
 - Se o WebSocket cair, o polling de 10 segundos mantém sincronização
 - Se em página de setor, polling de 5 segundos garante sincronização rápida
 
 ### ✅ Múltiplos Setores
+
 - Suporta múltiplos setores por usuário (array `setores`)
 - Normalização de setores (remove acentos) garante matching correto
 - Aliases de setor mapeados corretamente (TI, Compras, etc.)
@@ -128,7 +139,7 @@ if (shouldCheckNow() && !user?.nivel_acesso?.includes("Administrador")) {
 
 2. **Múltiplos eventos de sincronização**: Enviados imediatamente e com 200ms de delay para garantir captura do cliente.
 
-3. **Polling adaptativo**: 
+3. **Polling adaptativo**:
    - 10 segundos de fallback geral
    - 5 segundos em páginas de setor
    - Garante sincronização rápida sem sobrecarregar servidor
@@ -140,6 +151,7 @@ if (shouldCheckNow() && !user?.nivel_acesso?.includes("Administrador")) {
 ## Dependências Adicionadas
 
 Nenhuma dependência novo foi adicionada. A solução usa:
+
 - **Backend**: `python-socketio` (já existente)
 - **Frontend**: `socket.io-client` (já existente)
 
@@ -165,6 +177,7 @@ Nenhuma dependência novo foi adicionada. A solução usa:
 ## Logs de Debug
 
 Ativar console do navegador para ver logs com prefixo:
+
 - `[AUTH]` - Hooks de autenticação
 - `[SIO]` - Socket.IO
 - `[LAYOUT]` - Layout component

@@ -96,7 +96,9 @@ export default function RequireLogin({
     // Aggressive polling on sector pages to ensure permissions are up-to-date
     let sectorPollInterval: ReturnType<typeof setInterval> | null = null;
     if (shouldCheckNow() && !user?.nivel_acesso?.includes("Administrador")) {
-      console.debug("[REQUIRE_LOGIN] Setting up aggressive polling on sector page (5s)");
+      console.debug(
+        "[REQUIRE_LOGIN] Setting up aggressive polling on sector page (5s)",
+      );
       sectorPollInterval = setInterval(() => {
         if (mounted && !abort) {
           fetchRemote().catch(() => {});
