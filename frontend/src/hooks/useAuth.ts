@@ -232,8 +232,12 @@ export function useAuth() {
         if (!mounted) return;
         const current = readFromStorage();
         if (!current || !current.id) return;
+        console.debug("[AUTH] Refreshing user data for id", current.id);
         const res = await fetch(`/api/usuarios/${current.id}`);
-        if (!res.ok) return;
+        if (!res.ok) {
+          console.debug("[AUTH] Refresh failed with status", res.status);
+          return;
+        }
         const data = await res.json();
         const now = Date.now();
         const base: AuthUser = {
@@ -249,6 +253,7 @@ export function useAuth() {
           ...base,
           expiresAt: now + REMEMBER_EXPIRY,
         };
+        console.debug("[AUTH] Updated user with setores:", base.setores);
         setUser(base);
         try {
           // prefer preserving existing storage choice
@@ -263,7 +268,9 @@ export function useAuth() {
           if (s && s.connected && base.id)
             s.emit("identify", { user_id: base.id });
         } catch (e) {}
-      } catch {}
+      } catch (err) {
+        console.debug("[AUTH] Refresh error:", err);
+      }
     };
     window.addEventListener("auth:refresh", refresh as EventListener);
     window.addEventListener("users:changed", refresh as EventListener);
