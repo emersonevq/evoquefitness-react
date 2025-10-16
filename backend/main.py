@@ -30,97 +30,111 @@ _http.add_middleware(
 def ping():
     return {"message": "pong"}
 
-_login_media_json = _uploads / "login-media.json"
-_login_media_dir = _uploads / "login-media"
-_login_media_dir.mkdir(parents=True, exist_ok=True)
-
-
-def _read_login_media() -> List[Dict[str, Any]]:
-    if not _login_media_json.exists():
-        return []
-    try:
-        data: Any = json.loads(_login_media_json.read_text("utf-8"))
-        if isinstance(data, list):
-            return data
-    except Exception:
-        pass
-    return []
-
-
-def _write_login_media(items: List[Dict[str, Any]]) -> None:
-    _login_media_json.write_text(json.dumps(items, ensure_ascii=False, indent=2), "utf-8")
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from core.db import get_db, engine
+from ti.models.media import Media
+from core.storage import get_storage
 
 
 @_http.get("/api/login-media")
-def login_media():
-    return _read_login_media()
+def login_media(db: Session = Depends(get_db)):
+    try:
+        try:
+            Media.__table__.create(bind=engine, checkfirst=True)
+        except Exception:
+            pass
+        q = db.query(Media).filter(Media.ativo == True).order_by(Media.id.desc()).all()
+        out = []
+        for m in q:
+            out.append(
+                {
+                    "id": m.id,
+                    "type": m.media_type,
+                    "url": m.caminho_arquivo,
+                    "title": m.title,
+                    "description": m.description,
+                    "mime": m.mime_type,
+                }
+            )
+        return out
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao listar mídias: {e}")
 
 
 @_http.post("/api/login-media/upload")
-async def upload_login_media(file: UploadFile = File(...)):
+async def upload_login_media(file: UploadFile = File(...), db: Session = Depends(get_db)):
     if not file:
         raise HTTPException(status_code=400, detail="Arquivo ausente")
     content_type = (file.content_type or "").lower()
     if content_type.startswith("image/"):
         kind = "image"
-        ext = ".jpg"
     elif content_type.startswith("video/"):
         kind = "video"
-        ext = ".mp4"
     else:
         raise HTTPException(status_code=400, detail="Tipo de arquivo não suportado")
 
     original_name = Path(file.filename or "arquivo").name
-    safe_stem = "_".join(Path(original_name).stem.split()) or "arquivo"
-    unique = f"{uuid.uuid4().hex[:10]}_{safe_stem}"
-    # Preserve extension if safe
-    ext_from_name = Path(original_name).suffix.lower()
-    if ext_from_name and len(ext_from_name) <= 6:
-        ext = ext_from_name
-    dest = _login_media_dir / f"{unique}{ext}"
+    ext = Path(original_name).suffix or ""
+    unique_name = f"{uuid.uuid4().hex[:12]}{ext}"
 
     data = await file.read()
-    dest.write_bytes(data)
+    try:
+        storage = get_storage()
+        blob_path = f"login-media/{unique_name}"
+        url = storage.upload_bytes(blob_path, data, content_type)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Falha no armazenamento: {e}")
 
-    url = f"/uploads/login-media/{dest.name}"
-    items = _read_login_media()
-    item = {
-        "id": uuid.uuid4().hex,
-        "type": kind,
-        "url": url,
-    }
-    items.append(item)
-    _write_login_media(items)
-    return item
+    try:
+        m = Media(
+            media_type=kind,
+            title=None,
+            description=None,
+            filename=unique_name,
+            caminho_arquivo=url,
+            mime_type=content_type,
+            tamanho_bytes=len(data),
+            conteudo=None,
+            usuario_id=None,
+            ativo=True,
+        )
+        db.add(m)
+        db.commit()
+        db.refresh(m)
+        return {
+            "id": m.id,
+            "type": m.media_type,
+            "url": m.caminho_arquivo,
+            "mime": m.mime_type,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Falha ao salvar registro: {e}")
 
 
 @_http.delete("/api/login-media/{item_id}")
-async def delete_login_media(item_id: str):
-    items = _read_login_media()
-    remaining: List[Dict[str, Any]] = []
-    removed: Dict[str, Any] | None = None
-    for it in items:
-        if str(it.get("id")) == str(item_id):
-            removed = it
-        else:
-            remaining.append(it)
-    if removed is None:
-        raise HTTPException(status_code=404, detail="Item não encontrado")
-
-    # Best-effort file deletion if hosted locally in /uploads/login-media
+async def delete_login_media(item_id: int, db: Session = Depends(get_db)):
     try:
-        url = str(removed.get("url") or "")
-        prefix = "/uploads/login-media/"
-        if url.startswith(prefix):
-            fname = url[len(prefix):]
-            fpath = _login_media_dir / fname
-            if fpath.exists() and fpath.is_file():
-                fpath.unlink()
-    except Exception:
-        pass
-
-    _write_login_media(remaining)
-    return {"ok": True}
+        m = db.query(Media).filter(Media.id == int(item_id)).first()
+        if not m:
+            raise HTTPException(status_code=404, detail="Item não encontrado")
+        # best-effort delete from storage
+        try:
+            if m.filename:
+                blob_path = f"login-media/{m.filename}"
+                storage = get_storage()
+                storage.delete_blob(blob_path)
+        except Exception:
+            pass
+        # mark inactive
+        m.ativo = False
+        db.add(m)
+        db.commit()
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao remover mídia: {e}")
 
 # Primary mount under /api
 _http.include_router(chamados_router, prefix="/api")
