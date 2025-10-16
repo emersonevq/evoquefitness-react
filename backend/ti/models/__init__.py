@@ -8,6 +8,7 @@ from .chamado_anexo import ChamadoAnexo
 from .historico_ticket import HistoricoTicket
 from .historico_status import HistoricoStatus
 from .media import Media
+from .alert import Alert
 __all__ = [
     "Chamado",
     "User",
@@ -19,4 +20,5 @@ __all__ = [
     "HistoricoTicket",
     "HistoricoStatus",
     "Media",
+    "Alert",
 ]
