@@ -425,9 +425,9 @@ export function useAuth() {
     return () => {
       mounted = false;
       if (pollInterval) clearInterval(pollInterval);
-      window.removeEventListener("auth:refresh", refresh as EventListener);
-      window.removeEventListener("users:changed", refresh as EventListener);
-      window.removeEventListener("user:updated", refresh as EventListener);
+      window.removeEventListener("auth:refresh", handleAuthRefresh as EventListener);
+      window.removeEventListener("users:changed", handleUsersChanged as EventListener);
+      window.removeEventListener("user:updated", handleUserUpdated as EventListener);
       // do not disconnect socket here - keep global alive
     };
   }, []);
