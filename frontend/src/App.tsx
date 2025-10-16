@@ -128,6 +128,7 @@ const App = () => (
               <Route path="email" element={<ConfEmail />} />
               <Route path="integracoes" element={<ConfIntegracoes />} />
               <Route path="midia-login" element={<LoginMediaConfig />} />
+              <Route path="alertas" element={<AlertsConfig />} />
               <Route path="acoes" element={<ConfAcoes />} />
             </Route>
           </Route>
