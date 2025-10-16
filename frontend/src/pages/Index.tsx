@@ -11,12 +11,20 @@ import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function Index() {
   const { user } = useAuthContext();
   const [, setTick] = useState(0);
+  const [showPermissionUpdate, setShowPermissionUpdate] = useState(false);
+
   useEffect(() => {
-    const handler = () => setTick((t) => t + 1);
+    const handler = () => {
+      setTick((t) => t + 1);
+      // Show a brief notification when permissions are updated
+      setShowPermissionUpdate(true);
+      setTimeout(() => setShowPermissionUpdate(false), 3000);
+    };
     window.addEventListener("auth:refresh", handler as EventListener);
     return () =>
       window.removeEventListener("auth:refresh", handler as EventListener);
