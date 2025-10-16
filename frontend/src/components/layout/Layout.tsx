@@ -23,8 +23,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [, setTick] = useState(0);
+  const [permissionsUpdated, setPermissionsUpdated] = useState(false);
+
   useEffect(() => {
-    const handler = () => setTick((t) => t + 1);
+    const handler = () => {
+      console.debug("[LAYOUT] Permission update detected");
+      setTick((t) => t + 1);
+      // Show feedback that permissions were updated
+      setPermissionsUpdated(true);
+      setTimeout(() => setPermissionsUpdated(false), 2500);
+    };
     window.addEventListener("auth:refresh", handler as EventListener);
     return () =>
       window.removeEventListener("auth:refresh", handler as EventListener);
