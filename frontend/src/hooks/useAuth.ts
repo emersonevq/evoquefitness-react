@@ -212,7 +212,8 @@ export function useAuth() {
             const uid = data?.user_id;
             const curr = readFromStorage();
             if (curr && curr.id && uid === curr.id) {
-              console.debug("[SIO] auth:refresh for user", uid);
+              console.debug("[SIO] auth:refresh for user", uid, "- refreshing permissions");
+              // Dispatch the refresh event to trigger permission updates
               window.dispatchEvent(new CustomEvent("auth:refresh"));
             }
           } catch (e) {
