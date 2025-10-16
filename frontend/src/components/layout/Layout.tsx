@@ -23,11 +23,37 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [, setTick] = useState(0);
+  const [permissionsUpdated, setPermissionsUpdated] = useState(false);
+
   useEffect(() => {
-    const handler = () => setTick((t) => t + 1);
+    const handler = () => {
+      console.debug("[LAYOUT] Permission update detected (auth:refresh)");
+      setTick((t) => t + 1);
+      // Show feedback that permissions were updated
+      setPermissionsUpdated(true);
+      setTimeout(() => setPermissionsUpdated(false), 2500);
+    };
+
+    const userDataHandler = () => {
+      console.debug("[LAYOUT] Permission update detected (user:data-updated)");
+      setTick((t) => t + 1);
+      setPermissionsUpdated(true);
+      setTimeout(() => setPermissionsUpdated(false), 2500);
+    };
+
     window.addEventListener("auth:refresh", handler as EventListener);
-    return () =>
+    window.addEventListener(
+      "user:data-updated",
+      userDataHandler as EventListener,
+    );
+
+    return () => {
       window.removeEventListener("auth:refresh", handler as EventListener);
+      window.removeEventListener(
+        "user:data-updated",
+        userDataHandler as EventListener,
+      );
+    };
   }, []);
   const doLogout = () => {
     try {
@@ -98,6 +124,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   ];
   return (
     <div className="min-h-[100svh] md:min-h-screen w-full flex flex-col">
+      {/* Permission update notification */}
+      {permissionsUpdated && (
+        <div className="fixed top-4 right-4 z-50 bg-green-50 border border-green-300 rounded-lg px-4 py-3 text-sm text-green-800 shadow-md animate-in fade-in slide-in-from-right-2 duration-300">
+          ✓ Permissões sincronizadas
+        </div>
+      )}
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur">
         <div className="h-1 w-full brand-gradient" />
         <div className="container flex items-center justify-between py-3 gap-2">

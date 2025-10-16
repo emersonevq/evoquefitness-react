@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAuthContext } from "@/lib/auth-context";
 
 interface Ticket {
@@ -40,6 +40,18 @@ export default function SectorPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
 
   const [open, setOpen] = useState(false);
+  const [, setTick] = useState(0);
+
+  // Listen for permission updates
+  useEffect(() => {
+    const handler = () => {
+      console.debug("[SECTOR] Permission update detected");
+      setTick((t) => t + 1);
+    };
+    window.addEventListener("auth:refresh", handler as EventListener);
+    return () =>
+      window.removeEventListener("auth:refresh", handler as EventListener);
+  }, []);
 
   const header = (
     <section className="w-full">

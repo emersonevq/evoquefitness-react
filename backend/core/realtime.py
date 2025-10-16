@@ -66,15 +66,19 @@ def emit_logout_sync(user_id: int):
     """Run the async emit in a fresh event loop (safe from threads)."""
     try:
         import asyncio
+        print(f"[SIO] emit_logout_sync starting for user_id={user_id}")
         asyncio.run(emit_logout_for_user(user_id))
+        print(f"[SIO] emit_logout_sync completed for user_id={user_id}")
     except Exception as e:
-        print(f"[SIO] emit_logout_sync error: {e}")
+        print(f"[SIO] emit_logout_sync error for user_id={user_id}: {e}")
 
 
 def emit_refresh_sync(user_id: int):
     """Sync wrapper for emit_refresh_for_user."""
     try:
         import asyncio
+        print(f"[SIO] emit_refresh_sync starting for user_id={user_id}")
         asyncio.run(emit_refresh_for_user(user_id))
+        print(f"[SIO] emit_refresh_sync completed for user_id={user_id}")
     except Exception as e:
-        print(f"[SIO] emit_refresh_sync error: {e}")
+        print(f"[SIO] emit_refresh_sync error for user_id={user_id}: {e}")

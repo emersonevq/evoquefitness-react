@@ -11,15 +11,44 @@ import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function Index() {
   const { user } = useAuthContext();
   const [, setTick] = useState(0);
+  const [showPermissionUpdate, setShowPermissionUpdate] = useState(false);
+
   useEffect(() => {
-    const handler = () => setTick((t) => t + 1);
+    const handler = () => {
+      console.debug("[INDEX] Permission update detected (auth:refresh)");
+      setTick((t) => t + 1);
+      // Show a brief notification when permissions are updated
+      setShowPermissionUpdate(true);
+      setTimeout(() => setShowPermissionUpdate(false), 3000);
+    };
+
+    const userDataHandler = () => {
+      console.debug("[INDEX] Permission update detected (user:data-updated)");
+      setTick((t) => t + 1);
+      setShowPermissionUpdate(true);
+      setTimeout(() => setShowPermissionUpdate(false), 3000);
+    };
+
     window.addEventListener("auth:refresh", handler as EventListener);
-    return () =>
+    window.addEventListener(
+      "user:data-updated",
+      userDataHandler as EventListener,
+    );
+    window.addEventListener("users:changed", handler as EventListener);
+
+    return () => {
       window.removeEventListener("auth:refresh", handler as EventListener);
+      window.removeEventListener(
+        "user:data-updated",
+        userDataHandler as EventListener,
+      );
+      window.removeEventListener("users:changed", handler as EventListener);
+    };
   }, []);
 
   const normalize = (s: any) =>
@@ -54,6 +83,12 @@ export default function Index() {
 
   return (
     <Layout>
+      {/* Permission update indicator */}
+      {showPermissionUpdate && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-green-50 border border-green-300 rounded-lg px-4 py-3 text-sm text-green-800 shadow-md animate-in fade-in slide-in-from-top-2 duration-300">
+          ✓ Suas permissões foram atualizadas!
+        </div>
+      )}
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="container py-8 sm:py-16">

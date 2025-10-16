@@ -571,20 +571,26 @@ export function Permissoes() {
       }),
     });
     if (res.ok) {
+      console.log("[ADMIN] User updated successfully, triggering refresh");
       setEditing(null);
       load();
+
+      // Dispatch event immediately to notify other listeners
       window.dispatchEvent(new CustomEvent("users:changed"));
-      try {
-        // If we edited the currently logged in user, request auth refresh so permissions update immediately
-        const current = (window as any).__CURRENT_AUTH_USER__;
-        // Fallback: use global event - we'll dispatch auth:refresh with user id in detail
-        if (current && current.id === editing?.id) {
-          window.dispatchEvent(new CustomEvent("auth:refresh"));
-        } else {
-          // still dispatch to be safe
-          window.dispatchEvent(new CustomEvent("auth:refresh"));
-        }
-      } catch (e) {}
+
+      // Force a synchronous refresh with a slight delay to ensure backend processed
+      setTimeout(() => {
+        console.log("[ADMIN] Forcing auth:refresh event for user", editing.id);
+        // Emit the custom event that listeners in useAuth are waiting for
+        window.dispatchEvent(new CustomEvent("auth:refresh"));
+
+        // Also emit a more specific event with the updated user info
+        window.dispatchEvent(
+          new CustomEvent("user:updated", {
+            detail: { user_id: editing.id, type: "permissions_changed" },
+          }),
+        );
+      }, 100);
     } else {
       const t = await res.json().catch(() => ({}) as any);
       alert((t && (t.detail || t.message)) || "Falha ao salvar");
