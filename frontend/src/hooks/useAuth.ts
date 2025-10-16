@@ -303,10 +303,29 @@ export function useAuth() {
     window.addEventListener("auth:refresh", refresh as EventListener);
     window.addEventListener("users:changed", refresh as EventListener);
     window.addEventListener("user:updated", refresh as EventListener);
+
+    // Polling fallback: periodically check for permission updates (every 15 seconds)
+    // This ensures even if Socket.IO fails, users still get updates quickly
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+    const setupPolling = () => {
+      if (pollInterval) clearInterval(pollInterval);
+      console.debug("[AUTH] Setting up polling fallback (15s interval)");
+      pollInterval = setInterval(() => {
+        if (mounted) {
+          // Silent poll - don't spam console
+          refresh().catch(() => {});
+        }
+      }, 15000);
+    };
+
+    setupPolling();
+
     return () => {
       mounted = false;
+      if (pollInterval) clearInterval(pollInterval);
       window.removeEventListener("auth:refresh", refresh as EventListener);
       window.removeEventListener("users:changed", refresh as EventListener);
+      window.removeEventListener("user:updated", refresh as EventListener);
       // do not disconnect socket here - keep global alive
     };
   }, []);
