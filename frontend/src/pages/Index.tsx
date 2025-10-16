@@ -20,14 +20,29 @@ export default function Index() {
 
   useEffect(() => {
     const handler = () => {
+      console.debug("[INDEX] Permission update detected (auth:refresh)");
       setTick((t) => t + 1);
       // Show a brief notification when permissions are updated
       setShowPermissionUpdate(true);
       setTimeout(() => setShowPermissionUpdate(false), 3000);
     };
+
+    const userDataHandler = () => {
+      console.debug("[INDEX] Permission update detected (user:data-updated)");
+      setTick((t) => t + 1);
+      setShowPermissionUpdate(true);
+      setTimeout(() => setShowPermissionUpdate(false), 3000);
+    };
+
     window.addEventListener("auth:refresh", handler as EventListener);
-    return () =>
+    window.addEventListener("user:data-updated", userDataHandler as EventListener);
+    window.addEventListener("users:changed", handler as EventListener);
+
+    return () => {
       window.removeEventListener("auth:refresh", handler as EventListener);
+      window.removeEventListener("user:data-updated", userDataHandler as EventListener);
+      window.removeEventListener("users:changed", handler as EventListener);
+    };
   }, []);
 
   const normalize = (s: any) =>
