@@ -63,22 +63,28 @@ async def emit_refresh_for_user(user_id: int):
 
 # Synchronous wrapper that can be safely passed to start_background_task from any thread.
 def emit_logout_sync(user_id: int):
-    """Run the async emit in a fresh event loop (safe from threads)."""
+    """Emit logout event to user's room (thread-safe)."""
     try:
-        import asyncio
-        print(f"[SIO] emit_logout_sync starting for user_id={user_id}")
-        asyncio.run(emit_logout_for_user(user_id))
+        room = f"user:{user_id}"
+        print(f"[SIO] emit_logout_sync: emitting auth:logout to room={room}")
+        # python-socketio's emit method is thread-safe
+        sio.emit("auth:logout", {"user_id": user_id}, room=room, skip_sid=None)
         print(f"[SIO] emit_logout_sync completed for user_id={user_id}")
     except Exception as e:
         print(f"[SIO] emit_logout_sync error for user_id={user_id}: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 def emit_refresh_sync(user_id: int):
-    """Sync wrapper for emit_refresh_for_user."""
+    """Emit refresh event to user's room (thread-safe)."""
     try:
-        import asyncio
-        print(f"[SIO] emit_refresh_sync starting for user_id={user_id}")
-        asyncio.run(emit_refresh_for_user(user_id))
+        room = f"user:{user_id}"
+        print(f"[SIO] emit_refresh_sync: emitting auth:refresh to room={room}")
+        # python-socketio's emit method is thread-safe
+        sio.emit("auth:refresh", {"user_id": user_id}, room=room, skip_sid=None)
         print(f"[SIO] emit_refresh_sync completed for user_id={user_id}")
     except Exception as e:
         print(f"[SIO] emit_refresh_sync error for user_id={user_id}: {e}")
+        import traceback
+        traceback.print_exc()

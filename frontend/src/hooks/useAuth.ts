@@ -381,22 +381,46 @@ export function useAuth() {
       }
     };
 
-    window.addEventListener("auth:refresh", refresh as EventListener);
-    window.addEventListener("users:changed", refresh as EventListener);
-    window.addEventListener("user:updated", refresh as EventListener);
+    const handleAuthRefresh = (e: Event) => {
+      console.debug("[AUTH] auth:refresh event received");
+      refresh().catch((err) => {
+        console.error("[AUTH] auth:refresh handler error:", err);
+      });
+    };
 
-    // Polling fallback: periodically check for permission updates (every 15 seconds)
+    const handleUsersChanged = (e: Event) => {
+      console.debug("[AUTH] users:changed event received");
+      refresh().catch((err) => {
+        console.error("[AUTH] users:changed handler error:", err);
+      });
+    };
+
+    const handleUserUpdated = (e: Event) => {
+      console.debug("[AUTH] user:updated event received");
+      refresh().catch((err) => {
+        console.error("[AUTH] user:updated handler error:", err);
+      });
+    };
+
+    window.addEventListener("auth:refresh", handleAuthRefresh as EventListener);
+    window.addEventListener(
+      "users:changed",
+      handleUsersChanged as EventListener,
+    );
+    window.addEventListener("user:updated", handleUserUpdated as EventListener);
+
+    // Polling fallback: periodically check for permission updates (every 10 seconds)
     // This ensures even if Socket.IO fails, users still get updates quickly
     let pollInterval: ReturnType<typeof setInterval> | null = null;
     const setupPolling = () => {
       if (pollInterval) clearInterval(pollInterval);
-      console.debug("[AUTH] Setting up polling fallback (15s interval)");
+      console.debug("[AUTH] Setting up polling fallback (10s interval)");
       pollInterval = setInterval(() => {
         if (mounted) {
           // Silent poll - don't spam console
           refresh().catch(() => {});
         }
-      }, 15000);
+      }, 10000);
     };
 
     setupPolling();
@@ -404,9 +428,18 @@ export function useAuth() {
     return () => {
       mounted = false;
       if (pollInterval) clearInterval(pollInterval);
-      window.removeEventListener("auth:refresh", refresh as EventListener);
-      window.removeEventListener("users:changed", refresh as EventListener);
-      window.removeEventListener("user:updated", refresh as EventListener);
+      window.removeEventListener(
+        "auth:refresh",
+        handleAuthRefresh as EventListener,
+      );
+      window.removeEventListener(
+        "users:changed",
+        handleUsersChanged as EventListener,
+      );
+      window.removeEventListener(
+        "user:updated",
+        handleUserUpdated as EventListener,
+      );
       // do not disconnect socket here - keep global alive
     };
   }, []);

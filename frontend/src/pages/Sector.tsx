@@ -45,12 +45,15 @@ export default function SectorPage() {
   // Listen for permission updates
   useEffect(() => {
     const handler = () => {
-      console.debug("[SECTOR] Permission update detected");
+      console.debug("[SECTOR] Permission update detected, re-rendering");
       setTick((t) => t + 1);
     };
     window.addEventListener("auth:refresh", handler as EventListener);
-    return () =>
+    window.addEventListener("user:data-updated", handler as EventListener);
+    return () => {
       window.removeEventListener("auth:refresh", handler as EventListener);
+      window.removeEventListener("user:data-updated", handler as EventListener);
+    };
   }, []);
 
   const header = (
