@@ -430,3 +430,32 @@ def normalize_setores(db: Session = Depends(get_db)):
         return {"updated": updated}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao normalizar setores: {e}")
+
+
+@router.post("/{user_id}/test-refresh")
+def test_refresh_socket(user_id: int):
+    """Test endpoint: manually trigger a refresh event for a user via Socket.IO"""
+    try:
+        print(f"[TEST] test_refresh_socket called for user_id={user_id}")
+        from core.realtime import emit_refresh_sync
+        import threading
+        import time
+
+        print(f"[TEST] Triggering refresh for user {user_id}")
+        t = threading.Thread(target=emit_refresh_sync, args=(user_id,), daemon=True)
+        t.start()
+
+        # Wait a bit for thread to execute
+        time.sleep(0.5)
+
+        return {
+            "ok": True,
+            "message": f"Refresh event triggered for user {user_id}",
+            "user_id": user_id,
+            "timestamp": time.time()
+        }
+    except Exception as e:
+        print(f"[TEST] Error in test_refresh_socket: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro ao testar refresh: {e}")
