@@ -70,17 +70,23 @@ export default function RequireLogin({
 
     // Listen to global events that should revalidate permissions on demand
     const onUsersChanged = () => {
-      console.debug("[REQUIRE_LOGIN] Event triggered, checking if should refresh permissions");
+      console.debug(
+        "[REQUIRE_LOGIN] Event triggered, checking if should refresh permissions",
+      );
       // Revalidate if on sector route or immediately
       if (shouldCheckNow()) {
-        console.debug("[REQUIRE_LOGIN] Fetching remote user to sync permissions");
+        console.debug(
+          "[REQUIRE_LOGIN] Fetching remote user to sync permissions",
+        );
         fetchRemote();
       }
     };
 
     // Also listen to socket-level auth:refresh for faster sync
     const onAuthRefresh = () => {
-      console.debug("[REQUIRE_LOGIN] auth:refresh received, syncing permissions");
+      console.debug(
+        "[REQUIRE_LOGIN] auth:refresh received, syncing permissions",
+      );
       if (shouldCheckNow()) fetchRemote();
     };
 

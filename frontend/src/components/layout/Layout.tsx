@@ -42,11 +42,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     };
 
     window.addEventListener("auth:refresh", handler as EventListener);
-    window.addEventListener("user:data-updated", userDataHandler as EventListener);
+    window.addEventListener(
+      "user:data-updated",
+      userDataHandler as EventListener,
+    );
 
     return () => {
       window.removeEventListener("auth:refresh", handler as EventListener);
-      window.removeEventListener("user:data-updated", userDataHandler as EventListener);
+      window.removeEventListener(
+        "user:data-updated",
+        userDataHandler as EventListener,
+      );
     };
   }, []);
   const doLogout = () => {

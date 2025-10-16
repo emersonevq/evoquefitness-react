@@ -9,6 +9,7 @@ Quando um admin atualiza as permissões de um usuário, as mudanças agora **apa
 ## ✅ O que foi implementado
 
 ### 1. **Backend - Emissão de Eventos (Socket.IO)**
+
 - **Arquivo**: `backend/core/realtime.py`
 - **Melhorias**:
   - Sistema Socket.IO já estava configurado (agora com logging melhorado)
@@ -22,6 +23,7 @@ Quando um admin atualiza as permissões de um usuário, as mudanças agora **apa
   - Thread dedicada para emitir eventos sem bloquear a resposta HTTP
 
 ### 2. **Frontend - Socket.IO Client**
+
 - **Arquivo**: `frontend/src/hooks/useAuth.ts`
 - **Melhorias**:
   - Socket.IO cliente já estava conectado, agora com melhor logging
@@ -32,21 +34,25 @@ Quando um admin atualiza as permissões de um usuário, as mudanças agora **apa
 ### 3. **Frontend - Sincronização em Páginas Específicas**
 
 #### **Index.tsx** (Página inicial)
+
 - Nova notificação visual verde com ✓ "Suas permissões foram atualizadas!"
 - Listener para evento `auth:refresh` causa re-render imediato
 - Novos setores aparecem no dropdown e na grade de setores
 
 #### **Layout.tsx** (Header da aplicação)
+
 - Notificação visual no canto superior direito: ✓ "Permissões sincronizadas"
 - Re-renderiza automaticamente o menu de setores
 - Listener para `auth:refresh` sincroniza permissões em toda a app
 
 #### **RequireLogin.tsx** (Guard de autenticação)
+
 - Sincronização imediata quando usuário navega para páginas de setor
 - Listeners separados para `users:changed` e `auth:refresh`
 - Novo logging com prefixo `[REQUIRE_LOGIN]`
 
 #### **Sector.tsx** (Página de setor)
+
 - Listener para `auth:refresh` causa re-render automático
 - Verifica acesso atualizado em tempo real
 - Novo logging com prefixo `[SECTOR]`
@@ -87,14 +93,15 @@ Quando um admin atualiza as permissões de um usuário, as mudanças agora **apa
 ## 📝 Arquivos Modificados
 
 ### Backend
+
 1. `backend/core/realtime.py`
    - Melhorado logging em `emit_refresh_sync()` e `emit_logout_sync()`
-   
 2. `backend/ti/api/usuarios.py`
    - Adicionado logging detalhado no endpoint PUT `/{user_id}`
    - Verificação de thread para emissão de eventos
 
 ### Frontend
+
 1. `frontend/src/hooks/useAuth.ts`
    - Melhorado logging na função `refresh()`
    - Adicionar debug mensagens no socket listener
@@ -122,6 +129,7 @@ Quando um admin atualiza as permissões de um usuário, as mudanças agora **apa
 ## 🧪 Como Validar
 
 ### Teste Manual
+
 1. Abra 2 abas do navegador
 2. Aba 1: Faça login como admin → `/setor/ti/admin/usuarios`
 3. Aba 2: Faça login como usuário → `/`
@@ -132,6 +140,7 @@ Quando um admin atualiza as permissões de um usuário, as mudanças agora **apa
    - Novo card de setor aparece na grade
 
 ### Verificar Logs (Console do Navegador - F12)
+
 ```
 [SIO] connect: [socket-id]
 [SIO] identify emitted for user [id]
@@ -142,6 +151,7 @@ Quando um admin atualiza as permissões de um usuário, as mudanças agora **apa
 ```
 
 ### Verificar Logs Backend
+
 ```
 [API] atualizar_usuario called for user_id=5
 [API] Starting thread to emit auth:refresh for user_id=5

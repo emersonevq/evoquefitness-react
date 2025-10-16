@@ -216,16 +216,28 @@ export function useAuth() {
 
         // Server-side permission/profile update for this user
         socket.on("auth:refresh", (data: any) => {
-          console.debug("[SIO] ✓ Received auth:refresh event from server", data);
+          console.debug(
+            "[SIO] ✓ Received auth:refresh event from server",
+            data,
+          );
           try {
             const uid = data?.user_id;
             const curr = readFromStorage();
             if (curr && curr.id && uid === curr.id) {
-              console.debug("[SIO] ✓ Event is for current user", uid, "- will refresh permissions");
+              console.debug(
+                "[SIO] ✓ Event is for current user",
+                uid,
+                "- will refresh permissions",
+              );
               // Dispatch the refresh event to trigger permission updates
               window.dispatchEvent(new CustomEvent("auth:refresh"));
             } else {
-              console.debug("[SIO] Event is for different user or no current user. uid:", uid, "curr.id:", curr?.id);
+              console.debug(
+                "[SIO] Event is for different user or no current user. uid:",
+                uid,
+                "curr.id:",
+                curr?.id,
+              );
             }
           } catch (e) {
             console.error("[SIO] auth:refresh handler error", e);
@@ -248,33 +260,57 @@ export function useAuth() {
         const current = readFromStorage();
         if (!current || !current.id) return;
         console.debug("[AUTH] ⟳ Refreshing user data for id", current.id);
-        permissionDebugger.log("api", `Fetching updated user data from /api/usuarios/${current.id}`);
+        permissionDebugger.log(
+          "api",
+          `Fetching updated user data from /api/usuarios/${current.id}`,
+        );
 
         const res = await fetch(`/api/usuarios/${current.id}`);
         if (!res.ok) {
           console.debug("[AUTH] ✗ Refresh failed with status", res.status);
-          permissionDebugger.log("api", "❌ API call failed", { status: res.status });
+          permissionDebugger.log("api", "❌ API call failed", {
+            status: res.status,
+          });
           return;
         }
         const data = await res.json();
         const now = Date.now();
         const oldSetores = (current.setores || []).slice().sort();
-        const newSetores = (Array.isArray(data.setores) ? data.setores : []).slice().sort();
+        const newSetores = (Array.isArray(data.setores) ? data.setores : [])
+          .slice()
+          .sort();
 
         // Deep comparison of setores
-        const setoresChanged = JSON.stringify(oldSetores) !== JSON.stringify(newSetores);
+        const setoresChanged =
+          JSON.stringify(oldSetores) !== JSON.stringify(newSetores);
 
         // Also check nivel_acesso
         const nivelChanged = current.nivel_acesso !== data.nivel_acesso;
 
         if (setoresChanged) {
-          console.log("[AUTH] ✓ SETORES CHANGED:", oldSetores.join(", "), "→", newSetores.join(", "));
-          permissionDebugger.log("state", `✓ Setores CHANGED: ${oldSetores.join(", ")} → ${newSetores.join(", ")}`);
+          console.log(
+            "[AUTH] ✓ SETORES CHANGED:",
+            oldSetores.join(", "),
+            "→",
+            newSetores.join(", "),
+          );
+          permissionDebugger.log(
+            "state",
+            `✓ Setores CHANGED: ${oldSetores.join(", ")} → ${newSetores.join(", ")}`,
+          );
         }
 
         if (nivelChanged) {
-          console.log("[AUTH] ✓ NIVEL_ACESSO CHANGED:", current.nivel_acesso, "→", data.nivel_acesso);
-          permissionDebugger.log("state", `✓ Nivel acesso CHANGED: ${current.nivel_acesso} → ${data.nivel_acesso}`);
+          console.log(
+            "[AUTH] ✓ NIVEL_ACESSO CHANGED:",
+            current.nivel_acesso,
+            "→",
+            data.nivel_acesso,
+          );
+          permissionDebugger.log(
+            "state",
+            `✓ Nivel acesso CHANGED: ${current.nivel_acesso} → ${data.nivel_acesso}`,
+          );
         }
 
         if (!setoresChanged && !nivelChanged) {
@@ -325,10 +361,19 @@ export function useAuth() {
 
         // Force a secondary dispatch to ensure all listeners get notified
         if (setoresChanged || nivelChanged) {
-          console.debug("[AUTH] Dispatching 'user:data-updated' event for UI re-render");
-          window.dispatchEvent(new CustomEvent("user:data-updated", {
-            detail: { changed: { setores: setoresChanged, nivel_acesso: nivelChanged } }
-          }));
+          console.debug(
+            "[AUTH] Dispatching 'user:data-updated' event for UI re-render",
+          );
+          window.dispatchEvent(
+            new CustomEvent("user:data-updated", {
+              detail: {
+                changed: {
+                  setores: setoresChanged,
+                  nivel_acesso: nivelChanged,
+                },
+              },
+            }),
+          );
         }
       } catch (err) {
         console.error("[AUTH] ✗ Refresh error:", err);

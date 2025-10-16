@@ -585,9 +585,11 @@ export function Permissoes() {
         window.dispatchEvent(new CustomEvent("auth:refresh"));
 
         // Also emit a more specific event with the updated user info
-        window.dispatchEvent(new CustomEvent("user:updated", {
-          detail: { user_id: editing.id, type: "permissions_changed" }
-        }));
+        window.dispatchEvent(
+          new CustomEvent("user:updated", {
+            detail: { user_id: editing.id, type: "permissions_changed" },
+          }),
+        );
       }, 100);
     } else {
       const t = await res.json().catch(() => ({}) as any);

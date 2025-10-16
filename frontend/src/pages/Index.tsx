@@ -35,12 +35,18 @@ export default function Index() {
     };
 
     window.addEventListener("auth:refresh", handler as EventListener);
-    window.addEventListener("user:data-updated", userDataHandler as EventListener);
+    window.addEventListener(
+      "user:data-updated",
+      userDataHandler as EventListener,
+    );
     window.addEventListener("users:changed", handler as EventListener);
 
     return () => {
       window.removeEventListener("auth:refresh", handler as EventListener);
-      window.removeEventListener("user:data-updated", userDataHandler as EventListener);
+      window.removeEventListener(
+        "user:data-updated",
+        userDataHandler as EventListener,
+      );
       window.removeEventListener("users:changed", handler as EventListener);
     };
   }, []);

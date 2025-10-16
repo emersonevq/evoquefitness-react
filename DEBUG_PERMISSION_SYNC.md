@@ -7,7 +7,7 @@ Se as permissões não estão sincronizando em tempo real, siga este guia para i
 Abra o **Console do navegador** (F12 → Console) e execute:
 
 ```javascript
-__PERM_DEBUG__.printStatus()
+__PERM_DEBUG__.printStatus();
 ```
 
 Você deverá ver algo como:
@@ -20,6 +20,7 @@ Recent events:
 ```
 
 **Se disser "🔴 Disconnected":**
+
 - Socket.IO não está conectando
 - Vá para a seção "Socket.IO não conecta" abaixo
 
@@ -28,16 +29,19 @@ Recent events:
 ## 2️⃣ Teste manual de sincronização
 
 ### No painel de Admin:
+
 1. Abra DevTools (F12)
 2. Vá para a aba "Network"
 3. Edite um usuário e adicione um novo setor
 4. Clique "Salvar"
 
 **Procure por:**
+
 - Um request `PUT /api/usuarios/{id}` → status 200 ✓
 - Um request `POST /api/usuarios/{id}/test-refresh` (opcional para teste)
 
 ### No console do usuário:
+
 1. Abra o Console (F12)
 2. Procure por mensagens como:
    ```
@@ -46,6 +50,7 @@ Recent events:
    ```
 
 **Se NÃO aparecer nada:**
+
 - O evento `auth:refresh` não foi recebido
 - Vá para "Evento não está sendo recebido" abaixo
 
@@ -57,7 +62,7 @@ No **Console do navegador**, execute:
 
 ```javascript
 // Verificar se socket existe
-window.__APP_SOCK__
+window.__APP_SOCK__;
 
 // Deve retorgar algo como:
 // Socket {id: 'UlQmjKs...', io: Manager, ...}
@@ -72,21 +77,29 @@ window.__APP_SOCK__
 Você pode forçar um teste de sincronização sem precisar editar um usuário:
 
 ### Passo 1: Identifique seu user_id
+
 No console, execute:
+
 ```javascript
-JSON.parse(localStorage.getItem("evoque-fitness-auth") || sessionStorage.getItem("evoque-fitness-auth")).id
+JSON.parse(
+  localStorage.getItem("evoque-fitness-auth") ||
+    sessionStorage.getItem("evoque-fitness-auth"),
+).id;
 // Deve retornar algo como: 5
 ```
 
 ### Passo 2: Chame o endpoint de teste
+
 ```javascript
-fetch('/api/usuarios/5/test-refresh', { method: 'POST' })
-  .then(r => r.json())
-  .then(d => console.log("Teste enviado:", d))
+fetch("/api/usuarios/5/test-refresh", { method: "POST" })
+  .then((r) => r.json())
+  .then((d) => console.log("Teste enviado:", d));
 ```
 
 ### Passo 3: Verifique o console
+
 Você deve ver mensagens como:
+
 ```
 [AUTH] ⟳ Refreshing user data for id 5
 [AUTH] ✓ Updated user with setores: [...]
@@ -99,11 +112,14 @@ Você deve ver mensagens como:
 ### ❌ Socket.IO não conecta
 
 **Sintomas:**
+
 - Console mostra: `🔴 Disconnected`
 - Backend não mostra: `[SIO] ✓ Socket connected`
 
 **Soluções:**
+
 1. Verifique se o backend está rodando:
+
    ```bash
    npm run dev  # na raiz do projeto
    ```
@@ -129,11 +145,14 @@ Você deve ver mensagens como:
 ### ❌ Evento não está sendo recebido
 
 **Sintomas:**
+
 - Socket.IO conecta (🟢)
 - Mas console não mostra `[AUTH] Refreshing...` após editar usuário
 
 **Debug:**
+
 1. No backend, procure por logs como:
+
    ```
    [API] atualizar_usuario called for user_id=5
    [API] Starting thread to emit auth:refresh for user_id=5
@@ -147,7 +166,7 @@ Você deve ver mensagens como:
 
 3. Teste forçando via endpoint:
    ```javascript
-   fetch('/api/usuarios/5/test-refresh', { method: 'POST' })
+   fetch("/api/usuarios/5/test-refresh", { method: "POST" });
    ```
 
 ---
@@ -155,17 +174,19 @@ Você deve ver mensagens como:
 ### ❌ Dados antigos no Storage
 
 **Sintomas:**
+
 - O refresh é chamado, mas setores continuam iguais
 
 **Solução:**
+
 1. Abra DevTools → Application → Storage
 2. Procure por `evoque-fitness-auth` em **localStorage** e **sessionStorage**
 3. Verifique se o campo `setores` contém os valores antigos
 4. Se sim, limpe o storage:
    ```javascript
-   localStorage.removeItem("evoque-fitness-auth")
-   sessionStorage.removeItem("evoque-fitness-auth")
-   location.reload()
+   localStorage.removeItem("evoque-fitness-auth");
+   sessionStorage.removeItem("evoque-fitness-auth");
+   location.reload();
    ```
 
 ---
@@ -173,12 +194,15 @@ Você deve ver mensagens como:
 ### ❌ Backend não sincroniza
 
 **Sintomas:**
+
 - PUT `/api/usuarios/{id}` retorna 200
 - Mas evento Socket.IO não é emitido
 
 **Verifique:**
+
 1. Se `core.realtime` está sendo importado corretamente
 2. Se o Socket.IO server está inicializado em `main.py`:
+
    ```python
    from core.realtime import mount_socketio
    app = mount_socketio(_http)
@@ -199,14 +223,14 @@ No Console, você pode monitorar eventos em tempo real:
 
 ```javascript
 // Ver todos os eventos auth:refresh
-window.addEventListener('auth:refresh', () => {
+window.addEventListener("auth:refresh", () => {
   console.log("✓ auth:refresh recebido!");
 });
 
 // Ver todas as chamadas da API de refresh
 const originalFetch = window.fetch;
-window.fetch = function(...args) {
-  if (args[0].includes('/api/usuarios/') && !args[0].includes('test-refresh')) {
+window.fetch = function (...args) {
+  if (args[0].includes("/api/usuarios/") && !args[0].includes("test-refresh")) {
     console.log("📡 API call:", args[0]);
   }
   return originalFetch.apply(this, args);
@@ -230,6 +254,7 @@ Se Socket.IO não funcionar, há um **polling automático a cada 15 segundos** c
 Quando tudo funciona, você deve ver uma sequência assim:
 
 **Frontend Console:**
+
 ```
 [SIO] ✓ Socket connected with ID UlQmjKs...
 [SIO] ✓ Identify emitted for user 5
@@ -239,6 +264,7 @@ Quando tudo funciona, você deve ver uma sequência assim:
 ```
 
 **Backend Logs:**
+
 ```
 [API] atualizar_usuario called for user_id=5
 [API] Starting thread to emit auth:refresh for user_id=5
@@ -254,7 +280,9 @@ Quando tudo funciona, você deve ver uma sequência assim:
 2. Cole os logs do Backend aqui
 3. Teste com o endpoint de teste:
    ```javascript
-   fetch('/api/usuarios/5/test-refresh', { method: 'POST' }).then(r => r.json()).then(console.log)
+   fetch("/api/usuarios/5/test-refresh", { method: "POST" })
+     .then((r) => r.json())
+     .then(console.log);
    ```
 4. Verifique se há alguma mensagem de erro
 
@@ -263,6 +291,7 @@ Quando tudo funciona, você deve ver uma sequência assim:
 ## 🔄 Fallback Automático
 
 Se Socket.IO não funcionar mas você precisar de sincronização:
+
 - Há um **polling a cada 15 segundos** como fallback
 - Permissões sincronizarão, mas com até 15 segundos de delay
 - Você pode forçar um refresh imediato fazendo logout e login

@@ -17,23 +17,27 @@ O sistema agora sincroniza as permissões de usuários em tempo real, sem necess
 ## 🧪 Como testar
 
 ### Pré-requisitos
+
 - Ter 2 abas do navegador abertas (Admin em uma, Usuário em outra)
 - Estar logado como admin em uma aba
 - Estar logado como usuário comum em outra aba
 
 ### Passo 1: Preparar as abas
+
 ```
 ABA 1 (Admin):  http://localhost:3000/setor/ti/admin/usuarios
 ABA 2 (Usuário): http://localhost:3000
 ```
 
 ### Passo 2: No painel de Admin (ABA 1)
+
 1. Localize o usuário que deseja dar acesso a novos setores
 2. Clique no botão "Editar" (ícone de lápis)
 3. Na seção "Setores", adicione um novo setor (ex: "Compras")
 4. Clique "Salvar"
 
 ### Passo 3: Na página do Usuário (ABA 2)
+
 1. **Observe a notificação verde** que aparecerá:
    - ✓ "Suas permissões foram atualizadas!"
    - ✓ "Permissões sincronizadas"
@@ -44,7 +48,9 @@ ABA 2 (Usuário): http://localhost:3000
    - O setor que era "desabilitado" agora fica acessível
 
 ### Passo 4: Verificar os logs
+
 Abra o console do navegador (F12) e procure por mensagens como:
+
 ```
 [AUTH] Refreshing user data for id [número]
 [AUTH] Updated user with setores: [lista de setores]
@@ -58,6 +64,7 @@ Abra o console do navegador (F12) e procure por mensagens como:
 ## 🔄 Como funciona no Backend
 
 ### 1. API de Atualização de Usuário
+
 - Endpoint: `PUT /api/usuarios/{user_id}`
 - Função: `atualizar_usuario()` em `backend/ti/api/usuarios.py`
 - O que faz:
@@ -66,6 +73,7 @@ Abra o console do navegador (F12) e procure por mensagens como:
   - Log: `[API] Starting thread to emit auth:refresh for user_id={id}`
 
 ### 2. Socket.IO - Realtime
+
 - Arquivo: `backend/core/realtime.py`
 - Função: `emit_refresh_sync(user_id)`
 - O que faz:
@@ -73,6 +81,7 @@ Abra o console do navegador (F12) e procure por mensagens como:
   - Log: `[SIO] emitting auth:refresh to room=user:{id}`
 
 ### 3. Frontend - Sincronização
+
 - Arquivo: `frontend/src/hooks/useAuth.ts`
 - Listeners de eventos:
   - Socket.IO: `socket.on("auth:refresh", ...)`
@@ -87,18 +96,22 @@ Abra o console do navegador (F12) e procure por mensagens como:
 ## 📱 Atualizações no Frontend
 
 ### Index.tsx
+
 - Mostra notificação verde quando permissões são atualizadas
 - Re-renderiza automaticamente para mostrar novos setores
 
 ### Layout.tsx
+
 - Mostra notificação no canto superior direito
 - Atualiza a lista de setores disponíveis no menu
 
 ### RequireLogin.tsx
+
 - Sincroniza permissões quando o usuário navega para um setor
 - Verifica acesso em tempo real
 
 ### Sector.tsx
+
 - Re-renderiza quando permissões mudam
 - Verifica acesso atualizado
 
@@ -107,8 +120,10 @@ Abra o console do navegador (F12) e procure por mensagens como:
 ## 🐛 Se não funcionar
 
 ### Verificar Socket.IO
+
 1. Abra o console do navegador (F12)
 2. Verifique se há logs como:
+
    ```
    [SIO] connect: [ID]
    [SIO] identify emitted for user [ID]
@@ -120,6 +135,7 @@ Abra o console do navegador (F12) e procure por mensagens como:
    - Sem erros de CORS
 
 ### Verificar Permissões
+
 1. Verifique se o usuário realmente foi atualizado no banco
 2. Acesse a API diretamente:
    ```
@@ -128,7 +144,9 @@ Abra o console do navegador (F12) e procure por mensagens como:
    Verifique se retorna o campo `setores` atualizado
 
 ### Debug
+
 Ative logs mais verbosos observando:
+
 ```
 Backend: [API] [SIO] logs
 Frontend: [AUTH] [LAYOUT] [REQUIRE_LOGIN] logs

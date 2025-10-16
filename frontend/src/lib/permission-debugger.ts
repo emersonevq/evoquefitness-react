@@ -1,6 +1,6 @@
 /**
  * Permission Sync Debugger
- * 
+ *
  * This module helps track and debug permission synchronization events.
  * It creates a visual dashboard in the browser console showing:
  * - Socket.IO connection status
@@ -55,8 +55,10 @@ class PermissionDebugger {
             this.socketConnected = newConnected;
             this.log(
               "socket",
-              newConnected ? "✓ Socket.IO connected" : "✗ Socket.IO disconnected",
-              { id: newId }
+              newConnected
+                ? "✓ Socket.IO connected"
+                : "✗ Socket.IO disconnected",
+              { id: newId },
             );
           }
 
@@ -87,11 +89,7 @@ class PermissionDebugger {
     }
   }
 
-  log(
-    source: DebugEvent["source"],
-    message: string,
-    data?: any
-  ) {
+  log(source: DebugEvent["source"], message: string, data?: any) {
     const event: DebugEvent = {
       timestamp: Date.now(),
       type: source,
@@ -110,7 +108,7 @@ class PermissionDebugger {
     console.log(
       `%c${icon} [PERM-DEBUG] ${message}`,
       this.getStyle(source),
-      data
+      data,
     );
   }
 
@@ -147,7 +145,7 @@ class PermissionDebugger {
       `Recent events:`,
       ...recentEvents.map(
         (e) =>
-          `  ${this.getIcon(e.source)} ${new Date(e.timestamp).toLocaleTimeString()}: ${e.message}`
+          `  ${this.getIcon(e.source)} ${new Date(e.timestamp).toLocaleTimeString()}: ${e.message}`,
       ),
     ];
 
