@@ -9,6 +9,8 @@ const menu = [
   { to: "chamados", label: "Chamados" },
   { to: "email", label: "Configurações de E-mail" },
   { to: "integracoes", label: "Integrações" },
+  { to: "midia-login", label: "Mídia do Login" },
+  { to: "alertas", label: "Alertas" },
   { to: "acoes", label: "Ações do Sistema" },
 ];
 

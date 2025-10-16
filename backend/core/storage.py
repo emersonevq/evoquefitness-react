@@ -51,6 +51,14 @@ class AzureBlobStorage:
         blob_client.upload_blob(data, overwrite=True, content_settings=content_settings)
         return blob_client.url
 
+    def delete_blob(self, blob_path: str) -> None:
+        try:
+            blob_client = self._svc.get_blob_client(container=self._container, blob=blob_path)
+            blob_client.delete_blob()
+        except Exception:
+            # Best-effort delete; do not raise to avoid breaking workflows
+            return
+
 
 def get_storage() -> AzureBlobStorage:
     cs = os.getenv("AZURE_STORAGE_CONNECTION_STRING") or os.getenv("AZURE_BLOB_CONNECTION_STRING")

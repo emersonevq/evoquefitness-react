@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { useAuthContext } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
 export default function Index() {
   const { user } = useAuthContext();
@@ -51,6 +52,49 @@ export default function Index() {
     };
   }, []);
 
+  const [alerts, setAlerts] = useState<any[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await apiFetch("/alerts");
+        if (res.ok) {
+          const data = await res.json();
+          if (mounted && Array.isArray(data)) setAlerts(data);
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const dismissed =
+    typeof window !== "undefined"
+      ? (JSON.parse(
+          localStorage.getItem("dismissedAlerts") || "[]",
+        ) as number[])
+      : [];
+  const dismiss = (id: number) => {
+    try {
+      const arr = JSON.parse(
+        localStorage.getItem("dismissedAlerts") || "[]",
+      ) as number[];
+      if (!Array.isArray(arr)) {
+        localStorage.setItem("dismissedAlerts", JSON.stringify([id]));
+      } else {
+        if (!arr.includes(id)) arr.push(id);
+        localStorage.setItem("dismissedAlerts", JSON.stringify(arr));
+      }
+    } catch {
+      localStorage.setItem("dismissedAlerts", JSON.stringify([id]));
+    }
+    setAlerts((cur) => cur.filter((a) => a.id !== id));
+  };
+
   const normalize = (s: any) =>
     typeof s === "string"
       ? s
@@ -89,6 +133,35 @@ export default function Index() {
           ✓ Suas permissões foram atualizadas!
         </div>
       )}
+
+      {/* Alerts */}
+      <div className="fixed inset-x-0 top-2 z-50 flex flex-col items-center gap-2 p-4 pointer-events-none">
+        {alerts
+          .filter((a) => a && a.ativo)
+          .filter((a) => !dismissed.includes(a.id))
+          .map((a) => (
+            <div
+              key={a.id}
+              className={`pointer-events-auto w-full max-w-4xl rounded-lg px-4 py-3 shadow-md text-sm ${a.severity === "danger" ? "bg-red-50 border border-red-300 text-red-800" : a.severity === "warning" ? "bg-yellow-50 border border-yellow-300 text-yellow-800" : "bg-blue-50 border border-blue-300 text-blue-800"}`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="font-semibold">{a.title || "Aviso"}</div>
+                  <div className="mt-1">{a.message}</div>
+                </div>
+                <div className="flex-shrink-0">
+                  <button
+                    onClick={() => dismiss(a.id)}
+                    className="px-3 py-1 rounded-md bg-background"
+                  >
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+      </div>
+
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="container py-8 sm:py-16">

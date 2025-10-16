@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import useEmblaCarousel, { EmblaCarouselType } from "embla-carousel-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 
 type MediaKind = "image" | "video" | "message";
 
@@ -16,7 +17,7 @@ interface MediaItem {
 }
 
 async function fetchLoginMedia(signal?: AbortSignal): Promise<MediaItem[]> {
-  const res = await fetch("/api/login-media", { signal });
+  const res = await apiFetch("/login-media", { signal });
   if (!res.ok) throw new Error("failed");
   const data = await res.json();
   if (!Array.isArray(data)) return [];
@@ -81,7 +82,7 @@ export default function LoginMediaPanel() {
 
   if (showFallback) {
     return (
-      <div className="w-full h-full rounded-2xl overflow-hidden brand-gradient flex items-center justify-center">
+      <div className="relative overflow-hidden rounded-2xl mx-auto w-[360px] h-[360px] sm:w-[460px] sm:h-[460px] md:w-[520px] md:h-[520px] lg:w-[560px] lg:h-[560px] xl:w-[640px] xl:h-[640px] brand-gradient flex items-center justify-center">
         <div className="max-w-lg text-center text-primary-foreground px-6">
           <img
             src="https://images.totalpass.com/public/1280x720/czM6Ly90cC1pbWFnZS1hZG1pbi1wcm9kL2d5bXMva2g2OHF6OWNuajloN2lkdnhzcHhhdWx4emFhbWEzYnc3MGx5cDRzZ3p5aTlpZGM0OHRvYnk0YW56azRk"
@@ -101,7 +102,7 @@ export default function LoginMediaPanel() {
   }
 
   return (
-    <div className="w-full h-full rounded-2xl overflow-hidden relative min-h-[60vh]">
+    <div className="relative overflow-hidden rounded-2xl mx-auto w-[360px] h-[360px] sm:w-[460px] sm:h-[460px] md:w-[520px] md:h-[520px] lg:w-[560px] lg:h-[560px] xl:w-[640px] xl:h-[640px]">
       <div
         className="absolute inset-0 brand-gradient opacity-70"
         aria-hidden="true"
