@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { permissionDebugger } from "@/lib/permission-debugger";
 
 interface AuthUser {
   id?: number;
