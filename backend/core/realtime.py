@@ -63,22 +63,26 @@ async def emit_refresh_for_user(user_id: int):
 
 # Synchronous wrapper that can be safely passed to start_background_task from any thread.
 def emit_logout_sync(user_id: int):
-    """Run the async emit in a fresh event loop (safe from threads)."""
+    """Run the async emit from a thread safely using anyio."""
     try:
-        import asyncio
+        import anyio
         print(f"[SIO] emit_logout_sync starting for user_id={user_id}")
-        asyncio.run(emit_logout_for_user(user_id))
+        anyio.from_thread.run(emit_logout_for_user, user_id)
         print(f"[SIO] emit_logout_sync completed for user_id={user_id}")
     except Exception as e:
         print(f"[SIO] emit_logout_sync error for user_id={user_id}: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 def emit_refresh_sync(user_id: int):
-    """Sync wrapper for emit_refresh_for_user."""
+    """Sync wrapper for emit_refresh_for_user using anyio for thread safety."""
     try:
-        import asyncio
+        import anyio
         print(f"[SIO] emit_refresh_sync starting for user_id={user_id}")
-        asyncio.run(emit_refresh_for_user(user_id))
+        anyio.from_thread.run(emit_refresh_for_user, user_id)
         print(f"[SIO] emit_refresh_sync completed for user_id={user_id}")
     except Exception as e:
         print(f"[SIO] emit_refresh_sync error for user_id={user_id}: {e}")
+        import traceback
+        traceback.print_exc()
