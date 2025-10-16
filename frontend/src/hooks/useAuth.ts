@@ -248,9 +248,12 @@ export function useAuth() {
         const current = readFromStorage();
         if (!current || !current.id) return;
         console.debug("[AUTH] ⟳ Refreshing user data for id", current.id);
+        permissionDebugger.log("api", `Fetching updated user data from /api/usuarios/${current.id}`);
+
         const res = await fetch(`/api/usuarios/${current.id}`);
         if (!res.ok) {
           console.debug("[AUTH] ✗ Refresh failed with status", res.status);
+          permissionDebugger.log("api", "❌ API call failed", { status: res.status });
           return;
         }
         const data = await res.json();
@@ -262,6 +265,9 @@ export function useAuth() {
         const setoresChanged = JSON.stringify(oldSetores.sort()) !== JSON.stringify(newSetores.sort());
         if (setoresChanged) {
           console.log("[AUTH] ✓ Setores changed:", oldSetores, "→", newSetores);
+          permissionDebugger.log("state", `Setores updated: ${oldSetores.join(", ")} → ${newSetores.join(", ")}`);
+        } else {
+          permissionDebugger.log("api", "No permission changes detected");
         }
 
         const base: AuthUser = {
